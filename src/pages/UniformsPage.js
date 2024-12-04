@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditUniformModal";
 import CreateUniModal from "../components/CreateUniModal";
+import config from "../config.json";
 
 // Styled components for the page
 const StockContainer = styled.div`
@@ -66,14 +67,11 @@ const StockPage = () => {
       try {
         const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
 
-        const response = await fetch(
-          "https://192.168.190.89:7039/api/Uniform",
-          {
-            headers: {
-              Authorization: token, // Token başlıqda düzgün formatda
-            },
-          }
-        );
+        const response = await fetch(config.serverUrl + "/api/Uniform", {
+          headers: {
+            Authorization: token, // Token başlıqda düzgün formatda
+          },
+        });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
@@ -130,14 +128,11 @@ const StockPage = () => {
       try {
         const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
 
-        const response = await fetch(
-          "https://192.168.190.89:7039/api/Uniform",
-          {
-            headers: {
-              Authorization: token, // Token başlıqda düzgün formatda
-            },
-          }
-        );
+        const response = await fetch(config.serverUrl + "/api/Uniform", {
+          headers: {
+            Authorization: token, // Token başlıqda düzgün formatda
+          },
+        });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
@@ -170,14 +165,11 @@ const StockPage = () => {
       try {
         const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
 
-        const response = await fetch(
-          "https://192.168.190.89:7039/api/Uniform",
-          {
-            headers: {
-              Authorization: token, // Token başlıqda düzgün formatda
-            },
-          }
-        );
+        const response = await fetch(config.serverUrl + "/api/Uniform", {
+          headers: {
+            Authorization: token, // Token başlıqda düzgün formatda
+          },
+        });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
@@ -203,7 +195,7 @@ const StockPage = () => {
       try {
         const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
         const response = await fetch(
-          `https://192.168.190.89:7039/api/Uniform`, // ID URL-də deyil, body-də olacaq
+          config.serverUrl + `/api/Uniform`, // ID URL-də deyil, body-də olacaq
           {
             method: "DELETE",
             headers: {

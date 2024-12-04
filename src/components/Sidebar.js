@@ -122,9 +122,9 @@ const Sidebar = ({
       path: "/requestsPage",
     },
     {
-      label: "Stock Response",
+      label: "BGS Requests Response",
       value: "stockResponse",
-      path: "/stock-response",
+      path: "/stockResponse",
     },
     { label: "Payroll", value: "payroll", path: "/payroll" },
     { label: "PDF", value: "pdfs", path: "/pdfs" },

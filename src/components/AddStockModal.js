@@ -1,27 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/CreateUniModal.css";
+import config from "../config.json";
 
 const Modal = ({ isOpen, onClose, onSave, apiData }) => {
+  const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIwIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibi5tYW1tYWRvdkBhemVyYmFpamFuc3VwZXJtYXJrZXQuY29tIiwiRnVsbE5hbWUiOiJOYXNpbWkgTWFtbWFkb3YiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiUmVjcnVpdGVyIiwiU3RvcmUgTWFuYWdlbWVudCIsIkhSIFN0YWZmIiwiQWRtaW4iXSwiZXhwIjoxNzY0Njc0OTE4fQ.EW_2UHYjfjGcG4AjNvwDmhPOJ_T_a5xBWXwgZ-pZTFc`;
   const [forms, setForms] = useState([
     {
       stockCount: 1,
       impstockCount: 1,
       unitPrice: 1,
       totalPrice: 1,
-      employee: "",
+      employee: 1,
     },
   ]);
+  const [uniformOptions, setUniformOptions] = useState([]);
 
-  // Update the total price when stockCount or unitPrice changes
   const calculateTotalPrice = (stockCount, unitPrice) => {
     return stockCount * unitPrice;
   };
 
-  const handleChange = (e, index) => {
-    const { name, value } = e.target;
+  useEffect(() => {
+    const fetchUniforms = async () => {
+      try {
+        const response = await fetch(config.serverUrl + "/api/Uniform", {
+          headers: {
+            Authorization: token,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch uniforms.");
+
+        const data = await response.json();
+        const uniforms = data[0]?.Uniforms || [];
+        setUniformOptions(uniforms);
+      } catch (error) {
+        console.error("Error fetching uniforms:", error);
+      }
+    };
+
+    fetchUniforms();
+  }, []);
+
+  const handleUniCodeChange = (e, index) => {
+    const selectedUniCode = e.target.value;
+
     setForms((prevForms) =>
       prevForms.map((form, i) =>
-        i === index ? { ...form, [name]: value } : form
+        i === index
+          ? {
+              ...form,
+              UniCode: selectedUniCode,
+            }
+          : form
       )
     );
   };
@@ -38,6 +68,16 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
               totalPrice: calculateTotalPrice(stockCount, form.unitPrice),
             }
           : form
+      )
+    );
+  };
+
+  const handleChange = (e, index) => {
+    const { name, value } = e.target;
+    const updatedValue = name === "employee" ? Number(value) : value;
+    setForms((prevForms) =>
+      prevForms.map((form, i) =>
+        i === index ? { ...form, [name]: updatedValue } : form
       )
     );
   };
@@ -66,43 +106,37 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         impstockCount: 1,
         unitPrice: 1,
         totalPrice: 1,
-        employee: "",
+        employee: 1, // Default set to 1 (Employee)
       },
     ]);
   };
 
   const handleSave = async () => {
     try {
-      // Validate inputs
-      const invalidForms = forms.filter((form) => {
-        return (
-          !form.stockCount.trim() ||
-          !form.impstockCount.trim() ||
-          !form.unitPrice.trim() ||
-          !form.totalPrice.trim() ||
-          !form.employee.trim()
-        );
-      });
-
-      if (invalidForms.length > 0) {
-        alert("Please fill all fields with valid values before saving.");
+      // Validation
+      if (forms.some((form) => !form.UniCode || !form.employee)) {
+        alert("Please fill all the fields before saving.");
         return;
       }
 
-      const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
       const payload = {
-        UniformItems: forms.map((form, index) => ({
-          UniformId: index + 1, // Assign a temporary ID or use a value from `apiData`
-
-          StockCount: form.stockCount.trim(),
-          ImportedStockCount: form.impstockCount.trim(),
-          UnitPrice: form.unitPrice.trim(),
-          TotalPrice: form.totalPrice.trim(),
-          StoreOrEmployee: form.employee.trim(),
-        })),
+        DCStockItems: forms.map((form) => {
+          const selectedUniform = uniformOptions.find(
+            (uniform) => uniform.UniCode === form.UniCode
+          );
+          return {
+            UniformId: selectedUniform?.Id || "", // Ensure UniCode matches UniformId in your backend
+            ImportedStockCount: form.stockCount,
+            UnitPrice: form.unitPrice,
+            TotalPrice: form.totalPrice,
+            StoreOrEmployee: form.employee, // Send as either 1 (Store) or 2 (Employee)
+          };
+        }),
       };
 
-      const response = await fetch(`https://192.168.190.89:7039/api/DCStock`, {
+      console.log(payload);
+
+      const response = await fetch(config.serverUrl + `/api/DCStock`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +156,6 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
       }
 
       const savedData = await response.json();
-      console.log(savedData);
       onSave(savedData); // Notify parent with saved uniforms
       resetForms();
     } catch (error) {
@@ -137,7 +170,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         impstockCount: 1,
         unitPrice: 1,
         totalPrice: 1,
-        employee: "",
+        employee: 1, // Reset to default value (Employee)
       },
     ]);
     onClose();
@@ -155,29 +188,24 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
           <div key={index} className="form-wrapper">
             <div className="form-grid">
               <div className="form-group">
-                <label className="label" htmlFor={`uni_code_${index}`}>
-                  Uni Code
+                <label className="label" htmlFor={`UniCode_${index}`}>
+                  Uniform Code
                 </label>
                 <select
-                  className="select"
-                  id={`uni_code_${index}`}
-                  name="uni_code"
-                  value={formData.uni_code}
-                  onChange={(e) => handleChange(e, index)}
+                  className="input"
+                  id={`UniCode_${index}`}
+                  value={formData.UniCode}
+                  onChange={(e) => handleUniCodeChange(e, index)}
                 >
-                  {/* <option value="">Select </option> */}
-                  {/* Check if employeeData exists and is not empty */}
-                  {/* {length > 0 ? (
-                    map((employee, idx) => (
-                      <option key={idx} value={employee.uni_code}>
-                        {employee.uni_name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      No available
+                  <option value="">Select Uniform Code</option>
+                  {uniformOptions.map((option, index) => (
+                    <option
+                      key={`${option.UniCode}-${index}`}
+                      value={option.UniCode}
+                    >
+                      {option.UniCode}
                     </option>
-                  )} */}
+                  ))}
                 </select>
               </div>
               <div className="form-group">
@@ -191,24 +219,12 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
                   value={formData.employee}
                   onChange={(e) => handleChange(e, index)}
                 >
-                  <option value="">Select Employee</option>
-                  {/* Check if employeeData exists and is not empty */}
-                  {/* {.length > 0 ? (
-                    .map((employee, idx) => (
-                      <option key={idx} value={employee.id}>
-                        
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      No employees available
-                    </option>
-                  )} */}
+                  <option value={1}>Employee</option>
+                  <option value={2}>Store</option>
                 </select>
               </div>
             </div>
 
-            {/* Stock Count, Unit Price, Total Price in the next row */}
             <div className="form-grid three-column">
               <div className="form-group">
                 <label className="label" htmlFor={`stockCount_${index}`}>
@@ -219,11 +235,11 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
                   type="number"
                   id={`stockCount_${index}`}
                   name="stockCount"
-                  min="1"
                   value={formData.stockCount}
                   onChange={(e) => handleStockCountChange(e, index)}
                 />
               </div>
+
               <div className="form-group">
                 <label className="label" htmlFor={`unitPrice_${index}`}>
                   Unit Price
@@ -233,18 +249,18 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
                   type="number"
                   id={`unitPrice_${index}`}
                   name="unitPrice"
-                  min="1"
                   value={formData.unitPrice}
                   onChange={(e) => handleUnitPriceChange(e, index)}
                 />
               </div>
+
               <div className="form-group">
                 <label className="label" htmlFor={`totalPrice_${index}`}>
                   Total Price
                 </label>
                 <input
                   className="input"
-                  type="text"
+                  type="number"
                   id={`totalPrice_${index}`}
                   name="totalPrice"
                   value={formData.totalPrice}

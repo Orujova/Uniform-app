@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditStockModal";
 import AddStockModal from "../components/AddStockModal"; // Import the modal component
+import config from "../config.json";
 
 // Styled components for the page
 const StockContainer = styled.div`
@@ -56,7 +57,7 @@ const StockPage = () => {
   const [error, setError] = useState("");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-
+  const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIwIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibi5tYW1tYWRvdkBhemVyYmFpamFuc3VwZXJtYXJrZXQuY29tIiwiRnVsbE5hbWUiOiJOYXNpbWkgTWFtbWFkb3YiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiUmVjcnVpdGVyIiwiU3RvcmUgTWFuYWdlbWVudCIsIkhSIFN0YWZmIiwiQWRtaW4iXSwiZXhwIjoxNzY0Njc0OTE4fQ.EW_2UHYjfjGcG4AjNvwDmhPOJ_T_a5xBWXwgZ-pZTFc`;
   // Fetch stock data from API
   useEffect(() => {
     const fetchStockData = async () => {
@@ -64,24 +65,18 @@ const StockPage = () => {
       setError("");
 
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-
-        const response = await fetch(
-          "https://192.168.190.89:7039/api/DCStock",
-          {
-            headers: {
-              Authorization: token, // Token başlıqda düzgün formatda
-            },
-          }
-        );
+        const response = await fetch(config.serverUrl + "/api/DCStock", {
+          headers: {
+            Authorization: token, // Token başlıqda düzgün formatda
+          },
+        });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
 
         // Extract Uniforms array from the response
-        const uniforms = data[0]?.Uniforms || [];
+        const uniforms = data[0]?.DCStocks || [];
         console.log(uniforms);
-
         setStockData(uniforms);
       } catch (err) {
         console.error("Error fetching uniforms:", err);
@@ -95,15 +90,16 @@ const StockPage = () => {
   }, []);
 
   const columns = [
-    { Header: "Uni Id", accessor: "UniformId" },
+    { Header: "Uni Code", accessor: "UniformCode" },
+    { Header: "Uniform Name", accessor: "UniformName" },
+    { Header: "Size", accessor: "UniformSize" },
+    { Header: "Type", accessor: "UniformType" },
     { Header: "Stock Count", accessor: "StockCount" },
     { Header: "Imported Stock", accessor: "ImportedStockCount" },
     { Header: "Unit Price", accessor: "UnitPrice" },
     { Header: "Total Price", accessor: "TotalPrice" },
     { Header: "Option", accessor: "StoreOrEmployee" },
-    // { Header: "Size", accessor: "size" },
-    // { Header: "Type", accessor: "uniType" },
-    // { Header: "Gender", accessor: "gender" },
+
     {
       Header: "Actions",
       accessor: "actions",
@@ -115,7 +111,7 @@ const StockPage = () => {
           />
           <FaTrash
             style={{ cursor: "pointer", color: "#e74c3c" }}
-            onClick={() => handleDelete(row.original.id)}
+            onClick={() => handleDelete(row.original.Id)}
           />
         </div>
       ),
@@ -130,23 +126,17 @@ const StockPage = () => {
       setError("");
 
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-
-        const response = await fetch(
-          "https://192.168.190.89:7039/api/Uniform",
-          {
-            headers: {
-              Authorization: token, // Token başlıqda düzgün formatda
-            },
-          }
-        );
+        const response = await fetch(config.serverUrl + "/api/DCStock", {
+          headers: {
+            Authorization: token, // Token başlıqda düzgün formatda
+          },
+        });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
 
         // Extract Uniforms array from the response
-        const uniforms = data[0]?.Uniforms || [];
-        console.log(uniforms);
+        const uniforms = data[0]?.DCStocks || [];
 
         setStockData(uniforms);
       } catch (err) {
@@ -170,23 +160,17 @@ const StockPage = () => {
       setError("");
 
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-
-        const response = await fetch(
-          "https://192.168.190.89:7039/api/Uniform",
-          {
-            headers: {
-              Authorization: token, // Token başlıqda düzgün formatda
-            },
-          }
-        );
+        const response = await fetch(config.serverUrl + "/api/DCStock", {
+          headers: {
+            Authorization: token, // Token başlıqda düzgün formatda
+          },
+        });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
 
         // Extract Uniforms array from the response
-        const uniforms = data[0]?.Uniforms || [];
-        console.log(uniforms);
+        const uniforms = data[0]?.DCStocks || [];
 
         setStockData(uniforms);
       } catch (err) {
@@ -203,9 +187,8 @@ const StockPage = () => {
   const handleDelete = async (Id) => {
     if (window.confirm("Are you sure you want to delete this uniform?")) {
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
         const response = await fetch(
-          `https://192.168.190.89:7039/api/Uniform`, // ID URL-də deyil, body-də olacaq
+          config.serverUrl + `/api/DCStock`, // ID URL-də deyil, body-də olacaq
           {
             method: "DELETE",
             headers: {
@@ -216,6 +199,8 @@ const StockPage = () => {
           }
         );
 
+        console.log(Id);
+
         if (!response.ok) {
           const errorDetails = await response.json();
           console.error("Error details:", errorDetails);
@@ -223,7 +208,7 @@ const StockPage = () => {
         }
 
         setStockData((prev) => prev.filter((item) => item.Id !== Id));
-        console.log("Uniform deleted successfully!");
+        console.log("DCStock deleted successfully!");
       } catch (error) {
         console.error("Error deleting uniform:", error.message);
       }

@@ -10,6 +10,7 @@ import UniformsPage from "./pages/UniformsPage"; // New UniformsPage
 import PDFsPage from "./pages/PDFsPage";
 import UniformCondition from "./pages/UniformCondition";
 import RequestsPage from "./pages/RequestsPage";
+import StockResponse from "./pages/StockResponse";
 
 // Main Application Layout with Sidebar and Content
 const AppContainer = styled.div`
@@ -54,10 +55,11 @@ const App = () => {
             <Route path="/distribution" element={<Distribution />} />
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/stock" element={<Stock />} />
-            <Route path="/uniforms" element={<UniformsPage />} />{" "}
+            <Route path="/uniforms" element={<UniformsPage />} />
             <Route path="/pdfs" element={<PDFsPage />} />
             <Route path="/uniformcondition" element={<UniformCondition />} />
             <Route path="/requestsPage" element={<RequestsPage />} />
+            <Route path="/stockResponse" element={<StockResponse />} />
           </Routes>
         </ContentArea>
       </AppContainer>

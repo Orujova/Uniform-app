@@ -36,6 +36,7 @@ const StyledTh = styled.th`
   font-size: 16px;
   text-align: left;
   font-weight: 600;
+  text-align: center;
 
   cursor: ${(props) => (props.$isSortable ? "pointer" : "default")};
 
@@ -52,6 +53,7 @@ const StyledTd = styled.td`
   border-bottom: 1px solid ${colors.borderColor};
   vertical-align: middle;
   font-weight: 500;
+  text-align: center;
 `;
 
 const StyledTr = styled.tr`
