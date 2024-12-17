@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "../styles/CreateUniModal.css";
-import config from "../config.json";
+import { API_BASE_URL } from "../config";
 
 const CreateRequest = ({ isOpen, onClose, onSave }) => {
   const [bgsProjectss, setBgsProject] = useState(null);
-  const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIwIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibi5tYW1tYWRvdkBhemVyYmFpamFuc3VwZXJtYXJrZXQuY29tIiwiRnVsbE5hbWUiOiJOYXNpbWkgTWFtbWFkb3YiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiUmVjcnVpdGVyIiwiU3RvcmUgTWFuYWdlbWVudCIsIkhSIFN0YWZmIiwiQWRtaW4iXSwiZXhwIjoxNzY0Njc0OTE4fQ.EW_2UHYjfjGcG4AjNvwDmhPOJ_T_a5xBWXwgZ-pZTFc`;
+  const token = localStorage.getItem("token");
   const [forms, setForms] = useState([
     {
       UniformId: "",
@@ -27,9 +27,9 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
   useEffect(() => {
     const fetchUniforms = async () => {
       try {
-        const response = await fetch(config.serverUrl + "/api/Uniform", {
+        const response = await fetch(API_BASE_URL + "/api/Uniform", {
           headers: {
-            Authorization: token,
+            Authorization:  `Bearer ${token}`,
           },
         });
 
@@ -46,9 +46,9 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
 
     const fetchProject = async () => {
       try {
-        const response = await fetch(config.serverUrl + "/api/Project", {
+        const response = await fetch(API_BASE_URL + "/api/Project", {
           headers: {
-            Authorization: token,
+            Authorization:  `Bearer ${token}`,
           },
         });
 
@@ -56,12 +56,11 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
 
         const data = await response.json();
         const projects = data[0]?.Projects || [];
-        // console.log(projects);
+
         const bgsProject = projects.find((project) => project.Id == "506");
-        // console.log(bgsProject?.ProjectName || "");
+
         setBgsProject(bgsProject);
-        setProjectName(bgsProject?.ProjectName || ""); // Project adını doldur
-        // Project adını doldur
+        setProjectName(bgsProject?.ProjectName || "");
       } catch (error) {
         console.error("Error fetching projects:", error);
       }
@@ -137,13 +136,11 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
         }),
       };
 
-      // console.log(payload);
-
-      const response = await fetch(config.serverUrl + "/api/BGSStockRequest", {
+      const response = await fetch(API_BASE_URL + "/api/BGSStockRequest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: token,
+          Authorization:  `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

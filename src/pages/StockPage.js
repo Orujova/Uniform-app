@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaFilter,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditStockModal";
-import AddStockModal from "../components/AddStockModal"; // Import the modal component
-import config from "../config.json";
+import AddStockModal from "../components/AddStockModal";
+import { API_BASE_URL } from "../config";
 
-// Styled components for the page
 const StockContainer = styled.div`
   padding: 16px;
   background-color: #ffffff;
   border-radius: 12px;
-
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -20,7 +25,7 @@ const StockContainer = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 `;
 
 const Title = styled.h2`
@@ -50,56 +55,112 @@ const StyledButton = styled.button`
   }
 `;
 
+const FilterContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FilterLabel = styled.label`
+  font-size: 14px;
+  color: #4a5568;
+`;
+
+const FilterInput = styled.input`
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #0284c7;
+  }
+`;
+
+const FilterSelect = styled.select`
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #0284c7;
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+`;
+
+const PageButton = styled.button`
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: ${(props) => (props.active ? "#0284c7" : "white")};
+  color: ${(props) => (props.active ? "white" : "#4a5568")};
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => (props.active ? "#0284c7" : "#f7fafc")};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const PageInfo = styled.span`
+  font-size: 14px;
+  color: #4a5568;
+`;
+
 const StockPage = () => {
   const [stockData, setStockData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [filters, setFilters] = useState({
+    uniformCode: "",
+    uniformType: "",
+    size: "",
+    gender: "",
+    receptionStartDate: "",
+    receptionEndDate: "",
+  });
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIwIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibi5tYW1tYWRvdkBhemVyYmFpamFuc3VwZXJtYXJrZXQuY29tIiwiRnVsbE5hbWUiOiJOYXNpbWkgTWFtbWFkb3YiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiUmVjcnVpdGVyIiwiU3RvcmUgTWFuYWdlbWVudCIsIkhSIFN0YWZmIiwiQWRtaW4iXSwiZXhwIjoxNzY0Njc0OTE4fQ.EW_2UHYjfjGcG4AjNvwDmhPOJ_T_a5xBWXwgZ-pZTFc`;
-  // Fetch stock data from API
-  useEffect(() => {
-    const fetchStockData = async () => {
-      setIsLoading(true);
-      setError("");
-
-      try {
-        const response = await fetch(config.serverUrl + "/api/DCStock", {
-          headers: {
-            Authorization: token, // Token başlıqda düzgün formatda
-          },
-        });
-
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
-
-        // Extract Uniforms array from the response
-        const uniforms = data[0]?.DCStocks || [];
-        console.log(uniforms);
-        setStockData(uniforms);
-      } catch (err) {
-        console.error("Error fetching uniforms:", err);
-        setError("Failed to fetch uniform data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStockData();
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const token = localStorage.getItem("token");
 
   const columns = [
     { Header: "Uni Code", accessor: "UniformCode" },
     { Header: "Uniform Name", accessor: "UniformName" },
     { Header: "Size", accessor: "UniformSize" },
     { Header: "Type", accessor: "UniformType" },
+    { Header: "Gender", accessor: "Gender" },
     { Header: "Stock Count", accessor: "StockCount" },
     { Header: "Imported Stock", accessor: "ImportedStockCount" },
     { Header: "Unit Price", accessor: "UnitPrice" },
     { Header: "Total Price", accessor: "TotalPrice" },
     { Header: "Option", accessor: "StoreOrEmployee" },
-
     {
       Header: "Actions",
       accessor: "actions",
@@ -118,101 +179,192 @@ const StockPage = () => {
     },
   ];
 
-  // Handlers
-  const handleCreateUniform = () => setAddModalOpen(true);
-  const handleSaveUniform = async () => {
-    const fetchStockData = async () => {
-      setIsLoading(true);
-      setError("");
-
-      try {
-        const response = await fetch(config.serverUrl + "/api/DCStock", {
-          headers: {
-            Authorization: token, // Token başlıqda düzgün formatda
-          },
-        });
-
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
-
-        // Extract Uniforms array from the response
-        const uniforms = data[0]?.DCStocks || [];
-
-        setStockData(uniforms);
-      } catch (err) {
-        console.error("Error fetching uniforms:", err);
-        setError("Failed to fetch uniform data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchStockData();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [filters, stockData]);
+
+  const fetchStockData = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(API_BASE_URL + "/api/DCStock", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      const data = await response.json();
+      const uniforms = data[0]?.DCStocks || [];
+      // Sort by Id in descending order
+      const sortedUniforms = uniforms.sort((a, b) => b.Id - a.Id);
+      setStockData(sortedUniforms);
+      setFilteredData(sortedUniforms);
+    } catch (err) {
+      console.error("Error fetching uniforms:", err);
+      setError("Failed to fetch uniform data. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const applyFilters = () => {
+    let filtered = [...stockData];
+
+    if (filters.uniformCode) {
+      filtered = filtered.filter((item) =>
+        item.UniformCode?.toLowerCase().includes(
+          filters.uniformCode.toLowerCase()
+        )
+      );
+    }
+
+    if (filters.uniformType) {
+      filtered = filtered.filter((item) =>
+        item.UniformType?.toLowerCase().includes(
+          filters.uniformType.toLowerCase()
+        )
+      );
+    }
+
+    if (filters.size) {
+      filtered = filtered.filter(
+        (item) =>
+          String(item.UniformSize)?.toLowerCase() === filters.size.toLowerCase()
+      );
+    }
+
+    if (filters.gender) {
+      filtered = filtered.filter(
+        (item) =>
+          String(item.Gender)?.toLowerCase() === filters.gender.toLowerCase()
+      );
+    }
+
+    if (filters.receptionStartDate && filters.receptionEndDate) {
+      filtered = filtered.filter((item) => {
+        const itemDate = new Date(item.ReceptionDate);
+        const startDate = new Date(filters.receptionStartDate);
+        const endDate = new Date(filters.receptionEndDate);
+        endDate.setHours(23, 59, 59, 999);
+        return itemDate >= startDate && itemDate <= endDate;
+      });
+    }
+
+    setFilteredData(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const getUniqueSizes = () => {
+    const sizes = new Set(
+      stockData.map((item) => String(item.UniformSize)).filter(Boolean)
+    );
+    return Array.from(sizes).sort();
+  };
+
+  const getUniqueGenders = () => {
+    const genders = new Set(
+      stockData.map((item) => String(item.Gender)).filter(Boolean)
+    );
+    return Array.from(genders).sort();
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCreateUniform = () => setAddModalOpen(true);
+
+  const handleSaveUniform = async () => {
+    await fetchStockData();
+  };
+
   const handleEdit = (row) => {
-    setEditData(row); // Set selected uniform for editing
-    setEditModalOpen(true); // Open modal
+    setEditData(row);
+    setEditModalOpen(true);
   };
 
-  const handleSaveEdit = (updatedData) => {
-    const fetchStockData = async () => {
-      setIsLoading(true);
-      setError("");
-
-      try {
-        const response = await fetch(config.serverUrl + "/api/DCStock", {
-          headers: {
-            Authorization: token, // Token başlıqda düzgün formatda
-          },
-        });
-
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
-
-        // Extract Uniforms array from the response
-        const uniforms = data[0]?.DCStocks || [];
-
-        setStockData(uniforms);
-      } catch (err) {
-        console.error("Error fetching uniforms:", err);
-        setError("Failed to fetch uniform data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+  const handleSaveEdit = () => {
     fetchStockData();
     setEditModalOpen(false);
   };
+
   const handleDelete = async (Id) => {
     if (window.confirm("Are you sure you want to delete this uniform?")) {
       try {
-        const response = await fetch(
-          config.serverUrl + `/api/DCStock`, // ID URL-də deyil, body-də olacaq
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ Id }), // ID burada göndərilir
-          }
-        );
-
-        console.log(Id);
+        const response = await fetch(API_BASE_URL + `/api/DCStock`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ Id }),
+        });
 
         if (!response.ok) {
           const errorDetails = await response.json();
-          console.error("Error details:", errorDetails);
           throw new Error(errorDetails.Message || "Failed to delete uniform.");
         }
 
-        setStockData((prev) => prev.filter((item) => item.Id !== Id));
-        console.log("DCStock deleted successfully!");
+        await fetchStockData();
       } catch (error) {
         console.error("Error deleting uniform:", error.message);
       }
     }
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push("...");
+        pageNumbers.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pageNumbers.push(1);
+        pageNumbers.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } else {
+        pageNumbers.push(1);
+        pageNumbers.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push("...");
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
   };
 
   return (
@@ -226,21 +378,121 @@ const StockPage = () => {
         </ButtonGroup>
       </Header>
 
-      {/* Loading, Error, or Table Component */}
+      <FilterContainer>
+        <FilterGroup>
+          <FilterLabel>Uniform Code</FilterLabel>
+          <FilterInput
+            type="text"
+            name="uniformCode"
+            value={filters.uniformCode}
+            onChange={handleFilterChange}
+            placeholder="Enter uniform code"
+          />
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>Uniform Type</FilterLabel>
+          <FilterInput
+            type="text"
+            name="uniformType"
+            value={filters.uniformType}
+            onChange={handleFilterChange}
+            placeholder="Enter uniform type"
+          />
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>Size</FilterLabel>
+          <FilterSelect
+            name="size"
+            value={filters.size}
+            onChange={handleFilterChange}
+          >
+            <option value="">All Sizes</option>
+            {getUniqueSizes().map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </FilterSelect>
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>Gender</FilterLabel>
+          <FilterSelect
+            name="gender"
+            value={filters.gender}
+            onChange={handleFilterChange}
+          >
+            <option value="">All Genders</option>
+            {getUniqueGenders().map((gender) => (
+              <option key={gender} value={gender}>
+                {gender}
+              </option>
+            ))}
+          </FilterSelect>
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>Reception Start Date</FilterLabel>
+          <FilterInput
+            type="date"
+            name="receptionStartDate"
+            value={filters.receptionStartDate}
+            onChange={handleFilterChange}
+          />
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>Reception End Date</FilterLabel>
+          <FilterInput
+            type="date"
+            name="receptionEndDate"
+            value={filters.receptionEndDate}
+            onChange={handleFilterChange}
+          />
+        </FilterGroup>
+      </FilterContainer>
+
       {isLoading ? (
         <p>Loading uniforms...</p>
       ) : error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
-        <Table
-          columns={columns}
-          data={stockData}
-          selectable={false}
-          editable={false}
-        />
-      )}
+        <>
+          <Table
+            columns={columns}
+            data={currentItems}
+            selectable={false}
+            editable={false}
+          />
 
-      {/* Modal Component */}
+          <PaginationContainer>
+            <PageButton
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <FaChevronLeft />
+            </PageButton>
+
+            {getPageNumbers().map((number, index) =>
+              number === "..." ? (
+                <PageInfo key={`ellipsis-${index}`}>...</PageInfo>
+              ) : (
+                <PageButton
+                  key={number}
+                  active={currentPage === number}
+                  onClick={() => handlePageChange(number)}
+                >
+                  {number}
+                </PageButton>
+              )
+            )}
+
+            <PageButton
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <FaChevronRight />
+            </PageButton>
+          </PaginationContainer>
+        </>
+      )}
 
       <AddStockModal
         isOpen={isAddModalOpen}
@@ -254,7 +506,7 @@ const StockPage = () => {
         onClose={() => setEditModalOpen(false)}
         onSave={handleSaveEdit}
         initialData={editData}
-        apiData={stockData} // Pass an empty object as fallback
+        apiData={stockData}
       />
     </StockContainer>
   );

@@ -1,0 +1,116 @@
+/* Modal Container */
+.user-edit-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  align-items: center;
+  justify-content: center;
+}
+
+.user-edit-modal.open {
+  display: flex;
+}
+
+/* Modal Content Styling */
+.user-edit-modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading Styling */
+.user-edit-modal h3 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* Form Elements Styling */
+.user-edit-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.user-edit-form input,
+.user-edit-form select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.user-edit-form input[type="password"] {
+  padding-right: 40px; /* Add space for the icon */
+}
+
+/* Submit and Cancel Buttons */
+.user-edit-buttons button {
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+  width: 45%;
+}
+
+.user-edit-buttons button:hover {
+  background-color: #1565c0;
+}
+
+.user-edit-buttons button[type="button"] {
+  background-color: #f44336;
+}
+
+.user-edit-buttons button[type="button"]:hover {
+  background-color: #e53935;
+}
+
+/* Password Visibility Icon Button */
+.user-edit-password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-edit-password-toggle-btn:focus {
+  outline: none;
+}
+
+/* Role Select Dropdown */
+.user-edit-form select {
+  height: 40px;
+}
+
+/* Modal Actions Styling */
+.user-edit-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.user-edit-form input:focus,
+.user-edit-form select:focus {
+  border-color: #1976d2;
+  outline: none;
+}
+
+/* Accessibility: Focused Buttons */
+button:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 4px;
+}

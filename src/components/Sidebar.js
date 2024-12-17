@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import CustomButton from "./CustomButton"; // Ensure CustomButton is correctly imported
+import CustomButton from "./CustomButton";
 
 // Styled Sidebar Container with light theme
 const SidebarContainer = styled.div`
-  width: 240px;
-  background-color: #ffffff; /* Clean white background */
-  color: #2d3a45; /* Dark gray text */
+  background-color: #ffffff;
+  color: #2d3a45;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -72,11 +71,14 @@ const SidebarButton = styled.button`
     background: #b3d4fc;
     color: #2d3a45;
   }
+
+  word-wrap: break-word;
+  white-space: nowrap;
 `;
 
 // Log Out Button with light styling
 const LogOutButton = styled(CustomButton)`
-  background-color: #f76c6c !important; /* Soft salmon for log out */
+  background-color: #f76c6c !important;
   margin-top: 20px;
   width: 100%;
   padding: 12px;
@@ -105,16 +107,21 @@ const Sidebar = ({
     { label: "Distribution", value: "distribution", path: "/distribution" },
     { label: "Transaction", value: "transaction", path: "/transaction" },
     {
-      label: "Projects",
-      value: "projects",
-      path: "/handover-pdf-list",
+      label: "Manager Response",
+      value: "ManagerResponse",
+      path: "/managerResponse",
+    },
+    {
+      label: "DC Response",
+      value: "dCResponse",
+      path: "/dCResponse",
     },
     {
       label: "Uniform Condition",
       value: "uniformcondition",
       path: "/uniformcondition",
     },
-    { label: "Stock", value: "stock", path: "/stock" }, // Consolidated Stock item
+    { label: "DC Stock", value: "stock", path: "/stock" },
     { label: "Uniforms", value: "uniforms", path: "/uniforms" },
     {
       label: "BGS Stock Requests",
@@ -122,7 +129,7 @@ const Sidebar = ({
       path: "/requestsPage",
     },
     {
-      label: "BGS Requests Response",
+      label: "BGS Response",
       value: "stockResponse",
       path: "/stockResponse",
     },
@@ -133,7 +140,7 @@ const Sidebar = ({
   const handleSelect = (item) => {
     setActive(item.value);
     onSelect(item.value);
-    navigate(item.path); // Use navigate to change the URL
+    navigate(item.path);
   };
 
   return (

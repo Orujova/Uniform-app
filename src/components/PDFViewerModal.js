@@ -1,6 +1,6 @@
-import React from 'react';
-import styled from 'styled-components';
-import { FaTimes } from 'react-icons/fa';
+import React from "react";
+import styled from "styled-components";
+import { FaTimes } from "react-icons/fa";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -16,7 +16,7 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   width: 80%;
   max-width: 800px;
   padding: 24px;
@@ -34,7 +34,7 @@ const Header = styled.div`
 const Title = styled.h2`
   margin: 0;
   font-size: 20px;
-  color: #2D3A45;
+  color: #2d3a45;
 `;
 
 const CloseButton = styled.button`
@@ -42,10 +42,10 @@ const CloseButton = styled.button`
   border: none;
   cursor: pointer;
   font-size: 1.5rem;
-  color: #7D8996;
+  color: #7d8996;
 
   &:hover {
-    color: #4A90E2;
+    color: #4a90e2;
   }
 `;
 
@@ -59,17 +59,29 @@ const PDFViewer = styled.iframe`
 const PDFViewerModal = ({ isOpen, pdf, onClose }) => {
   if (!isOpen) return null;
 
+  let correctedPdfPath = pdf.File;
+
+  // Modify the URL if it contains 'pdffile'
+  if (correctedPdfPath.includes("pdffile")) {
+    correctedPdfPath = correctedPdfPath.replace("/pdffile", "/uploads/pdffile");
+    console.log("Modified PDF URL:", correctedPdfPath);
+  }
+
   return (
     <ModalOverlay>
       <ModalContainer>
         <Header>
-          <Title>{pdf.name}</Title>
+          <Title>{pdf.FileName}</Title>
           <CloseButton onClick={onClose}>
             <FaTimes />
           </CloseButton>
         </Header>
-        {/* Replace with actual PDF source */}
-        <PDFViewer src={`path-to-your-pdf-directory/${pdf.name}.pdf`} />
+
+        <PDFViewer
+          src={correctedPdfPath}
+          title={pdf.FileName}
+          onError={() => alert("Error loading the PDF.")}
+        />
       </ModalContainer>
     </ModalOverlay>
   );

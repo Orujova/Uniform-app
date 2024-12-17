@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditUniformModal";
 import CreateUniModal from "../components/CreateUniModal";
-import config from "../config.json";
+import { API_BASE_URL } from "../config";
 
 // Styled components for the page
 const StockContainer = styled.div`
   padding: 16px;
   background-color: #ffffff;
   border-radius: 12px;
-
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -50,6 +55,52 @@ const StyledButton = styled.button`
   }
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+`;
+
+const PaginationButton = styled.button`
+  padding: 4px 8px;
+  min-width: 32px;
+  height: 32px;
+  margin: 0 2px;
+  border: 1px solid #dee2e6;
+  background-color: ${(props) => (props.active ? "#0284c7" : "#ffffff")};
+  color: ${(props) => (props.active ? "#ffffff" : "#212529")};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  border-radius: 6px;
+  &:hover {
+    background-color: ${(props) => (props.active ? "#0284c7" : "#f8f9fa")};
+    z-index: 2;
+  }
+
+  &:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+`;
+
 const StockPage = () => {
   const [stockData, setStockData] = useState([]);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -58,29 +109,41 @@ const StockPage = () => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  // Fetch stock data from API
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = stockData.slice(indexOfFirstItem, indexOfLastItem);
+
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     const fetchStockData = async () => {
       setIsLoading(true);
       setError("");
 
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-
-        const response = await fetch(config.serverUrl + "/api/Uniform", {
+        const response = await fetch(API_BASE_URL + "/api/Uniform", {
           headers: {
-            Authorization: token, // Token başlıqda düzgün formatda
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
 
-        // Extract Uniforms array from the response
         const uniforms = data[0]?.Uniforms || [];
-        console.log(uniforms);
 
-        setStockData(uniforms);
+        // Sort uniforms by Id in ascending order
+        const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
+
+        setStockData(sortedUniforms);
+        // setStockData(uniforms);
+        setTotalPages(Math.ceil(uniforms.length / itemsPerPage));
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -90,9 +153,8 @@ const StockPage = () => {
     };
 
     fetchStockData();
-  }, []);
+  }, [itemsPerPage]);
 
-  // Columns for the stock table
   const columns = [
     { Header: "Uni Code", accessor: "UniCode" },
     { Header: "Uniform Name", accessor: "UniName" },
@@ -108,7 +170,6 @@ const StockPage = () => {
             style={{ cursor: "pointer", color: "#2980b9" }}
             onClick={() => handleEdit(row.original)}
           />
-
           <FaTrash
             style={{ cursor: "pointer", color: "#e74c3c" }}
             onClick={() => handleDelete(row.original.Id)}
@@ -118,6 +179,29 @@ const StockPage = () => {
     },
   ];
 
+  // Pagination handlers
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers;
+  };
+
   // Handlers
   const handleCreateUniform = () => setCreateModalOpen(true);
   const handleSaveUniform = async () => {
@@ -126,11 +210,9 @@ const StockPage = () => {
       setError("");
 
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-
-        const response = await fetch(config.serverUrl + "/api/Uniform", {
+        const response = await fetch(API_BASE_URL + "/api/Uniform", {
           headers: {
-            Authorization: token, // Token başlıqda düzgün formatda
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -139,9 +221,13 @@ const StockPage = () => {
 
         // Extract Uniforms array from the response
         const uniforms = data[0]?.Uniforms || [];
-        console.log(uniforms);
+        // console.log(uniforms);
 
-        setStockData(uniforms);
+        // setStockData(uniforms);
+
+        // Sort new data by Id
+        const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
+        setStockData(sortedUniforms);
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -153,8 +239,8 @@ const StockPage = () => {
     fetchStockData();
   };
   const handleEdit = (row) => {
-    setEditData(row); // Set selected uniform for editing
-    setEditModalOpen(true); // Open modal
+    setEditData(row);
+    setEditModalOpen(true);
   };
 
   const handleSaveEdit = (updatedData) => {
@@ -163,11 +249,9 @@ const StockPage = () => {
       setError("");
 
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-
-        const response = await fetch(config.serverUrl + "/api/Uniform", {
+        const response = await fetch(API_BASE_URL + "/api/Uniform", {
           headers: {
-            Authorization: token, // Token başlıqda düzgün formatda
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -176,9 +260,12 @@ const StockPage = () => {
 
         // Extract Uniforms array from the response
         const uniforms = data[0]?.Uniforms || [];
-        console.log(uniforms);
+        // console.log(uniforms);
 
-        setStockData(uniforms);
+        // setStockData(uniforms);
+        // Sort new data by Id
+        const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
+        setStockData(sortedUniforms);
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -190,21 +277,18 @@ const StockPage = () => {
     fetchStockData();
     setEditModalOpen(false);
   };
+
   const handleDelete = async (Id) => {
     if (window.confirm("Are you sure you want to delete this uniform?")) {
       try {
-        const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic20xMDAxQGJyYXZvc3VwZXJtYXJrZXQuYXoiLCJGdWxsTmFtZSI6Ill1c2lmIEh1c2V5bnphZGUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI1MDc4MH0.OrC5akf-tfIJLyXBghGRaF6fjfXHqh-wao2Dyvj4Njo`;
-        const response = await fetch(
-          config.serverUrl + `/api/Uniform`, // ID URL-də deyil, body-də olacaq
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ Id }), // ID burada göndərilir
-          }
-        );
+        const response = await fetch(API_BASE_URL + `/api/Uniform`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ Id }),
+        });
 
         if (!response.ok) {
           const errorDetails = await response.json();
@@ -212,13 +296,17 @@ const StockPage = () => {
           throw new Error(errorDetails.Message || "Failed to delete uniform.");
         }
 
-        setStockData((prev) => prev.filter((item) => item.Id !== Id));
+        setStockData((prev) =>
+          [...prev.filter((item) => item.Id !== Id)].sort((a, b) => a.Id - b.Id)
+        );
+        // setStockData((prev) => prev.filter((item) => item.Id !== Id));
         console.log("Uniform deleted successfully!");
       } catch (error) {
         console.error("Error deleting uniform:", error.message);
       }
     }
   };
+
   return (
     <StockContainer>
       <Header>
@@ -230,26 +318,52 @@ const StockPage = () => {
         </ButtonGroup>
       </Header>
 
-      {/* Loading, Error, or Table Component */}
       {isLoading ? (
         <p>Loading uniforms...</p>
       ) : error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
-        <Table
-          columns={columns}
-          data={stockData}
-          selectable={false}
-          editable={false}
-        />
+        <>
+          <Table
+            columns={columns}
+            data={currentItems}
+            selectable={false}
+            editable={false}
+          />
+
+          <PaginationContainer>
+            <PaginationButton
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <FaChevronLeft size={12} />
+            </PaginationButton>
+
+            {getPageNumbers().map((number) => (
+              <PaginationButton
+                key={number}
+                active={currentPage === number}
+                onClick={() => handlePageChange(number)}
+              >
+                {number}
+              </PaginationButton>
+            ))}
+
+            <PaginationButton
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <FaChevronRight size={12} />
+            </PaginationButton>
+          </PaginationContainer>
+        </>
       )}
 
-      {/* Modal Component */}
       <CreateUniModal
         isOpen={isCreateModalOpen}
         onClose={() => setCreateModalOpen(false)}
         apiData={stockData}
-        onSave={handleSaveUniform} // Pass the save handler
+        onSave={handleSaveUniform}
       />
 
       <EditUniformModal

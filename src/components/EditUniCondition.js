@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import config from "../config.json";
+import { API_BASE_URL } from "../config";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -88,13 +88,13 @@ const EditUniformModal = ({
   apiData,
 }) => {
   const [formData, setFormData] = useState(initialData || {});
-
+  const token = localStorage.getItem("token");
   const [types, setTypes] = useState([]);
   const [genders, setGenders] = useState([]);
 
   useEffect(() => {
     console.log("Initial Data in Modal:", initialData);
-    setFormData(initialData || {}); // Update form data when initialData changes
+    setFormData(initialData || {});
   }, [initialData]);
 
   useEffect(() => {
@@ -118,14 +118,13 @@ const EditUniformModal = ({
 
   const handleSave = async () => {
     try {
-      const token = `Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIwIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibi5tYW1tYWRvdkBhemVyYmFpamFuc3VwZXJtYXJrZXQuY29tIiwiRnVsbE5hbWUiOiJOYXNpbWkgTWFtbWFkb3YiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiUmVjcnVpdGVyIiwiU3RvcmUgTWFuYWdlbWVudCIsIkhSIFN0YWZmIiwiQWRtaW4iXSwiZXhwIjoxNzY0Njc0OTE4fQ.EW_2UHYjfjGcG4AjNvwDmhPOJ_T_a5xBWXwgZ-pZTFc`;
       const response = await fetch(
-        config.serverUrl + `/api/UniformCondition`, // Ensure this matches the correct endpoint
+        API_BASE_URL + `/api/UniformCondition`, // Ensure this matches the correct endpoint
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: token,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(formData),
         }

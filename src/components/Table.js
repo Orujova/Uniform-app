@@ -14,9 +14,9 @@ const colors = {
 
 const StyledTableContainer = styled.div`
   width: 100%;
-  max-height: 80vh; /* Adjust as needed */
-  overflow-y: auto; /* Enable vertical scrolling */
-  overflow-x: auto; /* Enable horizontal scrolling for wide tables */
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: auto;
   padding-top: 20px;
   border-radius: 10px;
 `;
@@ -34,9 +34,10 @@ const StyledTh = styled.th`
   color: white;
   padding: 14px;
   font-size: 16px;
-  text-align: left;
   font-weight: 600;
   text-align: center;
+  word-wrap: break-word;
+  white-space: nowrap;
 
   cursor: ${(props) => (props.$isSortable ? "pointer" : "default")};
 
@@ -54,6 +55,8 @@ const StyledTd = styled.td`
   vertical-align: middle;
   font-weight: 500;
   text-align: center;
+  word-wrap: break-word;
+  white-space: nowrap;
 `;
 
 const StyledTr = styled.tr`
@@ -82,7 +85,7 @@ const Table = ({ columns = [], data = [], loading = false, error = "" }) => {
     useTable(
       {
         columns,
-        data: Array.isArray(data) ? data : [], // Ensure data is always an array
+        data: Array.isArray(data) ? data : [],
       },
       useSortBy
     );
