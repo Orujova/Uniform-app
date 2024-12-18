@@ -111,7 +111,7 @@ const StockPage = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(8);
   const [totalPages, setTotalPages] = useState(1);
 
   // Calculate pagination values
@@ -221,11 +221,6 @@ const StockPage = () => {
 
         // Extract Uniforms array from the response
         const uniforms = data[0]?.Uniforms || [];
-        // console.log(uniforms);
-
-        // setStockData(uniforms);
-
-        // Sort new data by Id
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
       } catch (err) {
@@ -260,10 +255,6 @@ const StockPage = () => {
 
         // Extract Uniforms array from the response
         const uniforms = data[0]?.Uniforms || [];
-        // console.log(uniforms);
-
-        // setStockData(uniforms);
-        // Sort new data by Id
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
       } catch (err) {

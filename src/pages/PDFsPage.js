@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaFilePdf, FaEye, FaDownload } from "react-icons/fa";
+import {
+  FaFilePdf,
+  FaEye,
+  FaDownload,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import theme from "../styles/theme";
 import PDFViewerModal from "../components/PDFViewerModal";
 import { API_BASE_URL } from "../config";
+
 const PageContainer = styled.div`
   padding: 24px;
   background-color: #ffffff;
@@ -12,9 +19,7 @@ const PageContainer = styled.div`
 
 const Header = styled.div`
   display: flex;
-  // flex-direction: column;
   justify-content: space-between;
-  // gap: 20px;
   margin-bottom: 20px;
 `;
 
@@ -120,33 +125,66 @@ const ButtonGroup = styled.div`
 
 const PaginationContainer = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+  align-items: center;
   margin-top: 20px;
-  gap: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 `;
 
 const PaginationButton = styled.button`
-  background-color: ${(props) => (props.active ? "#4a90e2" : "#e6e9ec")};
-  color: ${(props) => (props.active ? "#ffffff" : "#2d3a45")};
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  min-width: 32px;
+  height: 32px;
+  margin: 0 2px;
+  border: 1px solid #dee2e6;
+  background-color: ${(props) => (props.active ? "#0284c7" : "#ffffff")};
+  color: ${(props) => (props.active ? "#ffffff" : "#212529")};
   cursor: pointer;
-
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  border-radius: 6px;
   &:hover {
-    background-color: ${(props) => (props.active ? "#357abd" : "#dcdcdc")};
+    background-color: ${(props) => (props.active ? "#0284c7" : "#f8f9fa")};
+    z-index: 2;
+  }
+
+  &:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
   }
 `;
-
 const PDFsPage = () => {
   const token = localStorage.getItem("token");
   const [pdfs, setPdfs] = useState([]);
   const [filteredPdfs, setFilteredPdfs] = useState([]);
   const [selectedPdf, setSelectedPdf] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const itemsPerPage = 10;
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredPdfs.slice(indexOfFirstItem, indexOfLastItem);
 
   useEffect(() => {
     fetchPdfs();
@@ -155,6 +193,13 @@ const PDFsPage = () => {
   useEffect(() => {
     filterPdfs();
   }, [startDate, endDate, pdfs]);
+
+  // Update total pages when filtered data changes
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredPdfs.length / itemsPerPage));
+    // Reset to first page when filter changes
+    setCurrentPage(1);
+  }, [filteredPdfs, itemsPerPage]);
 
   const fetchPdfs = async () => {
     try {
@@ -186,12 +231,12 @@ const PDFsPage = () => {
         const createdDate = new Date(pdf.CreatedDate);
         const start = new Date(startDate);
         const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include the entire end date
         return createdDate >= start && createdDate <= end;
       });
     }
 
     setFilteredPdfs(filtered);
-    setCurrentPage(1);
   };
 
   const handleViewPdf = (pdf) => {
@@ -218,19 +263,36 @@ const PDFsPage = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = pdf.File;
+      link.download = pdf.FileName || "download.pdf"; // Use FileName from pdf object or fallback
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // Clean up
     } catch (error) {
       console.error("Error downloading PDF:", error);
     }
   };
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentPdfs = filteredPdfs.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredPdfs.length / itemsPerPage);
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers;
+  };
 
   return (
     <PageContainer>
@@ -267,15 +329,17 @@ const PDFsPage = () => {
           </tr>
         </thead>
         <tbody>
-          {currentPdfs.map((pdf) => (
-            <TableRow key={pdf.id}>
+          {currentItems.map((pdf) => (
+            <TableRow key={pdf.Id}>
               <TableCell>
                 <FaFilePdf style={{ marginRight: "8px", color: "#E74C3C" }} />
                 {pdf.FileName}
               </TableCell>
               <TableCell>{pdf.BGSorStore}</TableCell>
               <TableCell>{pdf.CreatedBy}</TableCell>
-              <TableCell>{pdf.CreatedDate}</TableCell>
+              <TableCell>
+                {new Date(pdf.CreatedDate).toLocaleDateString()}
+              </TableCell>
               <TableCell>
                 <ButtonGroup>
                   <ViewButton onClick={() => handleViewPdf(pdf)}>
@@ -288,20 +352,43 @@ const PDFsPage = () => {
               </TableCell>
             </TableRow>
           ))}
+          {currentItems.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={5} style={{ textAlign: "center" }}>
+                No PDFs found
+              </TableCell>
+            </TableRow>
+          )}
         </tbody>
       </Table>
 
-      <PaginationContainer>
-        {Array.from({ length: totalPages }, (_, index) => (
+      {filteredPdfs.length > 0 && (
+        <PaginationContainer>
           <PaginationButton
-            key={index + 1}
-            active={currentPage === index + 1}
-            onClick={() => setCurrentPage(index + 1)}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
           >
-            {index + 1}
+            <FaChevronLeft size={12} />
           </PaginationButton>
-        ))}
-      </PaginationContainer>
+
+          {getPageNumbers().map((number) => (
+            <PaginationButton
+              key={number}
+              active={currentPage === number}
+              onClick={() => handlePageChange(number)}
+            >
+              {number}
+            </PaginationButton>
+          ))}
+
+          <PaginationButton
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <FaChevronRight size={12} />
+          </PaginationButton>
+        </PaginationContainer>
+      )}
 
       {selectedPdf && (
         <PDFViewerModal

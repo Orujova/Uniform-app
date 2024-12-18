@@ -5,12 +5,14 @@ import {
   FaTimes,
   FaChevronLeft,
   FaChevronRight,
+  FaAlignLeft,
 } from "react-icons/fa";
 import Table from "../components/Table";
+import ProjectSelectModal from "../components/ProjectSelectModal";
 import { API_BASE_URL } from "../config";
 
 const StockContainer = styled.div`
-  padding: 12px;
+  padding: 16px;
   background-color: #ffffff;
   border-radius: 12px;
   display: flex;
@@ -35,6 +37,7 @@ const FilterContainer = styled.div`
   gap: 16px;
   padding-top: 20px;
   border-radius: 8px;
+  align-items: flex-end;
 `;
 
 const FilterGroup = styled.div`
@@ -136,6 +139,22 @@ const FilterSelect = styled.select`
   }
 `;
 
+const StyledButton = styled.button`
+  padding: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #0284c7;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #075985;
+  }
+`;
+
 const ManagerResponse = () => {
   const token = localStorage.getItem("token");
   const [stockData, setStockData] = useState([]);
@@ -144,6 +163,7 @@ const ManagerResponse = () => {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -153,7 +173,7 @@ const ManagerResponse = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
 
   const columns = [
@@ -478,6 +498,7 @@ const ManagerResponse = () => {
               ))}
             </FilterSelect>
           </FilterGroup>
+
           <FilterGroup>
             <FilterLabel>Start Date</FilterLabel>
             <FilterInput
@@ -487,6 +508,7 @@ const ManagerResponse = () => {
               onChange={handleFilterChange}
             />
           </FilterGroup>
+
           <FilterGroup>
             <FilterLabel>End Date</FilterLabel>
             <FilterInput
@@ -495,6 +517,12 @@ const ManagerResponse = () => {
               value={filters.endDate}
               onChange={handleFilterChange}
             />
+          </FilterGroup>
+          <FilterGroup>
+            <StyledButton onClick={() => setIsModalOpen(true)}>
+              <FaAlignLeft style={{ marginRight: "8px" }} />
+              Summarize
+            </StyledButton>
           </FilterGroup>
         </FilterContainer>
       </Header>
@@ -539,6 +567,13 @@ const ManagerResponse = () => {
           </PaginationContainer>
         </>
       )}
+
+      <ProjectSelectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        token={token}
+        apiBaseUrl={API_BASE_URL}
+      />
     </StockContainer>
   );
 };

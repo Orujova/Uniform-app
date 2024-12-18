@@ -1,19 +1,20 @@
+// pages/TransactionPage.js
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import {
-  FaPlus,
-  FaHistory,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { Header } from "../components/TransactionComp/TransHeader";
+import { Filters } from "../components/TransactionComp/TransFilters";
+import { ActionButtons } from "../components/TransactionComp/ActionButtons";
+import { Pagination } from "../components/Pagination";
+import UploadModal from "../components/TransactionComp/UploadModal";
 import Table from "../components/TableTrans";
 import TransEmployeeModal from "../components/TransEmployeeModal";
 import TrackStatusModal from "../components/TrackStatusModal";
-import { API_BASE_URL } from "../config";
-import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import ReassignModal from "../components/ReassignModal ";
+import SummaryModal from "../components/SummaryModal ";
 
 const StockContainer = styled.div`
   padding: 12px;
@@ -24,172 +25,21 @@ const StockContainer = styled.div`
   gap: 20px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 24px;
-  color: #2d3a45;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 10px;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  background-color: #0284c7;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #075985;
-  }
-`;
-
-const FilterContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-`;
-
-const FilterGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const FilterLabel = styled.label`
-  font-size: 14px;
-  color: #4a5568;
-`;
-
-const FilterInput = styled.input`
-  padding: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-
-  &:focus {
-    outline: none;
-    border-color: #0284c7;
-  }
-`;
-
-const FilterSelect = styled.select`
-  padding: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-
-  &:focus {
-    outline: none;
-    border-color: #0284c7;
-  }
-`;
-
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-`;
-
-const PaginationButton = styled.button`
-  padding: 4px 8px;
-  min-width: 32px;
-  height: 32px;
-  margin: 0 2px;
-  border: 1px solid #dee2e6;
-  background-color: ${(props) => (props.active ? "#0284c7" : "#ffffff")};
-  color: ${(props) => (props.active ? "#ffffff" : "#212529")};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s;
-  border-radius: 6px;
-
-  &:hover {
-    background-color: ${(props) => (props.active ? "#0284c7" : "#f8f9fa")};
-    z-index: 2;
-  }
-
-  &:disabled {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    cursor: not-allowed;
-  }
-
-  &:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
-
-  &:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-`;
-
-const ActionButtonGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-  background-color: ${(props) =>
-    props.variant === "accept" ? "#16a34a" : "#0369a1"};
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  &:hover:not(:disabled) {
-    background-color: ${(props) =>
-      props.variant === "accept" ? "#149343" : "#035f91"};
-  }
-`;
-
 const TransactionPage = () => {
   const [stockData, setStockData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]); // Add this line
+  const [selectedRows, setSelectedRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isEmployeeModalOpen, setEmployeeModalOpen] = useState(false);
   const [isTrackStatusModalOpen, setTrackStatusModalOpen] = useState(false);
+  const [isReassignModalOpen, setReassignModalOpen] = useState(false);
+  const [isSummaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [isUploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedRowForReassign, setSelectedRowForReassign] = useState(null);
   const [uniqueStatuses, setUniqueStatuses] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(8);
-  const [isReassignModalOpen, setReassignModalOpen] = useState(false);
-  const [selectedRowForReassign, setSelectedRowForReassign] = useState(null);
+  const [itemsPerPage] = useState(5);
   const [filters, setFilters] = useState({
     status: "",
     badge: "",
@@ -197,6 +47,7 @@ const TransactionPage = () => {
     startDate: "",
     endDate: "",
   });
+
   const token = localStorage.getItem("token");
 
   const columns = [
@@ -247,51 +98,32 @@ const TransactionPage = () => {
         const isDisabled = status === "handovered" || status === "pending";
 
         return (
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              onClick={() => {
-                if (isDisabled) {
-                  showToast(`Cannot reassign a ${status} transaction`, "error");
-                  return;
-                }
-                setSelectedRowForReassign(row.original);
-                setReassignModalOpen(true);
-              }}
-              style={{
-                padding: "4px 8px",
-                backgroundColor: isDisabled ? "#9CA3AF" : "#0284c7",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: isDisabled ? "not-allowed" : "pointer",
-              }}
-              disabled={isDisabled}
-            >
-              Reassign
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              if (isDisabled) {
+                showToast(`Cannot reassign a ${status} transaction`, "error");
+                return;
+              }
+              setSelectedRowForReassign(row.original);
+              setReassignModalOpen(true);
+            }}
+            style={{
+              padding: "4px 8px",
+              backgroundColor: isDisabled ? "#9CA3AF" : "#0284c7",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: isDisabled ? "not-allowed" : "pointer",
+            }}
+            disabled={isDisabled}
+          >
+            Reassign
+          </button>
         );
       },
     },
   ];
 
-  // Add these handlers
-  const handleRowSelect = (rowId) => {
-    setSelectedRows((prev) => {
-      if (prev.includes(rowId)) {
-        return prev.filter((id) => id !== rowId);
-      }
-      return [...prev, rowId];
-    });
-  };
-
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedRows(currentItems.map((item) => item.Id));
-    } else {
-      setSelectedRows([]);
-    }
-  };
   useEffect(() => {
     fetchStockData();
   }, []);
@@ -314,7 +146,7 @@ const TransactionPage = () => {
     setError("");
 
     try {
-      const response = await fetch(API_BASE_URL + "/api/TransactionPage", {
+      const response = await fetch(`${API_BASE_URL}/api/TransactionPage`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -323,8 +155,6 @@ const TransactionPage = () => {
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const data = await response.json();
       const transactions = data[0]?.Transactions || [];
-
-      // Sort by Id in descending order
       const sortedTransactions = [...transactions].sort((a, b) => b.Id - a.Id);
 
       setStockData(sortedTransactions);
@@ -419,6 +249,23 @@ const TransactionPage = () => {
     }));
   };
 
+  const handleRowSelect = (rowId) => {
+    setSelectedRows((prev) => {
+      if (prev.includes(rowId)) {
+        return prev.filter((id) => id !== rowId);
+      }
+      return [...prev, rowId];
+    });
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedRows(currentItems.map((item) => item.Id));
+    } else {
+      setSelectedRows([]);
+    }
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -442,12 +289,6 @@ const TransactionPage = () => {
     return pageNumbers;
   };
 
-  // Calculate pagination values
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
   const handleAction = async (actionType) => {
     if (selectedRows.length === 0) {
       alert("Please select at least one transaction");
@@ -463,7 +304,7 @@ const TransactionPage = () => {
     const endpoint = endpoints[actionType];
 
     try {
-      const response = await fetch(API_BASE_URL + endpoint, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -478,11 +319,8 @@ const TransactionPage = () => {
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
-      console.log(selectedRows);
-      // Refresh data after successful action
       await fetchStockData();
       setSelectedRows([]);
-
       showToast(
         `${
           actionType.charAt(0).toUpperCase() + actionType.slice(1)
@@ -494,126 +332,33 @@ const TransactionPage = () => {
     }
   };
 
-  const renderActionButtons = () => {
-    if (selectedRows.length === 0) return null;
-
-    const selectedTransactions = currentItems.filter((item) =>
-      selectedRows.includes(item.Id)
-    );
-    const allPending = selectedTransactions.every(
-      (item) => item.TransactionStatus?.toLowerCase() === "pending"
-    );
-    const allAccepted = selectedTransactions.every(
-      (item) => item.TransactionStatus?.toLowerCase() === "accepted"
-    );
-
-    return (
-      <ActionButtonGroup>
-        {allPending && (
-          <>
-            <ActionButton
-              variant="accept"
-              onClick={() => handleAction("accept")}
-            >
-              Accept
-            </ActionButton>
-            <ActionButton
-              variant="accept"
-              onClick={() => handleAction("acceptAndHandover")}
-            >
-              Accept & Handover
-            </ActionButton>
-          </>
-        )}
-        {(allAccepted || allPending) && (
-          <ActionButton
-            variant="handover"
-            onClick={() => handleAction("handover")}
-            disabled={allPending}
-          >
-            Handover
-          </ActionButton>
-        )}
-      </ActionButtonGroup>
-    );
-  };
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
     <StockContainer>
-      <Header>
-        <Title>Transaction Page</Title>
-        <ButtonGroup>
-          <StyledButton onClick={() => setEmployeeModalOpen(true)}>
-            <FaPlus style={{ marginRight: "8px" }} />
-            Order For Employee
-          </StyledButton>
-          <StyledButton onClick={() => setTrackStatusModalOpen(true)}>
-            <FaHistory style={{ marginRight: "8px" }} />
-            Track Status
-          </StyledButton>
-        </ButtonGroup>
-      </Header>
+      <Header
+        onOpenEmployeeModal={() => setEmployeeModalOpen(true)}
+        onOpenTrackStatusModal={() => setTrackStatusModalOpen(true)}
+        onOpenSummaryModal={() => setSummaryModalOpen(true)}
+        onOpenUploadModal={() => setUploadModalOpen(true)}
+      />
 
-      <FilterContainer>
-        <FilterGroup>
-          <FilterLabel>Status</FilterLabel>
-          <FilterSelect
-            name="status"
-            value={filters.status}
-            onChange={handleFilterChange}
-          >
-            <option value="">All Status</option>
-            {uniqueStatuses.map((status) => (
-              <option key={status} value={status.toLowerCase()}>
-                {status}
-              </option>
-            ))}
-          </FilterSelect>
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Badge</FilterLabel>
-          <FilterInput
-            type="text"
-            name="badge"
-            value={filters.badge}
-            onChange={handleFilterChange}
-            placeholder="Enter badge number"
-          />
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Order Filter</FilterLabel>
-          <FilterSelect
-            name="order"
-            value={filters.order}
-            onChange={handleFilterChange}
-          >
-            <option value="">Select Order Type</option>
-            <option value="expired">Expired</option>
-            <option value="timeexpires">Time Expires</option>
-            <option value="suitableforuse">Suitable For Use</option>
-          </FilterSelect>
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Start Date</FilterLabel>
-          <FilterInput
-            type="date"
-            name="startDate"
-            value={filters.startDate}
-            onChange={handleFilterChange}
-          />
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>End Date</FilterLabel>
-          <FilterInput
-            type="date"
-            name="endDate"
-            value={filters.endDate}
-            onChange={handleFilterChange}
-          />
-        </FilterGroup>
-      </FilterContainer>
+      <Filters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        uniqueStatuses={uniqueStatuses}
+      />
 
-      {renderActionButtons()}
+      <ActionButtons
+        selectedTransactions={currentItems.filter((item) =>
+          selectedRows.includes(item.Id)
+        )}
+        onAction={handleAction}
+      />
 
       {isLoading ? (
         <p>Loading transactions...</p>
@@ -631,31 +376,12 @@ const TransactionPage = () => {
             error={error}
           />
 
-          <PaginationContainer>
-            <PaginationButton
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <FaChevronLeft size={12} />
-            </PaginationButton>
-
-            {getPageNumbers().map((number) => (
-              <PaginationButton
-                key={number}
-                active={currentPage === number}
-                onClick={() => handlePageChange(number)}
-              >
-                {number}
-              </PaginationButton>
-            ))}
-
-            <PaginationButton
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <FaChevronRight size={12} />
-            </PaginationButton>
-          </PaginationContainer>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            getPageNumbers={getPageNumbers}
+          />
         </>
       )}
 
@@ -664,12 +390,10 @@ const TransactionPage = () => {
         isOpen={isEmployeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
       />
-
       <TrackStatusModal
         isOpen={isTrackStatusModalOpen}
         onClose={() => setTrackStatusModalOpen(false)}
       />
-
       <ReassignModal
         isOpen={isReassignModalOpen}
         onClose={() => {
@@ -678,6 +402,14 @@ const TransactionPage = () => {
         }}
         selectedRow={selectedRowForReassign}
         onReassignComplete={fetchStockData}
+      />
+      <SummaryModal
+        isOpen={isSummaryModalOpen}
+        onClose={() => setSummaryModalOpen(false)}
+      />
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
       />
     </StockContainer>
   );

@@ -85,7 +85,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
     };
 
     fetchBadges();
-  }, []);
+  }, [token]);
 
   // Update useEffect for suggestions
   useEffect(() => {

@@ -40,11 +40,6 @@ const StyledTh = styled.th`
   word-wrap: break-word;
   white-space: nowrap;
   cursor: ${(props) => (props.$isSortable ? "pointer" : "default")};
-
-  &:hover {
-    background-color: ${(props) =>
-      props.$isSortable ? "#026aa7" : colors.primary};
-  }
 `;
 
 const StyledTd = styled.td`

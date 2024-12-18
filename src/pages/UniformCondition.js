@@ -112,7 +112,7 @@ const StockPage = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(8);
   const [totalPages, setTotalPages] = useState(1);
 
   // Calculate pagination values
@@ -160,8 +160,8 @@ const StockPage = () => {
 
   // Columns for the stock table
   const columns = [
-    { Header: "Uniform Name", accessor: "UniName" },
     { Header: "Position Name", accessor: "PositionName" },
+    { Header: "Uniform Name", accessor: "UniName" },
     { Header: "Functional Area", accessor: "FunctionalArea" },
     { Header: "Type", accessor: "UniType" },
     { Header: "Gender", accessor: "Gender" },

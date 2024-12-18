@@ -1,13 +1,13 @@
 const theme = {
   colors: {
-    primary: "#4A90E2", // Vibrant teal for highlights
-    secondary: "#393E46", // Muted gray for secondary items
-    accent: "#F44336", // Strong red for delete or log-out actions
-    background: "#2C2E33", // Sleek darker gray background
+    primary: "#4A90E2",
+    secondary: "#393E46",
+    accent: "#F44336",
+    background: "#2C2E33",
     cardBackground: "#FFFFFF",
-    textColor: "#EEEEEE", // Light gray for text
-    sidebarBg: "#2C2E33", // Dark background for sidebar
-    buttonHover: "#357ABD", // Brighter turquoise for hover
+    textColor: "#EEEEEE",
+    sidebarBg: "#2C2E33",
+    buttonHover: "#357ABD",
     tableHeader: "#3C4043",
     tableRowHover: "#EAF2F8",
   },

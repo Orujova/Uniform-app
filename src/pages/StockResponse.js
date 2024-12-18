@@ -7,9 +7,9 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
+import * as ContextMenu from "@radix-ui/react-context-menu";
 import Table from "../components/Table";
 import { API_BASE_URL } from "../config";
-import { ContextMenuTrigger } from "react-contextmenu";
 import StatusFilter from "../components/StatusFilter";
 
 const Modal = styled.div`
@@ -139,6 +139,77 @@ const PaginationButton = styled.button`
   }
 `;
 
+const ActionButton = styled.button`
+  cursor: pointer;
+  background-color: ${(props) =>
+    props.variant === "accept" ? "#28a745" : "#dc3545"};
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background-color: ${(props) =>
+      props.variant === "accept" ? "#218838" : "#c82333"};
+  }
+`;
+
+const ContextMenuContent = styled(ContextMenu.Content)`
+  min-width: 220px;
+  background-color: white;
+  border-radius: 6px;
+  padding: 5px;
+  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
+    0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  z-index: 1000;
+`;
+
+const ContextMenuItem = styled(ContextMenu.Item)`
+  font-size: 13px;
+  line-height: 1;
+  color: #11181c;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  height: 25px;
+  padding: 0 5px;
+  position: relative;
+  padding-left: 25px;
+  user-select: none;
+  outline: none;
+
+  &[data-highlighted] {
+    background-color: #0284c7;
+    color: white;
+  }
+
+  &[data-disabled] {
+    color: #98a1b2;
+    pointer-events: none;
+  }
+`;
+
+const ContextMenuSeparator = styled(ContextMenu.Separator)`
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 5px;
+`;
+
+const IconWrapper = styled.div`
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const statusOptions = [
   { label: "Pending", value: "Pending" },
   { label: "Intransit", value: "Intransit" },
@@ -156,7 +227,7 @@ const StockResponse = () => {
   const [count, setCount] = useState(0);
   const [statusFilter, setStatusFilter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(9);
+  const [itemsPerPage] = useState(8);
 
   useEffect(() => {
     fetchStockData();
@@ -239,7 +310,7 @@ const StockResponse = () => {
   const handleSubmit = async () => {
     try {
       const countResponse = await fetch(
-        API_BASE_URL + `/api/BGSStockRequest/update-count-status`,
+        `${API_BASE_URL}/api/BGSStockRequest/update-count-status`,
         {
           method: "PUT",
           headers: {
@@ -257,6 +328,23 @@ const StockResponse = () => {
       await fetchStockData();
     } catch (err) {
       setError("Error processing the request.");
+    }
+  };
+
+  const handleContextMenuAction = (action, rowData) => {
+    switch (action) {
+      case "accept":
+        handleAccept(rowData.Id);
+        break;
+      case "reject":
+        handleReject(rowData.Id);
+        break;
+      case "view":
+        // Implement view details functionality
+        console.log("View details for:", rowData);
+        break;
+      default:
+        break;
     }
   };
 
@@ -298,84 +386,69 @@ const StockResponse = () => {
         const { Status, Id } = row.original;
 
         return (
-          <div
-            style={{ display: "flex", gap: "10px", justifyContent: "center" }}
-          >
-            {Status === "Intransit" ? (
-              <FaShippingFast
+          <ContextMenu.Root>
+            <ContextMenu.Trigger asChild>
+              <div
                 style={{
-                  cursor: "pointer",
-                  fontSize: "20px",
-                  color: "#6b7280",
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
                 }}
-              />
-            ) : Status === "Pending" ? (
-              <>
-                <button
-                  onClick={() => handleAccept(Id)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: "#28a745",
-                    color: "#fff",
-                    padding: "8px 14px",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    transition: "background-color 0.3s, transform 0.2s",
-                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.backgroundColor = "#218838")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.backgroundColor = "#28a745")
-                  }
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => handleReject(Id)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: "#dc3545",
-                    color: "#fff",
-                    padding: "8px 14px",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    transition: "background-color 0.3s, transform 0.2s",
-                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.backgroundColor = "#c82333")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.backgroundColor = "#dc3545")
-                  }
-                >
-                  Reject
-                </button>
-              </>
-            ) : Status === "Accepted" ? (
-              <FaCheck
-                style={{
-                  cursor: "pointer",
-                  fontSize: "20px",
-                  color: "#28a745",
-                }}
-              />
-            ) : Status === "Rejected" ? (
-              <FaTimes
-                style={{
-                  cursor: "pointer",
-                  fontSize: "20px",
-                  color: "#dc3545",
-                }}
-              />
-            ) : null}
-          </div>
+              >
+                {Status === "Intransit" && (
+                  <IconWrapper>
+                    <FaShippingFast style={{ color: "#6b7280" }} />
+                  </IconWrapper>
+                )}
+                {Status === "Pending" && (
+                  <>
+                    <ActionButton
+                      variant="accept"
+                      onClick={() => handleAccept(Id)}
+                    >
+                      Accept
+                    </ActionButton>
+                    <ActionButton
+                      variant="reject"
+                      onClick={() => handleReject(Id)}
+                    >
+                      Reject
+                    </ActionButton>
+                  </>
+                )}
+                {Status === "Accepted" && (
+                  <IconWrapper>
+                    <FaCheck style={{ color: "#28a745" }} />
+                  </IconWrapper>
+                )}
+                {Status === "Rejected" && (
+                  <IconWrapper>
+                    <FaTimes style={{ color: "#dc3545" }} />
+                  </IconWrapper>
+                )}
+              </div>
+            </ContextMenu.Trigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                disabled={Status !== "Pending"}
+                onSelect={() => handleContextMenuAction("accept", row.original)}
+              >
+                Accept Request
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={Status !== "Pending"}
+                onSelect={() => handleContextMenuAction("reject", row.original)}
+              >
+                Reject Request
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                onSelect={() => handleContextMenuAction("view", row.original)}
+              >
+                View Details
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu.Root>
         );
       },
     },
@@ -416,14 +489,12 @@ const StockResponse = () => {
         <p style={{ color: "red" }}>{error}</p>
       ) : (
         <>
-          <ContextMenuTrigger id="contextMenu">
-            <Table
-              columns={columns}
-              data={currentItems}
-              selectable={false}
-              editable={false}
-            />
-          </ContextMenuTrigger>
+          <Table
+            columns={columns}
+            data={currentItems}
+            selectable={false}
+            editable={false}
+          />
 
           <PaginationContainer>
             <PaginationButton

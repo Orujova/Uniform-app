@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-// import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { login } from "../redux/authActions";
+import { API_BASE_URL } from "../config";
 import {
   Box,
   TextField,
@@ -12,31 +13,102 @@ import {
 } from "@mui/material";
 import Carousel from "react-material-ui-carousel";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import login0 from "../assets/login_0.png";
 import login1 from "../assets/login_1.jpg";
 import login2 from "../assets/login_2.jpg";
 import login3 from "../assets/login_3.jpg";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const images = [login0, login1, login2, login3];
+
+// Role-based routing configuration
+const ROLE_ROUTES = {
+  1: "/transaction",
+  2: "/stock",
+  3: "/requestsPage",
+  4: "/managerResponse",
+};
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [roles, setRoles] = useState([]);
   const dispatch = useDispatch();
-  // const history = useHistory();
+  const navigate = useNavigate();
+
+  // Fetch roles from API
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_BASE_URL}/api/Role`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch roles");
+        }
+
+        const data = await response.json();
+        const rolesData = data[0]?.Roles || [];
+        setRoles(rolesData);
+      } catch (err) {
+        console.error("Error fetching roles:", err);
+        toast.error("Error loading roles");
+      }
+    };
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchRoles();
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const success = await dispatch(login(username, password));
-    if (success) {
-      // history.push("/headcounts");
-    } else {
-      setError("Invalid username or password");
+
+    try {
+      const success = await dispatch(login(username, password));
+
+      if (success) {
+        const token = localStorage.getItem("token");
+        const userDataString = localStorage.getItem("userData");
+
+        if (!token || !userDataString) {
+          throw new Error("Authentication failed - missing token or user data");
+        }
+
+        const userData = JSON.parse(userDataString);
+        const { roleId } = userData;
+
+        // If user has multiple roles, redirect to the highest priority role's page
+        if (Array.isArray(roleId) && roleId.length > 0) {
+          // Sort roles by priority (assuming lower number means higher priority)
+          const primaryRole = Math.min(...roleId);
+          const redirectPath = ROLE_ROUTES[primaryRole];
+
+          if (redirectPath) {
+            navigate(redirectPath);
+          } else {
+            toast.error("No valid route found for user role");
+          }
+        } else {
+          toast.error("No roles assigned to user");
+        }
+      } else {
+        setError("Invalid username or password");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An error occurred during login");
+      toast.error("Login failed");
     }
   };
 

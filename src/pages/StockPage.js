@@ -4,7 +4,6 @@ import {
   FaPlus,
   FaEdit,
   FaTrash,
-  FaFilter,
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
@@ -147,7 +146,7 @@ const StockPage = () => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
   const token = localStorage.getItem("token");
 
   const columns = [

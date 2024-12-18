@@ -136,7 +136,7 @@ const ManagerResponse = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-// src/redux/actions/authActions.js
 import axios from "axios";
 import { LOGIN_SUCCESS, LOGIN_FAIL, LOGOUT } from "./types";
 import { API_BASE_URL } from "../config";
@@ -17,7 +16,7 @@ export const login = (email, password) => async (dispatch) => {
         userId: res.data.UserId,
         fullName: res.data.FullName,
         email: res.data.Email,
-        roleId: res.data.RoleId,
+        roleId: res.data.RoleIds,
       };
       console.log(res.data);
 

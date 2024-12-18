@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import Table from "../components/TableTrans";
+import Table from "../components/Table";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "react-toastify";
@@ -95,12 +95,41 @@ const PaginationButton = styled.button`
     border-bottom-right-radius: 4px;
   }
 `;
-
 const SearchContainer = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 20px;
   margin: 10px 0;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const DateFilterContainer = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const FilterLabel = styled.label`
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+`;
+
+const DateInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 150px;
+
+  &:focus {
+    outline: none;
+    border-color: #0284c7;
+    box-shadow: 0 0 0 1px #0284c7;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -117,7 +146,7 @@ const SearchInput = styled.input`
   }
 `;
 
-const PayrollPage = () => {
+const PayyrolDetucted = () => {
   const [stockData, setStockData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -126,6 +155,8 @@ const PayrollPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [badgeFilter, setBadgeFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -140,9 +171,13 @@ const PayrollPage = () => {
     { Header: "Project Name", accessor: "ProjectName" },
     { Header: "Count", accessor: "UniCount" },
     { Header: "Sender", accessor: "Sender" },
+    { Header: "Deducted Amount", accessor: "DeductedAmount" },
     { Header: "Sender Date", accessor: "SenderDate" },
     { Header: "HandoveredBy", accessor: "HandoveredBy" },
     { Header: "Enacted Date", accessor: "EnactedDate" },
+    { Header: "DeductedBy", accessor: "DeductedBy" },
+    { Header: "Deducted Date ", accessor: "DeductedDate" },
+
     {
       Header: "Status",
       accessor: "TransactionStatus",
@@ -171,7 +206,6 @@ const PayrollPage = () => {
     },
   ];
 
-  // Add these handlers
   const handleRowSelect = (rowId) => {
     setSelectedRows((prev) => {
       if (prev.includes(rowId)) {
@@ -198,21 +232,47 @@ const PayrollPage = () => {
   }, [stockData, badgeFilter]);
 
   const filterData = () => {
-    if (!badgeFilter.trim()) {
-      setFilteredData(stockData);
-    } else {
-      const filtered = stockData.filter((item) =>
+    let filtered = [...stockData];
+
+    // Filter by badge if exists
+    if (badgeFilter.trim()) {
+      filtered = filtered.filter((item) =>
         item.EmployeeBadge.toLowerCase().includes(
           badgeFilter.toLowerCase().trim()
         )
       );
-      setFilteredData(filtered);
-      setCurrentPage(1);
     }
+
+    // Filter by date range if both dates are selected
+    if (startDate && endDate) {
+      filtered = filtered.filter((item) => {
+        if (!item.DeductedDate) return false;
+        const itemDate = new Date(item.DeductedDate);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59); // Include the entire end date
+        return itemDate >= start && itemDate <= end;
+      });
+    }
+
+    setFilteredData(filtered);
+    setCurrentPage(1);
   };
 
   const handleBadgeFilterChange = (e) => {
     setBadgeFilter(e.target.value);
+  };
+
+  useEffect(() => {
+    filterData();
+  }, [stockData, badgeFilter, startDate, endDate]);
+
+  const handleStartDateChange = (e) => {
+    setStartDate(e.target.value);
+  };
+
+  const handleEndDateChange = (e) => {
+    setEndDate(e.target.value);
   };
 
   const fetchStockData = async () => {
@@ -221,7 +281,7 @@ const PayrollPage = () => {
 
     try {
       const response = await fetch(
-        API_BASE_URL + "/api/TransactionPage/recent-transactions",
+        API_BASE_URL + "/api/TransactionPage/payroll-processed-transactions",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -274,48 +334,11 @@ const PayrollPage = () => {
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-  const handleDeduct = async () => {
-    if (selectedRows.length === 0) {
-      showToast("Please select at least one transaction to deduct", "warning");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const response = await fetch(
-        `${API_BASE_URL}/api/TransactionPage/deduct-transactions`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            TransactionIds: selectedRows,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
-      }
-
-      await fetchStockData();
-      setSelectedRows([]);
-      showToast("Transactions deducted successfully", "success");
-    } catch (error) {
-      console.error("Error deducting transactions:", error);
-      showToast("Failed to deduct transactions. Please try again.", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleExport = async () => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${API_BASE_URL}/api/TransactionPage/export-recent-transactions`,
+        `${API_BASE_URL}/api/TransactionPage/export-payroll-processed-transactions`,
         {
           method: "GET",
           headers: {
@@ -328,17 +351,11 @@ const PayrollPage = () => {
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
-      // Get the blob from the response
       const blob = await response.blob();
-
-      // Create a URL for the blob
       const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary link element
       const link = document.createElement("a");
       link.href = url;
 
-      // Set the file name - you might want to get this from the response headers
       link.download = "transactions.xlsx";
 
       // Append to the document, click it, and remove it
@@ -361,9 +378,6 @@ const PayrollPage = () => {
   const renderActionButtons = () => {
     return (
       <ButtonGroup>
-        <StyledButton onClick={handleDeduct} disabled={isLoading}>
-          {isLoading ? "Processing..." : "Deduct Selected"}
-        </StyledButton>
         <StyledButton onClick={handleExport} disabled={isLoading}>
           {isLoading ? "Exporting..." : "Export"}
         </StyledButton>
@@ -379,12 +393,34 @@ const PayrollPage = () => {
       </Header>
 
       <SearchContainer>
-        <SearchInput
-          type="text"
-          placeholder="Employee Badge..."
-          value={badgeFilter}
-          onChange={handleBadgeFilterChange}
-        />
+        <FilterGroup>
+          <FilterLabel>Date Range</FilterLabel>
+          <DateFilterContainer>
+            <DateInput
+              type="date"
+              value={startDate}
+              onChange={handleStartDateChange}
+              placeholder="Start Date"
+            />
+            <DateInput
+              type="date"
+              value={endDate}
+              onChange={handleEndDateChange}
+              placeholder="End Date"
+              min={startDate}
+            />
+          </DateFilterContainer>
+        </FilterGroup>
+
+        <FilterGroup>
+          <FilterLabel>Employee Badge</FilterLabel>
+          <SearchInput
+            type="text"
+            placeholder="Search by badge..."
+            value={badgeFilter}
+            onChange={handleBadgeFilterChange}
+          />
+        </FilterGroup>
       </SearchContainer>
 
       {isLoading ? (
@@ -440,4 +476,4 @@ const PayrollPage = () => {
   );
 };
 
-export default PayrollPage;
+export default PayyrolDetucted;

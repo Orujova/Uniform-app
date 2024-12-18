@@ -3,18 +3,22 @@ import styled from "styled-components";
 import {
   FaPlus,
   FaEdit,
-  FaTrash,
   FaCheck,
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
+  FaUpload,
 } from "react-icons/fa";
+import * as ContextMenu from "@radix-ui/react-context-menu";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../utils/toast";
 import Table from "../components/Table";
-import EditUniformModal from "../components/EditUniCondition";
+import EditUniformModal from "../components/EditRequest";
 import CreateRequest from "../components/CreateRequest";
 import EmployeeModal from "../components/EmployeeModal";
+import RequestUploadModal from "../components/RequestUploadModal";
 import { API_BASE_URL } from "../config";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import StatusFilter from "../components/StatusFilter";
 
 const StockContainer = styled.div`
@@ -106,6 +110,50 @@ const PaginationButton = styled.button`
   }
 `;
 
+const ContextMenuContent = styled(ContextMenu.Content)`
+  min-width: 220px;
+  background-color: white;
+  border-radius: 6px;
+  padding: 5px;
+  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
+    0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  z-index: 1000;
+`;
+
+const ContextMenuItem = styled(ContextMenu.Item)`
+  font-size: 13px;
+  line-height: 1;
+  color: #11181c;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  height: 25px;
+  padding: 0 10px;
+  position: relative;
+  user-select: none;
+  outline: none;
+  cursor: pointer;
+
+  &[data-highlighted] {
+    background-color: #0284c7;
+    color: white;
+  }
+
+  &:hover {
+    background-color: #0284c7;
+    color: white;
+  }
+`;
+
+const ContextMenuSeparator = styled(ContextMenu.Separator)`
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 5px;
+`;
+
 const statusOptions = [
   { label: "Pending", value: "Pending" },
   { label: "Intransit", value: "Intransit" },
@@ -118,13 +166,14 @@ const RequestsPage = () => {
   const [stockData, setStockData] = useState([]);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isEmployeeModalOpen, setEmployeeModalOpen] = useState(false);
+  const [isRequestUploadModalOpen, setRequestUploadModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(7);
 
   useEffect(() => {
     fetchStockData();
@@ -146,7 +195,6 @@ const RequestsPage = () => {
 
       const stockRequests = data[0]?.BGSStockRequests || [];
 
-      // Sort by Id in descending order
       const sortedRequests = [...stockRequests].sort((a, b) => b.Id - a.Id);
 
       // Fetch uniform details
@@ -234,6 +282,7 @@ const RequestsPage = () => {
 
   const handleCreateUniform = () => setCreateModalOpen(true);
   const handleEmployeeModal = () => setEmployeeModalOpen(true);
+  const handleRequestUploadModal = () => setRequestUploadModalOpen(true);
 
   const handleSaveUniform = async () => {
     await fetchStockData();
@@ -247,30 +296,6 @@ const RequestsPage = () => {
   const handleSaveEdit = async () => {
     await fetchStockData();
     setEditModalOpen(false);
-  };
-
-  const handleDelete = async (Id) => {
-    if (window.confirm("Are you sure you want to delete this uniform?")) {
-      try {
-        const response = await fetch(API_BASE_URL + `/api/BGSStockRequest`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ Id }),
-        });
-
-        if (!response.ok) {
-          const errorDetails = await response.json();
-          throw new Error(errorDetails.Message || "Failed to delete uniform.");
-        }
-
-        await fetchStockData();
-      } catch (error) {
-        console.error("Error deleting uniform:", error.message);
-      }
-    }
   };
 
   const getStatusColor = (status) => {
@@ -320,14 +345,17 @@ const RequestsPage = () => {
         switch (status) {
           case "Pending":
             return (
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <FaEdit
                   style={{ cursor: "pointer", color: "#2980b9" }}
                   onClick={() => handleEdit(row.original)}
-                />
-                <FaTrash
-                  style={{ cursor: "pointer", color: "#e74c3c" }}
-                  onClick={() => handleDelete(row.original.Id)}
                 />
               </div>
             );
@@ -367,7 +395,7 @@ const RequestsPage = () => {
 
   const handleStatusFilterChange = (event) => {
     setStatusFilter(event.target.value);
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const filteredStockData = statusFilter
@@ -396,6 +424,10 @@ const RequestsPage = () => {
             <FaPlus style={{ marginRight: "8px" }} />
             Uniform For Employee
           </StyledButton>
+          <StyledButton onClick={handleRequestUploadModal}>
+            <FaUpload style={{ marginRight: "8px" }} />
+            Upload
+          </StyledButton>
         </ButtonGroup>
       </Header>
 
@@ -411,14 +443,38 @@ const RequestsPage = () => {
         <p style={{ color: "red" }}>{error}</p>
       ) : (
         <>
-          <ContextMenuTrigger id="contextMenu">
-            <Table
-              columns={columns}
-              data={currentItems}
-              selectable={false}
-              editable={false}
-            />
-          </ContextMenuTrigger>
+          <ContextMenu.Root>
+            <ContextMenu.Trigger>
+              <Table
+                columns={columns}
+                data={currentItems}
+                selectable={false}
+                editable={false}
+              />
+            </ContextMenu.Trigger>
+            <ContextMenuContent>
+              {statusOptions.map((option) => (
+                <ContextMenuItem
+                  key={option.value}
+                  onSelect={() => {
+                    setStatusFilter(option.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  {option.label}
+                </ContextMenuItem>
+              ))}
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                onSelect={() => {
+                  setStatusFilter(null);
+                  setCurrentPage(1);
+                }}
+              >
+                Clear Filter
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu.Root>
 
           <PaginationContainer>
             <PaginationButton
@@ -447,29 +503,7 @@ const RequestsPage = () => {
           </PaginationContainer>
         </>
       )}
-
-      <ContextMenu id="contextMenu">
-        {statusOptions.map((option) => (
-          <MenuItem
-            key={option.value}
-            onClick={() => {
-              setStatusFilter(option.value);
-              setCurrentPage(1);
-            }}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
-        <MenuItem
-          onClick={() => {
-            setStatusFilter(null);
-            setCurrentPage(1);
-          }}
-        >
-          Clear Filter
-        </MenuItem>
-      </ContextMenu>
-
+      <ToastContainer />
       <CreateRequest
         isOpen={isCreateModalOpen}
         onClose={() => setCreateModalOpen(false)}
@@ -481,6 +515,10 @@ const RequestsPage = () => {
         isOpen={isEmployeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
       />
+      <RequestUploadModal
+        isOpen={isRequestUploadModalOpen}
+        onClose={() => setRequestUploadModalOpen(false)}
+      />
 
       <EditUniformModal
         isOpen={isEditModalOpen}
@@ -489,6 +527,8 @@ const RequestsPage = () => {
         initialData={editData}
         apiData={stockData}
       />
+
+      <ToastContainer />
     </StockContainer>
   );
 };

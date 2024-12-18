@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
-import Select from 'react-select';
-import Table from '../components/Table';
-import CustomButton from '../components/CustomButton';
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import Select from "react-select";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import Table from "../components/Table";
+import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Container for First Distribution Page
 const FirstDistributionContainer = styled.div`
@@ -11,17 +14,15 @@ const FirstDistributionContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background-color: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
 `;
 
-// Top Bar with dropdown (removed generate button)
+// Top Bar with dropdown
 const TopBar = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   padding: 14px 18px;
   border-radius: 12px;
 `;
@@ -32,169 +33,304 @@ const ProjectDropdown = styled(Select)`
   font-size: 14px;
 `;
 
-// Table Title with subtle styling
-const TableTitle = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #FFFFFF;
-  padding: 14px 18px;
-  border-radius: 12px;
+const StyledButton = styled.button`
+  padding: 10px 16px;
   font-size: 16px;
   font-weight: 600;
-  color: #2C2E33;
-`;
-
-// Styled Button for actions
-const ActionButton = styled.button`
-  background: ${(props) => (props.delete ? '#F76C6C' : '#00ADB5')};
-  color: #FFFFFF;
+  color: #fff;
+  background-color: #0284c7;
   border: none;
-  padding: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s;
 
   &:hover {
-    background: ${(props) => (props.delete ? '#E65858' : '#009CA6')};
+    background-color: #075985;
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+`;
+
+const PaginationButton = styled.button`
+  padding: 4px 8px;
+  min-width: 32px;
+  height: 32px;
+  margin: 0 2px;
+  border: 1px solid #dee2e6;
+  background-color: ${(props) => (props.active ? "#0284c7" : "#ffffff")};
+  color: ${(props) => (props.active ? "#ffffff" : "#212529")};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  border-radius: 6px;
+  &:hover {
+    background-color: ${(props) => (props.active ? "#0284c7" : "#f8f9fa")};
+    z-index: 2;
+  }
+
+  &:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
   }
 `;
 
 const FirstDistribution = () => {
+  const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [tableData, setTableData] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Get token from localStorage
+  const token = localStorage.getItem("token");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Common headers for API requests
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  // Fetch projects on component mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/Employee`, {
+          headers: headers,
+        });
+        if (!response.ok) throw new Error("Failed to fetch projects");
+        const data = await response.json();
+
+        const projectEmployees = data[0]?.Employees || [];
+
+        // Create a Map to store unique projects
+        const uniqueProjects = new Map();
+
+        projectEmployees.forEach((employee) => {
+          const project = employee.Project;
+          const projectCode = project.ProjectCode;
+
+          // Only add if this project code hasn't been added yet
+          if (!uniqueProjects.has(projectCode)) {
+            uniqueProjects.set(projectCode, {
+              value: project.Id,
+              label: `Project ${projectCode}`,
+            });
+          }
+        });
+
+        // Convert Map values to array and sort
+        const projectOptions = Array.from(uniqueProjects.values()).sort(
+          (a, b) => a.label.localeCompare(b.label)
+        );
+
+        setProjects(projectOptions);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+
+    if (token) fetchProjects();
+  }, [token]);
 
   // Handle project selection change and load data
-  const handleProjectChange = (selectedOption) => {
+  const handleProjectChange = async (selectedOption) => {
     setSelectedProject(selectedOption);
-    // Example: Load data based on project selection
     if (selectedOption) {
-      const data = selectedOption.value === '20099OPOVH'
-        ? [
-            {
-              id: 1,
-              employeeName: 'Sadıqov Rəşad Elşad oğlu',
-              uniform: 'T-shirt - green - long-sleeved',
-              size: 'XL',
-              count: 5,
-              status: 'Pending',
-            },
-            {
-              id: 2,
-              employeeName: 'Muradov Elçin Məzahir oğlu',
-              uniform: 'Trousers (Fresh & Non-fresh Sections)',
-              size: 'M',
-              count: 3,
-              status: 'Accepted',
-            },
-          ]
-        : [];
-      setTableData(data);
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/Project/GetEmployeesByProjectId?projectId=${selectedOption.value}`,
+          { headers: headers }
+        );
+        if (!response.ok) throw new Error("Failed to fetch employees");
+
+        const data = await response.json();
+        const projectEmployees = data[0]?.ProjectEmployees || [];
+        setTableData(projectEmployees);
+
+        setTotalPages(Math.ceil(projectEmployees.length / itemsPerPage));
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+      } finally {
+        setLoading(false);
+      }
     } else {
       setTableData([]);
     }
   };
 
-  // Handle Select All checkbox
-  const handleSelectAll = () => {
-    const allSelected = !selectAll;
-    setSelectAll(allSelected);
-    setSelectedRows(allSelected ? tableData.map((row) => row.id) : []);
-  };
+  const handleOrderSubmit = async () => {
+    if (!selectedProject) {
+      showToast("Please select a project first");
+      return;
+    }
 
-  // Handle individual row selection
-  const handleRowSelect = (id) => {
-    const updatedSelectedRows = selectedRows.includes(id)
-      ? selectedRows.filter((rowId) => rowId !== id)
-      : [...selectedRows, id];
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/TransactionPage/assign-uniforms`,
+        {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({
+            ProjectId: selectedProject.value,
+          }),
+        }
+      );
 
-    setSelectedRows(updatedSelectedRows);
+      if (!response.ok) {
+        throw new Error("Failed to submit order");
+      }
+
+      showToast("Order submitted successfully");
+
+      handleProjectChange(selectedProject);
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      alert("Failed to submit order. Please try again.");
+    }
   };
 
   // Columns configuration for the table
   const columns = [
-    // Select All Checkbox Column (only once)
-    {
-      Header: (
-        <input
-          type="checkbox"
-          checked={selectAll}
-          onChange={handleSelectAll}
-        />
-      ),
-      accessor: 'select',
-      Cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.original.id)}
-          onChange={() => handleRowSelect(row.original.id)}
-        />
-      ),
-    },
-    { Header: 'Employee Name', accessor: 'employeeName' },
-    { Header: 'Uniform', accessor: 'uniform' },
-    { Header: 'Size', accessor: 'size' },
-    { Header: 'Count', accessor: 'count' },
-    { Header: 'Status', accessor: 'status' },
-    // Single "Actions" column definition
-    {
-      Header: 'Actions',
-      accessor: 'actions',
-      Cell: ({ row }) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <ActionButton>
-            <FaEdit />
-          </ActionButton>
-          <ActionButton delete>
-            <FaTrashAlt />
-          </ActionButton>
-        </div>
-      ),
-    },
+    { Header: "Full Name", accessor: "FullName" },
+    { Header: "Badge", accessor: "Badge" },
+    { Header: "FIN", accessor: "FIN" },
+    { Header: "Phone Number", accessor: "PhoneNumber" },
+    { Header: "Shirt Size", accessor: "ShirtSize" },
+    { Header: "Pant Size", accessor: "PantSize" },
+    { Header: "Gender", accessor: "Gender" },
   ];
+
+  if (!token) {
+    return (
+      <FirstDistributionContainer>
+        <div style={{ textAlign: "center", color: "#F76C6C" }}>
+          Please log in to access this page
+        </div>
+      </FirstDistributionContainer>
+    );
+  }
+
+  // Pagination handlers
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers;
+  };
+
   return (
     <FirstDistributionContainer>
-      {/* Top bar with project dropdown */}
       <TopBar>
         <ProjectDropdown
-          options={[
-            { value: '20099OPOVH', label: 'Project 20099OPOVH' },
-            { value: '20129OPOVH', label: 'Project 20129OPOVH' },
-            { value: '3030', label: 'Project 3030' },
-          ]}
+          options={projects}
           placeholder="Select a project..."
           value={selectedProject}
           onChange={handleProjectChange}
           styles={{
             control: (provided) => ({
               ...provided,
-              borderRadius: '10px',
-              borderColor: '#E0E0E0',
-              boxShadow: 'none',
-              minHeight: '45px',
+              borderRadius: "10px",
+              borderColor: "#E0E0E0",
+              boxShadow: "none",
+              minHeight: "45px",
             }),
             placeholder: (provided) => ({
               ...provided,
-              color: '#9099A0',
+              color: "#9099A0",
             }),
           }}
+          isSearchable={true}
+          isClearable={true}
         />
+
+        <StyledButton onClick={handleOrderSubmit}>
+          Order for Employee
+        </StyledButton>
       </TopBar>
 
-      {/* Table title */}
-      <TableTitle>
-        <span>Project Distribution Data</span>
-      </TableTitle>
-
-      {/* Table with project data */}
       <Table
         columns={columns}
-        data={tableData}
-        selectable={true}  // Enable select all, individual row selection
-        editable={true}    // Enable edit/delete buttons
+        data={currentItems}
+        selectable={true}
+        editable={true}
+        loading={loading}
       />
+
+      {tableData.length > 0 && totalPages > 1 && (
+        <PaginationContainer>
+          <PaginationButton
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <FaChevronLeft size={12} />
+          </PaginationButton>
+
+          {getPageNumbers().map((number) => (
+            <PaginationButton
+              key={number}
+              active={currentPage === number}
+              onClick={() => handlePageChange(number)}
+            >
+              {number}
+            </PaginationButton>
+          ))}
+
+          <PaginationButton
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <FaChevronRight size={12} />
+          </PaginationButton>
+        </PaginationContainer>
+      )}
+
+      <ToastContainer />
     </FirstDistributionContainer>
   );
 };

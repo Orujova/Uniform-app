@@ -25,7 +25,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
       try {
         const response = await fetch(API_BASE_URL + "/api/Uniform", {
           headers: {
-            Authorization:   `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -40,7 +40,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
     };
 
     fetchUniforms();
-  }, []);
+  }, [token]);
 
   const handleUniCodeChange = (e, index) => {
     const selectedUniCode = e.target.value;
@@ -141,7 +141,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization:  `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
