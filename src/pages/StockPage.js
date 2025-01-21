@@ -11,6 +11,9 @@ import Table from "../components/Table";
 import EditUniformModal from "../components/EditStockModal";
 import AddStockModal from "../components/AddStockModal";
 import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StockContainer = styled.div`
   padding: 16px;
@@ -54,6 +57,29 @@ const StyledButton = styled.button`
   }
 `;
 
+const ClearFilterButton = styled.button`
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #4a5568;
+  background-color: #ebf4ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #4299e1; /* Hover-da gözəl mavi */
+  color: white;
+  box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #4a5568;
+    background-color: #ebf4ff;
+  }
+`;
+
 const FilterContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -61,6 +87,13 @@ const FilterContainer = styled.div`
   padding: 12px;
   background-color: #f8f9fa;
   border-radius: 8px;
+  position: relative;
+`;
+
+const FilterActionsContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
 `;
 
 const FilterGroup = styled.div`
@@ -146,7 +179,7 @@ const StockPage = () => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
   const token = localStorage.getItem("token");
 
   const columns = [
@@ -181,6 +214,17 @@ const StockPage = () => {
   useEffect(() => {
     fetchStockData();
   }, []);
+
+  const handleClearFilters = () => {
+    setFilters({
+      uniformCode: "",
+      uniformType: "",
+      size: "",
+      gender: "",
+      receptionStartDate: "",
+      receptionEndDate: "",
+    });
+  };
 
   useEffect(() => {
     applyFilters();
@@ -256,7 +300,7 @@ const StockPage = () => {
     }
 
     setFilteredData(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   const getUniqueSizes = () => {
@@ -285,6 +329,7 @@ const StockPage = () => {
 
   const handleSaveUniform = async () => {
     await fetchStockData();
+    showToast("Stock added successfully!");
   };
 
   const handleEdit = (row) => {
@@ -295,6 +340,7 @@ const StockPage = () => {
   const handleSaveEdit = () => {
     fetchStockData();
     setEditModalOpen(false);
+    showToast("Stock updated successfully!");
   };
 
   const handleDelete = async (Id) => {
@@ -315,6 +361,7 @@ const StockPage = () => {
         }
 
         await fetchStockData();
+        showToast("Stock deleted successfully!");
       } catch (error) {
         console.error("Error deleting uniform:", error.message);
       }
@@ -366,6 +413,13 @@ const StockPage = () => {
     return pageNumbers;
   };
 
+  const getUniqueTypes = () => {
+    const types = new Set(
+      stockData.map((item) => String(item.UniformType)).filter(Boolean)
+    );
+    return Array.from(types).sort();
+  };
+
   return (
     <StockContainer>
       <Header>
@@ -377,76 +431,88 @@ const StockPage = () => {
         </ButtonGroup>
       </Header>
 
-      <FilterContainer>
-        <FilterGroup>
-          <FilterLabel>Uniform Code</FilterLabel>
-          <FilterInput
-            type="text"
-            name="uniformCode"
-            value={filters.uniformCode}
-            onChange={handleFilterChange}
-            placeholder="Enter uniform code"
-          />
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Uniform Type</FilterLabel>
-          <FilterInput
-            type="text"
-            name="uniformType"
-            value={filters.uniformType}
-            onChange={handleFilterChange}
-            placeholder="Enter uniform type"
-          />
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Size</FilterLabel>
-          <FilterSelect
-            name="size"
-            value={filters.size}
-            onChange={handleFilterChange}
-          >
-            <option value="">All Sizes</option>
-            {getUniqueSizes().map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </FilterSelect>
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Gender</FilterLabel>
-          <FilterSelect
-            name="gender"
-            value={filters.gender}
-            onChange={handleFilterChange}
-          >
-            <option value="">All Genders</option>
-            {getUniqueGenders().map((gender) => (
-              <option key={gender} value={gender}>
-                {gender}
-              </option>
-            ))}
-          </FilterSelect>
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Reception Start Date</FilterLabel>
-          <FilterInput
-            type="date"
-            name="receptionStartDate"
-            value={filters.receptionStartDate}
-            onChange={handleFilterChange}
-          />
-        </FilterGroup>
-        <FilterGroup>
-          <FilterLabel>Reception End Date</FilterLabel>
-          <FilterInput
-            type="date"
-            name="receptionEndDate"
-            value={filters.receptionEndDate}
-            onChange={handleFilterChange}
-          />
-        </FilterGroup>
-      </FilterContainer>
+      <div>
+        <FilterContainer>
+          <FilterGroup>
+            <FilterLabel>Uniform Code</FilterLabel>
+            <FilterInput
+              type="text"
+              name="uniformCode"
+              value={filters.uniformCode}
+              onChange={handleFilterChange}
+              placeholder="Enter uniform code"
+            />
+          </FilterGroup>
+          <FilterGroup>
+            <FilterLabel>Uniform Type</FilterLabel>
+            <FilterSelect
+              name="uniformType"
+              value={filters.uniformType}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Types</option>
+              {getUniqueTypes().map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </FilterSelect>
+          </FilterGroup>
+          <FilterGroup>
+            <FilterLabel>Size</FilterLabel>
+            <FilterSelect
+              name="size"
+              value={filters.size}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Sizes</option>
+              {getUniqueSizes().map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </FilterSelect>
+          </FilterGroup>
+          <FilterGroup>
+            <FilterLabel>Gender</FilterLabel>
+            <FilterSelect
+              name="gender"
+              value={filters.gender}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Genders</option>
+              {getUniqueGenders().map((gender) => (
+                <option key={gender} value={gender}>
+                  {gender}
+                </option>
+              ))}
+            </FilterSelect>
+          </FilterGroup>
+          <FilterGroup>
+            <FilterLabel>Reception Start Date</FilterLabel>
+            <FilterInput
+              type="date"
+              name="receptionStartDate"
+              value={filters.receptionStartDate}
+              onChange={handleFilterChange}
+            />
+          </FilterGroup>
+          <FilterGroup>
+            <FilterLabel>Reception End Date</FilterLabel>
+            <FilterInput
+              type="date"
+              name="receptionEndDate"
+              value={filters.receptionEndDate}
+              onChange={handleFilterChange}
+            />
+          </FilterGroup>
+        </FilterContainer>
+        <FilterActionsContainer>
+          <ClearFilterButton onClick={handleClearFilters}>
+            Clear Filters
+          </ClearFilterButton>
+        </FilterActionsContainer>
+      </div>
 
       {isLoading ? (
         <p>Loading uniforms...</p>
@@ -507,6 +573,7 @@ const StockPage = () => {
         initialData={editData}
         apiData={stockData}
       />
+      <ToastContainer />
     </StockContainer>
   );
 };

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -137,6 +140,7 @@ const EditUniformModal = ({
 
       const updatedData = await response.json();
       console.log(updatedData);
+      showToast("Uniform updated successfully");
       onSave(updatedData); // Call the onSave function to update the parent component
       onClose(); // Close the modal after saving
     } catch (error) {
@@ -226,6 +230,7 @@ const EditUniformModal = ({
             Save
           </button>
         </ButtonGroup>
+        <ToastContainer />
       </ModalContent>
     </ModalOverlay>
   );

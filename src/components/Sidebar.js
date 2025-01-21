@@ -9,7 +9,6 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-// Styled Components
 const SidebarContainer = styled.div`
   background-color: #ffffff;
   color: #2d3a45;
@@ -19,10 +18,42 @@ const SidebarContainer = styled.div`
   justify-content: space-between;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   border-radius: 16px;
-  min-height: 95vh;
+  height: 95vh;
   position: relative;
   width: 20%;
-  // margin: 12px 0 0 0;
+  overflow: hidden;
+`;
+
+const ScrollableContent = styled.div`
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-right: -8px;
+
+  /* Custom Scrollbar Styling */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+    margin: 8px 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #e6e9ec;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+  }
+
+  /* Firefox Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #e6e9ec transparent;
 `;
 
 const MenuContainer = styled.div`
@@ -30,6 +61,7 @@ const MenuContainer = styled.div`
   flex-direction: column;
   gap: 12px;
   margin-top: 20px;
+  padding-bottom: 20px;
 `;
 
 const UserProfile = styled.div`
@@ -175,7 +207,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
   const dropdownRef = useRef(null);
-  const user = JSON.parse(localStorage.getItem("userData"));
+  const user = JSON.parse(localStorage.getItem("userData")) || {};
 
   const menuGroups = {
     distribution: {
@@ -187,9 +219,13 @@ const Sidebar = ({ onSelect, onLogOut }) => {
           path: "/first-distribution",
         },
         { label: "DC Stock", value: "stock", path: "/stock" },
-        { label: "DC Response", value: "dCResponse", path: "/dCResponse" },
         {
-          label: "BGS Response",
+          label: "DC Response - DC Order",
+          value: "dCResponse",
+          path: "/dCResponse",
+        },
+        {
+          label: "DC Response - BGS Order",
           value: "stockResponse",
           path: "/stockResponse",
         },
@@ -206,6 +242,37 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         },
       ],
     },
+    PDFs: {
+      label: "PDF Management",
+      items: [
+        {
+          label: "Handover & Packing List",
+          value: "handover-packing",
+          path: "/handover-packing",
+        },
+        { label: "Upload PDF", value: "upload-pdf", path: "/upload-pdf" },
+      ],
+    },
+    Reports: {
+      label: "Report Management",
+      items: [
+        {
+          label: "Stock Requirements",
+          value: "stock-requirement",
+          path: "/stock-requirement",
+        },
+        {
+          label: "Provision Details",
+          value: "provision-detail",
+          path: "/provision-detail",
+        },
+        {
+          label: "Forecast Report",
+          value: "forecast-report",
+          path: "/forecast-report",
+        },
+      ],
+    },
   };
 
   const standaloneItems = [
@@ -216,8 +283,8 @@ const Sidebar = ({ onSelect, onLogOut }) => {
     },
     { label: "Transaction", value: "transaction", path: "/transaction" },
     {
-      label: "Manager Response",
-      value: "ManagerResponse",
+      label: "Operation Response",
+      value: "OperationResponse",
       path: "/managerResponse",
     },
     {
@@ -226,7 +293,6 @@ const Sidebar = ({ onSelect, onLogOut }) => {
       path: "/uniformcondition",
     },
     { label: "Uniforms", value: "uniforms", path: "/uniforms" },
-    { label: "PDF", value: "pdfs", path: "/pdfs" },
   ];
 
   useEffect(() => {
@@ -270,7 +336,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
 
   return (
     <SidebarContainer>
-      <div>
+      <ScrollableContent>
         <UserProfile
           onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
           ref={dropdownRef}
@@ -338,7 +404,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
             </SidebarButton>
           ))}
         </MenuContainer>
-      </div>
+      </ScrollableContent>
     </SidebarContainer>
   );
 };

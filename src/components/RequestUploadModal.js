@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { FaUpload, FaFile } from "react-icons/fa";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -176,7 +178,7 @@ const RequestUploadModal = ({ isOpen, onClose }) => {
           <FaUpload size={24} color="#3b82f6" />
           <p>Click to select or drag and drop a PDF file</p>
         </UploadArea>
-
+        <ToastContainer />
         {selectedFile && (
           <SelectedFile>
             <FaFile color="#3b82f6" />

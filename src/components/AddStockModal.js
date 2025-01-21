@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../styles/CreateUniModal.css";
 import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import "react-toastify/dist/ReactToastify.css";
+import { FaTimes } from "react-icons/fa";
 
 const Modal = ({ isOpen, onClose, onSave, apiData }) => {
   const token = localStorage.getItem("token");
@@ -59,7 +62,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
 
   const handleStockCountChange = (e, index) => {
     const { value } = e.target;
-    const stockCount = Math.max(1, Number(value)); // Ensure stock count is at least 1
+    const stockCount = Math.max(1, Number(value));
     setForms((prevForms) =>
       prevForms.map((form, i) =>
         i === index
@@ -107,16 +110,17 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         impstockCount: 1,
         unitPrice: 1,
         totalPrice: 1,
-        employee: 1, // Default set to 1 (Employee)
+        employee: 1,
       },
     ]);
+    showToast("New uniform form added");
   };
 
   const handleSave = async () => {
     try {
       // Validation
       if (forms.some((form) => !form.UniCode || !form.employee)) {
-        alert("Please fill all the fields before saving.");
+        showToast("Please fill all the fields before saving.", "error");
         return;
       }
 
@@ -130,12 +134,10 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
             ImportedStockCount: form.stockCount,
             UnitPrice: form.unitPrice,
             TotalPrice: form.totalPrice,
-            StoreOrEmployee: form.employee, // Send as either 1 (Store) or 2 (Employee)
+            StoreOrEmployee: form.employee,
           };
         }),
       };
-
-      console.log(payload);
 
       const response = await fetch(API_BASE_URL + `/api/DCStock`, {
         method: "POST",
@@ -152,16 +154,22 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         const errorMessages = Object.values(errorDetails.errors)
           .flat()
           .join("\n");
-        alert(`Validation Errors:\n${errorMessages}`);
+        showToast(`Validation Errors:\n${errorMessages}`);
         return;
       }
 
       const savedData = await response.json();
-      onSave(savedData); // Notify parent with saved uniforms
+
+      onSave(savedData);
       resetForms();
     } catch (error) {
       console.error("Error creating uniforms:", error.message);
     }
+  };
+
+  const deleteForm = (index) => {
+    setForms((prevForms) => prevForms.filter((_, i) => i !== index));
+    showToast("Form deleted");
   };
 
   const resetForms = () => {
@@ -171,7 +179,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         impstockCount: 1,
         unitPrice: 1,
         totalPrice: 1,
-        employee: 1, // Reset to default value (Employee)
+        employee: 1,
       },
     ]);
     onClose();
@@ -187,6 +195,18 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         </button>
         {forms.map((formData, index) => (
           <div key={index} className="form-wrapper">
+            {index > 0 && (
+              <div style={{ textAlign: "right", marginBottom: "10px" }}>
+                <FaTimes
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "20px",
+                    color: "#dc3545",
+                  }}
+                  onClick={() => deleteForm(index)}
+                />
+              </div>
+            )}
             <div className="form-grid">
               <div className="form-group">
                 <label className="label" htmlFor={`UniCode_${index}`}>
@@ -273,11 +293,14 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         ))}
 
         <div style={{ textAlign: "right" }}>
+          <button className="button" onClick={handleSave}>
+            Save
+          </button>
           <button className="button" onClick={addForm}>
             Add More
           </button>
-          <button className="button" onClick={handleSave}>
-            Save
+          <button className="cancel" onClick={resetForms}>
+            Cancel
           </button>
         </div>
       </div>

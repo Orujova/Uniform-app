@@ -120,31 +120,36 @@ const FirstDistribution = () => {
     "Content-Type": "application/json",
   };
 
-  // Fetch projects on component mount
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/Employee`, {
           headers: headers,
         });
+
         if (!response.ok) throw new Error("Failed to fetch projects");
         const data = await response.json();
-
         const projectEmployees = data[0]?.Employees || [];
-
         // Create a Map to store unique projects
         const uniqueProjects = new Map();
-
         projectEmployees.forEach((employee) => {
           const project = employee.Project;
-          const projectCode = project.ProjectCode;
 
-          // Only add if this project code hasn't been added yet
-          if (!uniqueProjects.has(projectCode)) {
-            uniqueProjects.set(projectCode, {
-              value: project.Id,
-              label: `Project ${projectCode}`,
-            });
+          // Ensure the project exists before accessing its properties
+          if (project) {
+            const projectCode = project.ProjectCode;
+
+            // Only add if this project code hasn't been added yet
+            if (!uniqueProjects.has(projectCode)) {
+              uniqueProjects.set(projectCode, {
+                value: project.Id,
+                label: `Project ${projectCode}`,
+              });
+            }
+          } else {
+            console.warn(
+              `Employee with ID ${employee.Id} has no associated project.`
+            );
           }
         });
 
@@ -224,7 +229,6 @@ const FirstDistribution = () => {
   const columns = [
     { Header: "Full Name", accessor: "FullName" },
     { Header: "Badge", accessor: "Badge" },
-    { Header: "FIN", accessor: "FIN" },
     { Header: "Phone Number", accessor: "PhoneNumber" },
     { Header: "Shirt Size", accessor: "ShirtSize" },
     { Header: "Pant Size", accessor: "PantSize" },

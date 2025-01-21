@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
 import { FaTimes } from "react-icons/fa";
 import "../styles/EmployeeModal.css";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TransEmployeeModal = ({ isOpen, onClose }) => {
   const token = localStorage.getItem("token");
-
+  const [isMonday, setIsMonday] = useState(false);
   // State for multiple employee selections
   const [employeeRequests, setEmployeeRequests] = useState([
     {
@@ -21,7 +24,6 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
   ]);
   const [badges, setBadges] = useState([]);
 
-  // Styles remain the same as before
   const modalStyles = {
     overlay: {
       position: "fixed",
@@ -63,6 +65,42 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
       outline: "none",
     },
   };
+
+  const buttonStyles = {
+    // ... existing button styles
+    save: {
+      backgroundColor: isMonday ? "#0284c7" : "#9CA3AF",
+      color: "white",
+      padding: "10px 20px",
+      borderRadius: "6px",
+      border: "none",
+      cursor: isMonday ? "pointer" : "not-allowed",
+      marginRight: "10px",
+      transition: "background-color 0.3s ease",
+      "&:hover": {
+        backgroundColor: isMonday ? "#075985" : "#9CA3AF",
+      },
+    },
+  };
+
+  useEffect(() => {
+    // Check if today is Monday (0 is Sunday, 1 is Monday)
+    const checkIfMonday = () => {
+      const today = new Date().getDay();
+      setIsMonday(today === 1);
+    };
+
+    // Check when modal opens
+    if (isOpen) {
+      checkIfMonday();
+      if (!isMonday) {
+        showToast(
+          "Uniform creation can only be performed on Mondays.",
+          "warning"
+        );
+      }
+    }
+  }, [isOpen]);
 
   // Fetch badges
   useEffect(() => {
@@ -195,8 +233,45 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
   };
 
   const handleRequiredCountChange = (e, uniformId, availableStock, index) => {
-    const value = parseInt(e.target.value, 10);
+    const uniform = employeeRequests[index].uniformData.find(
+      (u) => u.UniformId === uniformId
+    );
+    const maxAllowed = uniform.RequiredCount;
+    let value = parseInt(e.target.value, 10) || 0;
 
+    // Cap the value at maxAllowed and set warnings accordingly
+    if (value > maxAllowed) {
+      value = maxAllowed + 1;
+      updateEmployeeRequest(index, {
+        requiredCounts: {
+          ...employeeRequests[index].requiredCounts,
+          [uniformId]: value,
+        },
+        warnings: {
+          ...employeeRequests[index].warnings,
+          [uniformId]: `Maximum required count is ${maxAllowed}!`,
+        },
+      });
+      return;
+    }
+
+    // Check if value is negative
+    if (value < 0) {
+      value = 0;
+      updateEmployeeRequest(index, {
+        requiredCounts: {
+          ...employeeRequests[index].requiredCounts,
+          [uniformId]: value,
+        },
+        warnings: {
+          ...employeeRequests[index].warnings,
+          [uniformId]: "Count cannot be negative!",
+        },
+      });
+      return;
+    }
+
+    // Update state and check for available stock warning
     updateEmployeeRequest(index, {
       requiredCounts: {
         ...employeeRequests[index].requiredCounts,
@@ -206,10 +281,24 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
         ...employeeRequests[index].warnings,
         [uniformId]:
           value > availableStock
-            ? "Required count exceeds available stock!"
+            ? `Required count exceeds available stock (${availableStock})!`
             : "",
       },
     });
+  };
+
+  const hasWarnings = () => {
+    return employeeRequests.some((request) =>
+      Object.values(request.warnings).some((warning) => warning !== "")
+    );
+  };
+
+  const allCountsEmpty = () => {
+    return employeeRequests.every((request) =>
+      Object.values(request.requiredCounts).every(
+        (count) => !count || count === 0
+      )
+    );
   };
 
   const handleAddMore = () => {
@@ -244,7 +333,21 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
     });
 
     if (allUniformDetails.length === 0) {
-      console.warn("No uniform requests to submit.");
+      showToast("Please add at least one uniform request", "error");
+      return;
+    }
+
+    const invalidRequests = employeeRequests.filter(
+      (req) =>
+        req.selectedBadge &&
+        !req.uniformData.some((u) => req.requiredCounts[u.UniformId] > 0)
+    );
+
+    if (invalidRequests.length > 0) {
+      showToast(
+        "All selected employees must have at least one uniform request",
+        "error"
+      );
       return;
     }
 
@@ -268,6 +371,10 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
       if (!response.ok) {
         throw new Error(`Failed to save data: ${response.statusText}`);
       }
+
+      console.log(payload);
+
+      showToast("Uniform requests saved successfully");
       resetModalState();
       onClose();
     } catch (error) {
@@ -403,7 +510,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
                       <label className="label">Required Count:</label>
                       <input
-                        type="number"
+                        type="text"
                         value={request.requiredCounts[uniform.UniformId] || 0}
                         onChange={(e) =>
                           handleRequiredCountChange(
@@ -413,12 +520,18 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                             index
                           )
                         }
-                        min="0"
                         max={uniform.RequiredCount}
+                        min="0"
                         style={modalStyles.input}
                       />
                       {request.warnings[uniform.UniformId] && (
-                        <p style={{ color: "red" }}>
+                        <p
+                          style={{
+                            color: "red",
+                            margin: "5px 0",
+                            fontSize: "14px",
+                          }}
+                        >
                           {request.warnings[uniform.UniformId]}
                         </p>
                       )}
@@ -429,15 +542,45 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
             )}
           </div>
         ))}
+        <ToastContainer />
 
         <div style={{ textAlign: "right", marginTop: "20px" }}>
+          <button
+            className="button"
+            onClick={handleSave}
+            disabled={!isMonday || hasWarnings() || allCountsEmpty()}
+            style={{
+              ...buttonStyles.save,
+              ...modalStyles.button,
+              opacity: !isMonday || hasWarnings() || allCountsEmpty() ? 0.5 : 1,
+              cursor:
+                !isMonday || hasWarnings() || allCountsEmpty()
+                  ? "not-allowed"
+                  : "pointer",
+            }}
+          >
+            Save
+          </button>
           <button className="button" onClick={handleAddMore}>
             Add More
           </button>
-          <button className="button" onClick={handleSave}>
-            Save
+          <button className="cancel" onClick={handleClose}>
+            Cancel
           </button>
         </div>
+
+        {!isMonday && (
+          <div
+            style={{
+              color: "#EF4444",
+              fontSize: "14px",
+              marginTop: "10px",
+              textAlign: "center",
+            }}
+          >
+            Uniform creation can only be performed on Mondays.
+          </div>
+        )}
       </div>
     </div>
   );

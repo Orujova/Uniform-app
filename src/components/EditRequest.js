@@ -136,6 +136,7 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
     UniformId: 0,
     RequestCount: 0,
     ProjectId: 0,
+    UniCode: "", // Əlavə edildi
   });
   const [uniforms, setUniforms] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -148,15 +149,21 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
   }, [isOpen]);
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && uniforms.length > 0) {
+      // Uyğun uniformu tap
+      const selectedUniform = uniforms.find(
+        (u) => u.Id === initialData.UniformId
+      );
+
       setFormData({
         Id: initialData.Id,
         UniformId: initialData.UniformId,
         RequestCount: initialData.RequestCount || "",
         ProjectId: initialData.ProjectId,
+        UniCode: selectedUniform ? selectedUniform.UniCode : "", // UniCode-u əlavə et
       });
     }
-  }, [initialData]);
+  }, [initialData, uniforms]);
 
   const fetchUniforms = async () => {
     try {
@@ -168,11 +175,23 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
       const data = await response.json();
       const uniforms = data[0]?.Uniforms || [];
       setUniforms(uniforms);
-      console.log(uniforms);
     } catch (error) {
       console.error("Error fetching uniforms:", error);
       showToast("Failed to load uniforms", "error");
     }
+  };
+
+  const handleUniformChange = (e) => {
+    const selectedUniformId = e.target.value;
+    const selectedUniform = uniforms.find(
+      (u) => u.Id === parseInt(selectedUniformId)
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      UniformId: selectedUniformId,
+      UniCode: selectedUniform ? selectedUniform.UniCode : "",
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -213,20 +232,14 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
         <Title>Edit Request</Title>
 
         <Form onSubmit={handleSubmit}>
           <FormGroup>
             <Label>Select Uniform</Label>
             <Select
-              value={formData.UniformCode}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  UniformId: e.target.value,
-                }))
-              }
+              value={formData.UniformId}
+              onChange={handleUniformChange}
               required
             >
               <option value="">Select Uniform</option>
@@ -258,6 +271,9 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
             <Button type="submit" variant="primary" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
+            <button className="cancel" onClick={onClose}>
+              Cancel
+            </button>
           </ButtonGroup>
         </Form>
       </ModalContent>

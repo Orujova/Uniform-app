@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import "../styles/CreateUniModal.css";
 import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaTimes } from "react-icons/fa";
 
 const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
   const token = localStorage.getItem("token");
@@ -13,21 +17,6 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
       gender: "",
     },
   ]);
-  // const [sizes, setSizes] = useState([]);
-  // const [types, setTypes] = useState([]);
-  // const [genders, setGenders] = useState([]);
-
-  // useEffect(() => {
-  //   if (isOpen && apiData) {
-  //     const uniqueSizes = [...new Set(apiData.map((item) => item.Size))];
-  //     const uniqueTypes = [...new Set(apiData.map((item) => item.UniType))];
-  //     const uniqueGenders = [...new Set(apiData.map((item) => item.Gender))];
-
-  //     setSizes(uniqueSizes);
-  //     setTypes(uniqueTypes);
-  //     setGenders(uniqueGenders);
-  //   }
-  // }, [isOpen, apiData]);
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
@@ -49,6 +38,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         gender: "",
       },
     ]);
+    showToast("New uniform form added");
   };
 
   const handleSave = async () => {
@@ -65,7 +55,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
       });
 
       if (invalidForms.length > 0) {
-        alert("Please fill all fields with valid values before saving.");
+        showToast("Please fill all fields in all forms", "error");
         return;
       }
 
@@ -95,18 +85,21 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         const errorMessages = Object.values(errorDetails.errors)
           .flat()
           .join("\n");
-        alert(`Validation Errors:\n${errorMessages}`);
+        showToast(`Validation Errors:\n${errorMessages}`);
         return;
       }
 
       const savedData = await response.json();
-      console.log(savedData);
+      showToast(`Successfully created ${forms.length} uniform(s)`);
       onSave(savedData); // Notify parent with saved uniforms
       resetForms();
     } catch (error) {
       console.error("Error creating uniforms:", error.message);
-      alert("An error occurred while creating uniforms. Please try again.");
     }
+  };
+  const deleteForm = (index) => {
+    setForms((prevForms) => prevForms.filter((_, i) => i !== index));
+    showToast("Form deleted");
   };
 
   const resetForms = () => {
@@ -133,6 +126,18 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         </button>
         {forms.map((formData, index) => (
           <div key={index} className="form-wrapper">
+            {index > 0 && (
+              <div style={{ textAlign: "right", marginBottom: "10px" }}>
+                <FaTimes
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "20px",
+                    color: "#dc3545",
+                  }}
+                  onClick={() => deleteForm(index)}
+                />
+              </div>
+            )}
             <div className="form-grid">
               <div className="form-group">
                 <label className="label" htmlFor={`uni_code_${index}`}>
@@ -212,13 +217,17 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         ))}
 
         <div style={{ textAlign: "right" }}>
-          <button className="button" onClick={addForm}>
-            Add More
-          </button>
           <button className="button" onClick={handleSave}>
             Save
           </button>
+          <button className="button" onClick={addForm}>
+            Add More
+          </button>
+          <button className="cancel" onClick={resetForms}>
+            Cancel
+          </button>
         </div>
+        <ToastContainer />
       </div>
     </div>
   );

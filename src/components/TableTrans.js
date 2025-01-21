@@ -68,11 +68,11 @@ const StyledTr = styled.tr`
     transition: background-color 0.3s;
   }
 `;
-
 const SelectionCheckbox = styled.input`
   width: 16px;
   height: 16px;
-  cursor: pointer;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.disabled ? "0.5" : "1")};
 `;
 
 const Table = ({
@@ -93,14 +93,32 @@ const Table = ({
       useSortBy
     );
 
-  const isAllSelected = data.length > 0 && selectedRows.length === data.length;
+  // Get only selectable rows (non-handovered)
+  const selectableRows = data.filter(
+    (row) => row.TransactionStatus?.toLowerCase() !== "handovered"
+  );
+
+  // Check if all selectable rows are selected
+  const isAllSelected =
+    selectableRows.length > 0 &&
+    selectableRows.every((row) => selectedRows.includes(row.Id));
 
   const handleSelectAll = (e) => {
-    onSelectAll(e.target.checked);
+    if (e.target.checked) {
+      // Only select non-handovered rows
+      const selectableIds = data
+        .filter((row) => row.TransactionStatus?.toLowerCase() !== "handovered")
+        .map((row) => row.Id);
+      onSelectAll(true, selectableIds);
+    } else {
+      onSelectAll(false, []);
+    }
   };
 
-  const handleRowSelect = (rowId) => {
-    onRowSelect(rowId);
+  const handleRowSelect = (rowId, isHandovered) => {
+    if (!isHandovered) {
+      onRowSelect(rowId);
+    }
   };
 
   return (
@@ -124,6 +142,7 @@ const Table = ({
                         type="checkbox"
                         checked={isAllSelected}
                         onChange={handleSelectAll}
+                        disabled={selectableRows.length === 0}
                       />
                     </StyledTh>
                     {headerGroup.headers.map((column) => {
@@ -152,6 +171,9 @@ const Table = ({
                 rows.map((row) => {
                   prepareRow(row);
                   const { key: rowKey, ...rowRest } = row.getRowProps();
+                  const isHandovered =
+                    row.original.TransactionStatus?.toLowerCase() ===
+                    "handovered";
                   const isSelected = selectedRows.includes(row.original.Id);
 
                   return (
@@ -161,11 +183,15 @@ const Table = ({
                       $isSelected={isSelected}
                     >
                       <StyledTd>
-                        <SelectionCheckbox
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleRowSelect(row.original.Id)}
-                        />
+                        {!isHandovered ? (
+                          <SelectionCheckbox
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() =>
+                              handleRowSelect(row.original.Id, isHandovered)
+                            }
+                          />
+                        ) : null}
                       </StyledTd>
                       {row.cells.map((cell) => {
                         const cellProps = cell.getCellProps();

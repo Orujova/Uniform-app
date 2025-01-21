@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaTimes, FaArrowRight } from "react-icons/fa";
+import { FaArrowRight } from "react-icons/fa";
 import { API_BASE_URL } from "../config";
 
 // Styled Components
@@ -20,74 +20,103 @@ const ModalOverlay = styled.div`
 
 const ModalContainer = styled.div`
   background-color: white;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 100%;
   max-width: 1200px;
   max-height: 90vh;
-  overflow-y: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 `;
 
 const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 16px 16px 0 0;
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 const ModalTitle = styled.h2`
   margin: 0;
   font-size: 20px;
-  color: #2d3a45;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-
-  cursor: pointer;
-
-  &:hover {
-    color: #374151;
-  }
-
-  color: #005ea6;
-
-  padding: 4px 8px;
-  border: 1px solid #005ea6;
-  border-radius: 50%;
+  color: #1e293b;
+  font-weight: 600;
 `;
 
 const ModalContent = styled.div`
   padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+`;
+
+const TableWrapper = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  position: relative;
 `;
 
 const StyledTable = styled.table`
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin-top: 16px;
+  background-color: white;
+  border-radius: 8px;
+`;
+
+const TableHeader = styled.thead`
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: white;
 `;
 
 const Th = styled.th`
   text-align: left;
-  padding: 12px;
-  background-color: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
-  color: #374151;
+  padding: 16px;
+  background-color: #f8fafc;
+  color: #475569;
   font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
   text-align: center;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 `;
 
 const Td = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
   text-align: center;
+  color: #1e293b;
+  font-size: 14px;
+  background-color: white;
+  transition: background-color 0.2s;
+
+  tr:hover & {
+    background-color: #f8fafc;
+  }
 `;
 
 const StatusContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: ${(props) => (props.withArrow ? "space-between" : "center")};
+  justify-content: center;
   position: relative;
   width: 100%;
+  gap: 8px;
 `;
 
 const ArrowContainer = styled.div`
@@ -98,6 +127,7 @@ const ArrowContainer = styled.div`
   display: flex;
   align-items: center;
   z-index: 1;
+  padding: 0 4px;
 `;
 
 const ArrowLine = styled.div`
@@ -109,16 +139,16 @@ const ArrowLine = styled.div`
 
 const StatusArrow = styled(FaArrowRight)`
   color: #065f46;
-  font-size: 16px;
+  font-size: 14px;
 `;
 
 const WaitingStatus = styled.span`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
-  background-color: #e5e7eb;
-  color: #6b7280;
+  background-color: #f1f5f9;
+  color: #64748b;
   font-style: italic;
 `;
 
@@ -138,9 +168,12 @@ const StatusBadge = styled.span`
         return "background-color: #FEE2E2; color: #991B1B;";
       case "intransit":
         return "background-color: #DBEAFE; color: #1E40AF;";
+      case "accepted":
+        return "background-color: #D1FAE5; color: #065F46;";
+      case "handovered":
+        return "background-color: #F3F4F6; color: #374151;";
       default:
         return "background-color: ; color: ;";
-      // return "background-color: #F3F4F6; color: #374151;";
     }
   }}
 `;
@@ -204,17 +237,15 @@ const TrackStatusModal = ({ isOpen, onClose }) => {
     return (status || "").toLowerCase();
   };
 
-  const renderDCStatus = (managerStatus, dcStatus) => {
-    const managerStatusLower = getStatusLowerCase(managerStatus);
+  const renderDCStatus = (operationStatus, dcStatus) => {
+    const operationStatusLower = getStatusLowerCase(operationStatus);
 
-    if (managerStatusLower === "pending" || !managerStatus) {
-      return <WaitingStatus> Manager Approval</WaitingStatus>;
+    if (operationStatusLower === "pending" || !operationStatus) {
+      return <WaitingStatus> Operation Approval</WaitingStatus>;
     }
-    if (managerStatusLower === "approved") {
+    if (operationStatusLower === "approved") {
       return (
-        <StatusBadge status={dcStatus || "pending"}>
-          {dcStatus || "Pending"}
-        </StatusBadge>
+        <StatusBadge status={dcStatus || ""}>{dcStatus || ""}</StatusBadge>
       );
     }
     return null;
@@ -234,9 +265,9 @@ const TrackStatusModal = ({ isOpen, onClose }) => {
       <ModalContainer>
         <ModalHeader>
           <ModalTitle>Track Status</ModalTitle>
-          <CloseButton onClick={onClose}>
-            <FaTimes size={16} />
-          </CloseButton>
+          <button className="close-button" onClick={onClose}>
+            &times;
+          </button>
         </ModalHeader>
         <ModalContent>
           {isLoading ? (
@@ -244,55 +275,65 @@ const TrackStatusModal = ({ isOpen, onClose }) => {
           ) : error ? (
             <ErrorMessage>{error}</ErrorMessage>
           ) : (
-            <StyledTable>
-              <thead>
-                <tr>
-                  <Th>Employee Name</Th>
-                  <Th>Uniform Name</Th>
-                  <Th>Request Count</Th>
-                  <Th>Store Request Status</Th>
-                  <Th>Manager Order Status</Th>
-                  <Th>DC Order Status</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {statusData.map((item, index) => (
-                  <tr key={index}>
-                    <Td>{item.EmployeeName}</Td>
-                    <Td>{item.UniformName}</Td>
-                    <Td>{item.RequestCount}</Td>
-                    <Td style={{ position: "relative" }}>
-                      <StatusContainer>
-                        <StatusBadge
-                          status={item.StoreRequestStatus || "pending"}
-                        >
-                          {item.StoreRequestStatus || "Pending"}
-                        </StatusBadge>
-                        {getStatusLowerCase(item.StoreRequestStatus) ===
-                          "approved" && renderArrow()}
-                      </StatusContainer>
-                    </Td>
-                    <Td style={{ position: "relative" }}>
-                      <StatusContainer>
-                        <StatusBadge
-                          status={item.ManagerOrderStatus || "pending"}
-                        >
-                          {item.ManagerOrderStatus || "Pending"}
-                        </StatusBadge>
-                        {getStatusLowerCase(item.ManagerOrderStatus) ===
-                          "approved" && renderArrow()}
-                      </StatusContainer>
-                    </Td>
-                    <Td>
-                      {renderDCStatus(
-                        item.ManagerOrderStatus,
-                        item.DCOrderStatus
-                      )}
-                    </Td>
+            <TableWrapper>
+              <StyledTable>
+                <TableHeader>
+                  <tr>
+                    <Th>Employee Name</Th>
+                    <Th>Uniform Name</Th>
+                    <Th>Request Count</Th>
+                    <Th>Store Request Status</Th>
+                    <Th>Operation Response Status</Th>
+                    <Th>DC Response Status</Th>
+                    <Th>Transaction Status</Th>
                   </tr>
-                ))}
-              </tbody>
-            </StyledTable>
+                </TableHeader>
+                <tbody>
+                  {statusData.map((item, index) => (
+                    <tr key={index}>
+                      <Td>{item.EmployeeName}</Td>
+                      <Td>{item.UniformName}</Td>
+                      <Td>{item.RequestCount}</Td>
+                      <Td style={{ position: "relative" }}>
+                        <StatusContainer>
+                          <StatusBadge status={item.StoreRequestStatus || ""}>
+                            {item.StoreRequestStatus || ""}
+                          </StatusBadge>
+                          {getStatusLowerCase(item.StoreRequestStatus) ===
+                            "approved" && renderArrow()}
+                        </StatusContainer>
+                      </Td>
+                      <Td style={{ position: "relative" }}>
+                        <StatusContainer>
+                          <StatusBadge status={item.OperationOrderStatus || ""}>
+                            {item.OperationOrderStatus || ""}
+                          </StatusBadge>
+                          {getStatusLowerCase(item.OperationOrderStatus) ===
+                            "approved" && renderArrow()}
+                        </StatusContainer>
+                      </Td>
+                      <Td style={{ position: "relative" }}>
+                        <StatusContainer>
+                          {renderDCStatus(
+                            item.OperationOrderStatus,
+                            item.DCOrderStatus
+                          )}
+                          {getStatusLowerCase(item.DCOrderStatus) ===
+                            "approved" && renderArrow()}
+                        </StatusContainer>
+                      </Td>
+                      <Td>
+                        <StatusContainer>
+                          <StatusBadge status={item.TransactionStatus || ""}>
+                            {item.TransactionStatus || ""}
+                          </StatusBadge>
+                        </StatusContainer>
+                      </Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </StyledTable>
+            </TableWrapper>
           )}
         </ModalContent>
       </ModalContainer>

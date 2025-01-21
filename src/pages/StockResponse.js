@@ -7,10 +7,13 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import * as ContextMenu from "@radix-ui/react-context-menu";
 import Table from "../components/Table";
 import { API_BASE_URL } from "../config";
 import StatusFilter from "../components/StatusFilter";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Modal = styled.div`
   position: fixed;
@@ -44,14 +47,57 @@ const ModalButton = styled.button`
   padding: 10px 16px;
   font-size: 16px;
   color: #fff;
-  background-color: #0284c7;
+  background-color: ${(props) => (props.disabled ? "#9CA3AF" : "#0284c7")};
   border: none;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.disabled ? "0.6" : "1")};
 
   &:hover {
-    background-color: #075985;
+    background-color: ${(props) => (props.disabled ? "#9CA3AF" : "#075985")};
   }
+`;
+
+const WarningMessage = styled.div`
+  color: #dc2626;
+  font-size: 14px;
+  margin-bottom: 15px;
+  padding: 8px;
+  background-color: #fee2e2;
+  border-radius: 4px;
+  text-align: center;
+`;
+
+const InfoSection = styled.div`
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const InfoLabel = styled.span`
+  font-weight: 500;
+  color: #64748b;
+  font-size: 14px;
+`;
+
+const InfoValue = styled.span`
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
 `;
 
 const StockContainer = styled.div`
@@ -158,56 +204,22 @@ const ActionButton = styled.button`
   }
 `;
 
-const ContextMenuContent = styled(ContextMenu.Content)`
-  min-width: 220px;
-  background-color: white;
-  border-radius: 6px;
-  padding: 5px;
-  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
-    0px 10px 20px -15px rgba(22, 23, 24, 0.2);
-  animation-duration: 400ms;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
-  z-index: 1000;
-`;
-
-const ContextMenuItem = styled(ContextMenu.Item)`
-  font-size: 13px;
-  line-height: 1;
-  color: #11181c;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  height: 25px;
-  padding: 0 5px;
-  position: relative;
-  padding-left: 25px;
-  user-select: none;
-  outline: none;
-
-  &[data-highlighted] {
-    background-color: #0284c7;
-    color: white;
-  }
-
-  &[data-disabled] {
-    color: #98a1b2;
-    pointer-events: none;
-  }
-`;
-
-const ContextMenuSeparator = styled(ContextMenu.Separator)`
-  height: 1px;
-  background-color: #e5e7eb;
-  margin: 5px;
-`;
-
 const IconWrapper = styled.div`
   cursor: pointer;
   font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+const InfoWarningMessage = styled.div`
+  color: #0369a1;
+  font-size: 14px;
+  margin-bottom: 15px;
+  padding: 8px;
+  background-color: #e0f2fe;
+  border-radius: 4px;
+  text-align: center;
 `;
 
 const statusOptions = [
@@ -228,6 +240,9 @@ const StockResponse = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [availableStock, setAvailableStock] = useState(0);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     fetchStockData();
@@ -297,18 +312,79 @@ const StockResponse = () => {
       if (!response.ok) throw new Error("Failed to reject request");
 
       await fetchStockData();
+      showToast("Request rejected successfully");
     } catch (err) {
       setError("Error rejecting the request.");
     }
   };
 
-  const handleAccept = (requestId) => {
+  const fetchAvailableStock = async (uniformId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/DCStock`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch stock data");
+
+      const data = await response.json();
+      const stocks = data[0]?.DCStocks || [];
+      console.log(stocks);
+      const uniformStock = stocks.find(
+        (stock) => stock.UniformId === uniformId
+      );
+      return uniformStock?.StockCount || 0;
+    } catch (error) {
+      console.error("Error fetching available stock:", error);
+      return 0;
+    }
+  };
+
+  // const handleAccept = async (requestId) => {
+  //   const selectedItem = stockData.find((item) => item.Id === requestId);
+  //   setSelectedRequest(selectedItem);
+  //   setCount(selectedItem.RequestCount); // Default olaraq requested count'u set edirik
+
+  //   const stockCount = await fetchAvailableStock(selectedItem.UniformId);
+  //   setAvailableStock(stockCount);
+  //   setSelectedRequestId(requestId);
+  //   setModalOpen(true);
+  // };
+
+  const handleAccept = async (requestId) => {
+    const selectedItem = stockData.find((item) => item.Id === requestId);
+    setSelectedRequest(selectedItem);
+
+    const stockCount = await fetchAvailableStock(selectedItem.UniformId);
+    setAvailableStock(stockCount);
+
+    // Set initial count based on available stock vs requested count
+    const initialCount = Math.min(selectedItem.RequestCount, stockCount);
+    setCount(initialCount);
+
     setSelectedRequestId(requestId);
     setModalOpen(true);
   };
 
+  const handleCountChange = (e) => {
+    const newCount = parseInt(e.target.value) || 0;
+    const requestedCount = selectedRequest?.RequestCount || 0;
+
+    if (newCount > requestedCount) {
+      showToast(`Cannot exceed requested count (${requestedCount})`);
+      return;
+    }
+
+    if (newCount < 0) {
+      showToast("Count cannot be negative");
+      return;
+    }
+
+    setCount(newCount);
+  };
+
   const handleSubmit = async () => {
     try {
+      setIsSaving(true);
       const countResponse = await fetch(
         `${API_BASE_URL}/api/BGSStockRequest/update-count-status`,
         {
@@ -320,31 +396,18 @@ const StockResponse = () => {
           body: JSON.stringify({ Id: selectedRequestId, count }),
         }
       );
+      console.log(selectedRequestId, count);
 
       if (!countResponse.ok) throw new Error("Failed to update count");
 
       setModalOpen(false);
       setCount(0);
       await fetchStockData();
+      showToast("Request accepted successfully");
     } catch (err) {
       setError("Error processing the request.");
-    }
-  };
-
-  const handleContextMenuAction = (action, rowData) => {
-    switch (action) {
-      case "accept":
-        handleAccept(rowData.Id);
-        break;
-      case "reject":
-        handleReject(rowData.Id);
-        break;
-      case "view":
-        // Implement view details functionality
-        console.log("View details for:", rowData);
-        break;
-      default:
-        break;
+    } finally {
+      setIsSaving(false); // Loading bitir
     }
   };
 
@@ -386,69 +449,39 @@ const StockResponse = () => {
         const { Status, Id } = row.original;
 
         return (
-          <ContextMenu.Root>
-            <ContextMenu.Trigger asChild>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  justifyContent: "center",
-                }}
-              >
-                {Status === "Intransit" && (
-                  <IconWrapper>
-                    <FaShippingFast style={{ color: "#6b7280" }} />
-                  </IconWrapper>
-                )}
-                {Status === "Pending" && (
-                  <>
-                    <ActionButton
-                      variant="accept"
-                      onClick={() => handleAccept(Id)}
-                    >
-                      Accept
-                    </ActionButton>
-                    <ActionButton
-                      variant="reject"
-                      onClick={() => handleReject(Id)}
-                    >
-                      Reject
-                    </ActionButton>
-                  </>
-                )}
-                {Status === "Accepted" && (
-                  <IconWrapper>
-                    <FaCheck style={{ color: "#28a745" }} />
-                  </IconWrapper>
-                )}
-                {Status === "Rejected" && (
-                  <IconWrapper>
-                    <FaTimes style={{ color: "#dc3545" }} />
-                  </IconWrapper>
-                )}
-              </div>
-            </ContextMenu.Trigger>
-            <ContextMenuContent>
-              <ContextMenuItem
-                disabled={Status !== "Pending"}
-                onSelect={() => handleContextMenuAction("accept", row.original)}
-              >
-                Accept Request
-              </ContextMenuItem>
-              <ContextMenuItem
-                disabled={Status !== "Pending"}
-                onSelect={() => handleContextMenuAction("reject", row.original)}
-              >
-                Reject Request
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-              <ContextMenuItem
-                onSelect={() => handleContextMenuAction("view", row.original)}
-              >
-                View Details
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu.Root>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "center",
+            }}
+          >
+            {Status === "Intransit" && (
+              <IconWrapper>
+                <FaShippingFast style={{ color: "#6b7280" }} />
+              </IconWrapper>
+            )}
+            {Status === "Pending" && (
+              <>
+                <ActionButton variant="accept" onClick={() => handleAccept(Id)}>
+                  Accept
+                </ActionButton>
+                <ActionButton variant="reject" onClick={() => handleReject(Id)}>
+                  Reject
+                </ActionButton>
+              </>
+            )}
+            {Status === "Accepted" && (
+              <IconWrapper>
+                <FaCheck style={{ color: "#28a745" }} />
+              </IconWrapper>
+            )}
+            {Status === "Rejected" && (
+              <IconWrapper>
+                <FaTimes style={{ color: "#dc3545" }} />
+              </IconWrapper>
+            )}
+          </div>
         );
       },
     },
@@ -471,6 +504,82 @@ const StockResponse = () => {
     indexOfLastItem
   );
   const totalPages = Math.ceil(filteredStockData.length / itemsPerPage);
+  const renderModal = () => {
+    if (!modalOpen || !selectedRequest) return null;
+
+    const isStockAvailable = availableStock > 0;
+    const isRequestedMoreThanAvailable =
+      selectedRequest.RequestCount > availableStock;
+
+    return (
+      <Modal>
+        <ModalContent>
+          {isSaving && <LoadingSpinner />}
+          <h3 style={{ marginTop: 0 }}>Accept Uniform</h3>
+          <InfoSection>
+            <InfoItem>
+              <InfoLabel>Uniform name:</InfoLabel>
+              <InfoValue>{selectedRequest.UniformName}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>Requested count:</InfoLabel>
+              <InfoValue>{selectedRequest.RequestCount}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>Available stock:</InfoLabel>
+              <InfoValue>{availableStock}</InfoValue>
+            </InfoItem>
+          </InfoSection>
+
+          {!isStockAvailable && (
+            <WarningMessage>No stock available for this uniform</WarningMessage>
+          )}
+
+          {isStockAvailable && isRequestedMoreThanAvailable && (
+            <InfoWarningMessage>
+              The requested count exceeds available stock. Maximum{" "}
+              {availableStock} items can be accepted.
+            </InfoWarningMessage>
+          )}
+
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              htmlFor="acceptCount"
+              style={{ display: "block", marginBottom: "5px" }}
+            >
+              Accept Count:
+            </label>
+            <ModalInput
+              id="acceptCount"
+              type="number"
+              min="0"
+              max={Math.min(selectedRequest.RequestCount, availableStock)}
+              value={count}
+              onChange={handleCountChange}
+              disabled={!isStockAvailable}
+            />
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <ModalButton
+              onClick={handleSubmit}
+              disabled={!isStockAvailable || count === 0}
+            >
+              Submit
+            </ModalButton>
+            <StyledButton
+              onClick={() => {
+                setModalOpen(false);
+                setSelectedRequest(null);
+                setCount(0);
+              }}
+            >
+              Cancel
+            </StyledButton>
+          </div>
+        </ModalContent>
+      </Modal>
+    );
+  };
 
   return (
     <StockContainer>
@@ -523,31 +632,8 @@ const StockResponse = () => {
           </PaginationContainer>
         </>
       )}
-
-      {modalOpen && (
-        <Modal>
-          <ModalContent>
-            <h3 style={{ marginTop: 0 }}>Accept Uniform</h3>
-            <p>
-              <strong>Uniform name: </strong>
-              {
-                stockData.find((item) => item.Id === selectedRequestId)
-                  ?.UniformName
-              }
-            </p>
-            <ModalInput
-              type="number"
-              placeholder="Enter count"
-              value={count}
-              onChange={(e) => setCount(e.target.value)}
-            />
-            <ModalButton onClick={handleSubmit}>Submit</ModalButton>
-            <StyledButton onClick={() => setModalOpen(false)}>
-              Close
-            </StyledButton>
-          </ModalContent>
-        </Modal>
-      )}
+      {renderModal()}
+      <ToastContainer />
     </StockContainer>
   );
 };

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -95,11 +98,10 @@ const EditUniformModal = ({
 
   useEffect(() => {
     console.log("Initial Data in Modal:", initialData);
-    setFormData(initialData || {}); // Update form data when initialData changes
+    setFormData(initialData || {});
   }, [initialData]);
 
   useEffect(() => {
-    // Extract options from the API data when the modal opens
     if (isOpen && apiData) {
       const uniqueSizes = [...new Set(apiData.map((item) => item.Size))];
       const uniqueTypes = [...new Set(apiData.map((item) => item.UniType))];
@@ -137,8 +139,9 @@ const EditUniformModal = ({
 
       const updatedData = await response.json();
       console.log(updatedData);
-      onSave(updatedData); // Call the onSave function to update the parent component
-      onClose(); // Close the modal after saving
+      showToast("Uniform updated successfully");
+      onSave(updatedData);
+      onClose();
     } catch (error) {
       console.error("Error updating uniform:", error.message);
     }
@@ -221,6 +224,7 @@ const EditUniformModal = ({
             Save
           </button>
         </ButtonGroup>
+        <ToastContainer />
       </ModalContent>
     </ModalOverlay>
   );

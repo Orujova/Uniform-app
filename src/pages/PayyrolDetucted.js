@@ -173,9 +173,9 @@ const PayyrolDetucted = () => {
     { Header: "Sender", accessor: "Sender" },
     { Header: "Deducted Amount", accessor: "DeductedAmount" },
     { Header: "Sender Date", accessor: "SenderDate" },
-    { Header: "HandoveredBy", accessor: "HandoveredBy" },
-    { Header: "Enacted Date", accessor: "EnactedDate" },
-    { Header: "DeductedBy", accessor: "DeductedBy" },
+    { Header: "Handed Over By", accessor: "HandoveredBy" },
+    { Header: "Handed Over Date", accessor: "EnactedDate" },
+    { Header: "Deducted By", accessor: "DeductedBy" },
     { Header: "Deducted Date ", accessor: "DeductedDate" },
 
     {
@@ -268,11 +268,21 @@ const PayyrolDetucted = () => {
   }, [stockData, badgeFilter, startDate, endDate]);
 
   const handleStartDateChange = (e) => {
-    setStartDate(e.target.value);
+    const newStartDate = e.target.value;
+    if (endDate && new Date(newStartDate) > new Date(endDate)) {
+      showToast("Start date cannot be later than end date", "error");
+      return;
+    }
+    setStartDate(newStartDate);
   };
 
   const handleEndDateChange = (e) => {
-    setEndDate(e.target.value);
+    const newEndDate = e.target.value;
+    if (startDate && new Date(newEndDate) < new Date(startDate)) {
+      showToast("End date cannot be earlier than start date", "error");
+      return;
+    }
+    setEndDate(newEndDate);
   };
 
   const fetchStockData = async () => {

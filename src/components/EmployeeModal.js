@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
 import "../styles/EmployeeModal.css";
 import { FaTimes } from "react-icons/fa";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../utils/toast";
 
 const EmployeeModal = ({ isOpen, onClose }) => {
   const token = localStorage.getItem("token");
@@ -195,8 +198,45 @@ const EmployeeModal = ({ isOpen, onClose }) => {
   };
 
   const handleRequiredCountChange = (e, uniformId, availableStock, index) => {
-    const value = parseInt(e.target.value, 10);
+    const uniform = employeeRequests[index].uniformData.find(
+      (u) => u.UniformId === uniformId
+    );
+    const maxAllowed = uniform.RequiredCount;
+    let value = parseInt(e.target.value, 10) || 0;
 
+    // Cap the value at maxAllowed and set warnings accordingly
+    if (value > maxAllowed) {
+      value = maxAllowed + 1;
+      updateEmployeeRequest(index, {
+        requiredCounts: {
+          ...employeeRequests[index].requiredCounts,
+          [uniformId]: value,
+        },
+        warnings: {
+          ...employeeRequests[index].warnings,
+          [uniformId]: `Maximum required count is ${maxAllowed}!`,
+        },
+      });
+      return;
+    }
+
+    // Check if value is negative
+    if (value < 0) {
+      value = 0;
+      updateEmployeeRequest(index, {
+        requiredCounts: {
+          ...employeeRequests[index].requiredCounts,
+          [uniformId]: value,
+        },
+        warnings: {
+          ...employeeRequests[index].warnings,
+          [uniformId]: "Count cannot be negative!",
+        },
+      });
+      return;
+    }
+
+    // Update state and check for available stock warning
     updateEmployeeRequest(index, {
       requiredCounts: {
         ...employeeRequests[index].requiredCounts,
@@ -206,11 +246,26 @@ const EmployeeModal = ({ isOpen, onClose }) => {
         ...employeeRequests[index].warnings,
         [uniformId]:
           value > availableStock
-            ? "Required count exceeds available stock!"
-            : "",
+            ? `Required count exceeds available stock (${availableStock})!`
+            : "", // Clear warning if value is valid
       },
     });
   };
+
+  const hasWarnings = () => {
+    return employeeRequests.some((request) =>
+      Object.values(request.warnings).some((warning) => warning !== "")
+    );
+  };
+
+  const allCountsEmpty = () => {
+    return employeeRequests.every((request) =>
+      Object.values(request.requiredCounts).every(
+        (count) => !count || count === 0
+      )
+    );
+  };
+
   const handleAddMore = () => {
     setEmployeeRequests((prev) => [
       ...prev,
@@ -225,10 +280,12 @@ const EmployeeModal = ({ isOpen, onClose }) => {
         warnings: {},
       },
     ]);
+    showToast("New employee request added");
   };
 
   const handleRemoveRequest = (index) => {
     setEmployeeRequests((prev) => prev.filter((_, i) => i !== index));
+    showToast("Employee request removed");
   };
 
   const handleSave = async () => {
@@ -243,10 +300,9 @@ const EmployeeModal = ({ isOpen, onClose }) => {
     });
 
     if (allUniformDetails.length === 0) {
-      console.warn("No uniform requests to submit.");
+      showToast("Please add at least one uniform request", "error");
       return;
     }
-
     const payload = {
       EmployeeUniformDetails: allUniformDetails,
     };
@@ -264,6 +320,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
       if (!response.ok) {
         throw new Error(`Failed to save data: ${response.statusText}`);
       }
+      showToast("Uniform requests saved successfully");
 
       resetModalState();
       onClose();
@@ -400,7 +457,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
 
                       <label className="label">Required Count:</label>
                       <input
-                        type="number"
+                        type="text"
                         value={request.requiredCounts[uniform.UniformId] || 0}
                         onChange={(e) =>
                           handleRequiredCountChange(
@@ -410,12 +467,18 @@ const EmployeeModal = ({ isOpen, onClose }) => {
                             index
                           )
                         }
-                        min="0"
                         max={uniform.RequiredCount}
+                        min="0"
                         style={modalStyles.input}
                       />
                       {request.warnings[uniform.UniformId] && (
-                        <p style={{ color: "red" }}>
+                        <p
+                          style={{
+                            color: "red",
+                            margin: "5px 0",
+                            fontSize: "14px",
+                          }}
+                        >
                           {request.warnings[uniform.UniformId]}
                         </p>
                       )}
@@ -426,15 +489,28 @@ const EmployeeModal = ({ isOpen, onClose }) => {
             )}
           </div>
         ))}
-
         <div style={{ textAlign: "right", marginTop: "20px" }}>
+          <button
+            className="button"
+            onClick={handleSave}
+            disabled={hasWarnings() || allCountsEmpty()}
+            style={{
+              ...modalStyles.button,
+              opacity: hasWarnings() || allCountsEmpty() ? 0.5 : 1,
+              cursor:
+                hasWarnings() || allCountsEmpty() ? "not-allowed" : "pointer",
+            }}
+          >
+            Save
+          </button>
           <button className="button" onClick={handleAddMore}>
             Add More
           </button>
-          <button className="button" onClick={handleSave}>
-            Save
+          <button className="cancel" onClick={handleClose}>
+            Cancel
           </button>
         </div>
+        <ToastContainer />
       </div>
     </div>
   );

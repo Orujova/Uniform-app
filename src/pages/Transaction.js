@@ -50,6 +50,7 @@ const TransactionPage = () => {
 
   const token = localStorage.getItem("token");
 
+  // Update the columns definition in TransactionPage.js
   const columns = [
     { Header: "Employee Badge", accessor: "EmployeeBadge" },
     { Header: "Employee Name", accessor: "EmployeeFullName" },
@@ -62,33 +63,70 @@ const TransactionPage = () => {
     { Header: "Count", accessor: "UniCount" },
     { Header: "Sender", accessor: "Sender" },
     { Header: "Sender Date", accessor: "SenderDate" },
-    { Header: "HandoveredBy", accessor: "HandoveredBy" },
-    { Header: "Enacted Date", accessor: "EnactedDate" },
+    { Header: "Handed Over By", accessor: "HandoveredBy" },
+    { Header: "Handed Over Date", accessor: "EnactedDate" },
     {
-      Header: "Status",
-      accessor: "TransactionStatus",
-      Cell: ({ value }) => (
-        <span
-          style={{
-            padding: "4px 8px",
-            borderRadius: "4px",
-            backgroundColor:
-              value?.toLowerCase() === "pending"
-                ? "#FEF3C7"
-                : value?.toLowerCase() === "accepted"
-                ? "#DCFCE7"
-                : "#E5E7EB",
-            color:
-              value?.toLowerCase() === "pending"
-                ? "#92400E"
-                : value?.toLowerCase() === "accepted"
-                ? "#166534"
-                : "#374151",
-          }}
-        >
-          {value}
-        </span>
-      ),
+      Header: "Reception Status",
+      accessor: "ReceptionStatus",
+      Cell: ({ row }) => {
+        const status = row.original.TransactionStatus?.toLowerCase();
+        const receptionStatus =
+          status === "accepted"
+            ? "Accepted"
+            : status === "pending"
+            ? "Pending"
+            : "-";
+
+        return (
+          <span
+            style={{
+              padding: "4px 8px",
+              borderRadius: "4px",
+              backgroundColor:
+                receptionStatus.toLowerCase() === "pending"
+                  ? "#FEF3C7"
+                  : receptionStatus.toLowerCase() === "accepted"
+                  ? "#DCFCE7"
+                  : "#E5E7EB",
+              color:
+                receptionStatus.toLowerCase() === "pending"
+                  ? "#92400E"
+                  : receptionStatus.toLowerCase() === "accepted"
+                  ? "#166534"
+                  : "#374151",
+            }}
+          >
+            {receptionStatus}
+          </span>
+        );
+      },
+    },
+    {
+      Header: "Handed Over Status",
+      accessor: "HandoverStatus",
+      Cell: ({ row }) => {
+        const status = row.original.TransactionStatus?.toLowerCase();
+        const handoverStatus = status === "handovered" ? "Handovered" : "-";
+
+        return (
+          <span
+            style={{
+              padding: "4px 8px",
+              borderRadius: "4px",
+              backgroundColor:
+                handoverStatus.toLowerCase() === "handovered"
+                  ? "#E5E7EB"
+                  : "#E5E7EB",
+              color:
+                handoverStatus.toLowerCase() === "handovered"
+                  ? "#374151"
+                  : "#374151",
+            }}
+          >
+            {handoverStatus}
+          </span>
+        );
+      },
     },
     {
       Header: "Reassign",
@@ -257,10 +295,14 @@ const TransactionPage = () => {
       return [...prev, rowId];
     });
   };
-
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedRows(currentItems.map((item) => item.Id));
+      const selectableIds = filteredData
+        .filter(
+          (item) => item.TransactionStatus?.toLowerCase() !== "handovered"
+        )
+        .map((item) => item.Id);
+      setSelectedRows(selectableIds);
     } else {
       setSelectedRows([]);
     }
@@ -328,7 +370,6 @@ const TransactionPage = () => {
       );
     } catch (error) {
       console.error(`Error performing ${actionType} action:`, error);
-      alert(`Failed to perform ${actionType} action. Please try again.`);
     }
   };
 
@@ -354,7 +395,7 @@ const TransactionPage = () => {
       />
 
       <ActionButtons
-        selectedTransactions={currentItems.filter((item) =>
+        selectedTransactions={filteredData.filter((item) =>
           selectedRows.includes(item.Id)
         )}
         onAction={handleAction}

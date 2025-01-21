@@ -16,14 +16,26 @@ import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import login0 from "../assets/login_0.png";
-import login1 from "../assets/login_1.jpg";
-import login2 from "../assets/login_2.jpg";
-import login3 from "../assets/login_3.jpg";
+// Professional uniform management images
+const carouselImages = [
+  {
+    url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Distribution Management",
+  },
+  {
+    url: "https://plus.unsplash.com/premium_photo-1671469875519-944b48b1520e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Transaction",
+  },
+  {
+    url: "https://smartfill.store/wp-content/uploads/2024/04/Why-stock-control-is-important-for-businesses-of-any-size.jpeg",
+    title: "Stock Control",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1542626991-cbc4e32524cc?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Uniforms Management",
+  },
+];
 
-const images = [login0, login1, login2, login3];
-
-// Role-based routing configuration
 const ROLE_ROUTES = {
   1: "/transaction",
   2: "/stock",
@@ -39,7 +51,6 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Fetch roles from API
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -88,9 +99,7 @@ const LoginPage = () => {
         const userData = JSON.parse(userDataString);
         const { roleId } = userData;
 
-        // If user has multiple roles, redirect to the highest priority role's page
         if (Array.isArray(roleId) && roleId.length > 0) {
-          // Sort roles by priority (assuming lower number means higher priority)
           const primaryRole = Math.min(...roleId);
           const redirectPath = ROLE_ROUTES[primaryRole];
 
@@ -113,14 +122,14 @@ const LoginPage = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", backgroundColor: "#e6feed" }}>
+    <Box sx={{ display: "flex", height: "100vh", backgroundColor: "#f0f2f5" }}>
       <Carousel
         autoPlay
-        interval={3000}
+        interval={4000}
         indicators={false}
         navButtonsAlwaysVisible={true}
         animation="slide"
-        duration={500}
+        duration={800}
         NavButton={({ onClick, className, style, next, prev }) => {
           return (
             <Button
@@ -131,7 +140,7 @@ const LoginPage = () => {
                 position: "absolute",
                 top: "50%",
                 transform: "translateY(-50%)",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                backgroundColor: "rgba(0, 68, 102, 0.5)",
                 color: "#fff",
                 zIndex: 2,
                 [next ? "right" : "left"]: 10,
@@ -143,16 +152,47 @@ const LoginPage = () => {
         }}
         sx={{ flex: 1, height: "100vh" }}
       >
-        {images.map((image, index) => (
+        {carouselImages.map((image, index) => (
           <Box
             key={index}
             sx={{
-              backgroundImage: `url(${image})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
+              position: "relative",
               height: "100vh",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 68, 102, 0.7)",
+                zIndex: 1,
+              },
             }}
-          />
+          >
+            <Box
+              sx={{
+                backgroundImage: `url(${image.url})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                height: "100%",
+              }}
+            />
+            <Typography
+              variant="h3"
+              sx={{
+                position: "absolute",
+                bottom: "20%",
+                left: "50px",
+                color: "white",
+                zIndex: 2,
+                fontWeight: "bold",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+              }}
+            >
+              {image.title}
+            </Typography>
+          </Box>
         ))}
       </Carousel>
 
@@ -169,21 +209,24 @@ const LoginPage = () => {
       >
         <Box
           sx={{
-            backgroundColor: "#bedec7",
+            backgroundColor: "white",
             padding: "40px",
             borderRadius: "12px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
             width: "100%",
             maxWidth: "400px",
             textAlign: "center",
           }}
         >
-          <Typography variant="h4" sx={{ marginBottom: "10px", color: "#333" }}>
+          <Typography
+            variant="h4"
+            sx={{ marginBottom: "10px", color: "#004466", fontWeight: "600" }}
+          >
             Uniform
           </Typography>
           <Typography
             variant="body1"
-            sx={{ marginBottom: "20px", color: "#333" }}
+            sx={{ marginBottom: "20px", color: "#666" }}
           >
             Login your account
           </Typography>
@@ -199,9 +242,9 @@ const LoginPage = () => {
               onChange={(e) => setUsername(e.target.value)}
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "#999" },
-                  "&:hover fieldset": { borderColor: "#333" },
-                  "&.Mui-focused fieldset": { borderColor: "#333" },
+                  "& fieldset": { borderColor: "#e0e0e0" },
+                  "&:hover fieldset": { borderColor: "#004466" },
+                  "&.Mui-focused fieldset": { borderColor: "#004466" },
                 },
               }}
             />
@@ -216,9 +259,9 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "#999" },
-                  "&:hover fieldset": { borderColor: "#333" },
-                  "&.Mui-focused fieldset": { borderColor: "#333" },
+                  "& fieldset": { borderColor: "#e0e0e0" },
+                  "&:hover fieldset": { borderColor: "#004466" },
+                  "&.Mui-focused fieldset": { borderColor: "#004466" },
                 },
               }}
             />
@@ -232,11 +275,13 @@ const LoginPage = () => {
               fullWidth
               variant="contained"
               sx={{
-                backgroundColor: "#333",
+                backgroundColor: "#004466",
                 color: "white",
                 marginTop: "20px",
+                padding: "12px",
+                fontSize: "16px",
                 "&:hover": {
-                  backgroundColor: "#555",
+                  backgroundColor: "#003355",
                 },
               }}
             >

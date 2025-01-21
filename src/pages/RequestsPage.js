@@ -8,18 +8,19 @@ import {
   FaChevronRight,
   FaTimes,
   FaUpload,
+  FaAlignLeft,
 } from "react-icons/fa";
-import * as ContextMenu from "@radix-ui/react-context-menu";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../utils/toast";
+import { API_BASE_URL } from "../config";
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditRequest";
 import CreateRequest from "../components/CreateRequest";
 import EmployeeModal from "../components/EmployeeModal";
 import RequestUploadModal from "../components/RequestUploadModal";
-import { API_BASE_URL } from "../config";
 import StatusFilter from "../components/StatusFilter";
+import SummarizeModal from "../components/BGSStockSummary";
 
 const StockContainer = styled.div`
   padding: 16px;
@@ -110,48 +111,47 @@ const PaginationButton = styled.button`
   }
 `;
 
-const ContextMenuContent = styled(ContextMenu.Content)`
-  min-width: 220px;
-  background-color: white;
-  border-radius: 6px;
-  padding: 5px;
-  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
-    0px 10px 20px -15px rgba(22, 23, 24, 0.2);
-  animation-duration: 400ms;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
-  z-index: 1000;
-`;
-
-const ContextMenuItem = styled(ContextMenu.Item)`
-  font-size: 13px;
-  line-height: 1;
-  color: #11181c;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  height: 25px;
-  padding: 0 10px;
-  position: relative;
-  user-select: none;
-  outline: none;
+const ActionButton = styled.button`
   cursor: pointer;
-
-  &[data-highlighted] {
-    background-color: #0284c7;
-    color: white;
-  }
+  background-color: ${(props) => props.bgColor};
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 
   &:hover {
-    background-color: #0284c7;
-    color: white;
+    background-color: ${(props) => props.hoverColor};
   }
 `;
 
-const ContextMenuSeparator = styled(ContextMenu.Separator)`
-  height: 1px;
-  background-color: #e5e7eb;
-  margin: 5px;
+const StatusBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+  background-color: ${(props) => props.bgColor};
+  color: ${(props) => props.textColor};
+  border: 1px solid ${(props) => props.borderColor};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    background-color: ${(props) => props.dotColor};
+  }
 `;
 
 const statusOptions = [
@@ -173,7 +173,8 @@ const RequestsPage = () => {
   const [editData, setEditData] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(7);
+  const [itemsPerPage] = useState(6);
+  const [isSummarizeModalOpen, setSummarizeModalOpen] = useState(false);
 
   useEffect(() => {
     fetchStockData();
@@ -252,6 +253,7 @@ const RequestsPage = () => {
       }
 
       await fetchStockData();
+      showToast("Request accepted successfully");
     } catch (error) {
       console.error("Error accepting request:", error);
     }
@@ -296,18 +298,46 @@ const RequestsPage = () => {
   const handleSaveEdit = async () => {
     await fetchStockData();
     setEditModalOpen(false);
+    showToast("Request updated successfully");
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyles = (status) => {
     switch (status) {
       case "Pending":
-        return "#f59e0b";
+        return {
+          bg: "#FFF7ED",
+          text: "#9A3412",
+          border: "#FDBA74",
+          dot: "#F97316",
+        };
       case "Accepted":
-        return "#10b981";
+        return {
+          bg: "#F0FDF4",
+          text: "#166534",
+          border: "#86EFAC",
+          dot: "#22C55E",
+        };
       case "Rejected":
-        return "#ef4444";
+        return {
+          bg: "#FEF2F2",
+          text: "#991B1B",
+          border: "#FECACA",
+          dot: "#EF4444",
+        };
+      case "Intransit":
+        return {
+          bg: "#F0F9FF",
+          text: "#075985",
+          border: "#BAE6FD",
+          dot: "#0EA5E9",
+        };
       default:
-        return "#6b7280";
+        return {
+          bg: "#F9FAFB",
+          text: "#374151",
+          border: "#D1D5DB",
+          dot: "#6B7280",
+        };
     }
   };
 
@@ -317,24 +347,26 @@ const RequestsPage = () => {
     { Header: "Type", accessor: "UniformDetails.UniType" },
     { Header: "Size", accessor: "UniformDetails.Size" },
     { Header: "Gender", accessor: "UniformDetails.Gender" },
+    { Header: "Imported Count", accessor: "ImportedCount" },
     { Header: "Count", accessor: "Count" },
     { Header: "Request Count", accessor: "RequestCount" },
     { Header: "Project", accessor: "ProjectName" },
     {
       Header: "Status",
       accessor: "Status",
-      Cell: ({ value }) => (
-        <span
-          style={{
-            backgroundColor: getStatusColor(value),
-            color: "#fff",
-            padding: "5px 10px",
-            borderRadius: "8px",
-          }}
-        >
-          {value}
-        </span>
-      ),
+      Cell: ({ value }) => {
+        const styles = getStatusStyles(value);
+        return (
+          <StatusBadge
+            bgColor={styles.bg}
+            textColor={styles.text}
+            borderColor={styles.border}
+            dotColor={styles.dot}
+          >
+            {value}
+          </StatusBadge>
+        );
+      },
     },
     {
       Header: "Actions",
@@ -373,7 +405,6 @@ const RequestsPage = () => {
             );
 
           case "Accepted":
-          case "Intransit":
             return (
               <FaCheck
                 style={{
@@ -382,8 +413,17 @@ const RequestsPage = () => {
                   color: "#28a745",
                   textAlign: "center",
                 }}
-                onClick={() => handleAccept(row.original.Id)}
               />
+            );
+          case "Intransit":
+            return (
+              <ActionButton
+                onClick={() => handleAccept(row.original.Id)}
+                bgColor="#28a745"
+                hoverColor="#218838"
+              >
+                Accept
+              </ActionButton>
             );
 
           default:
@@ -424,6 +464,10 @@ const RequestsPage = () => {
             <FaPlus style={{ marginRight: "8px" }} />
             Uniform For Employee
           </StyledButton>
+          <StyledButton onClick={() => setSummarizeModalOpen(true)}>
+            <FaAlignLeft style={{ marginRight: "8px" }} />
+            Summarize
+          </StyledButton>
           <StyledButton onClick={handleRequestUploadModal}>
             <FaUpload style={{ marginRight: "8px" }} />
             Upload
@@ -443,38 +487,12 @@ const RequestsPage = () => {
         <p style={{ color: "red" }}>{error}</p>
       ) : (
         <>
-          <ContextMenu.Root>
-            <ContextMenu.Trigger>
-              <Table
-                columns={columns}
-                data={currentItems}
-                selectable={false}
-                editable={false}
-              />
-            </ContextMenu.Trigger>
-            <ContextMenuContent>
-              {statusOptions.map((option) => (
-                <ContextMenuItem
-                  key={option.value}
-                  onSelect={() => {
-                    setStatusFilter(option.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  {option.label}
-                </ContextMenuItem>
-              ))}
-              <ContextMenuSeparator />
-              <ContextMenuItem
-                onSelect={() => {
-                  setStatusFilter(null);
-                  setCurrentPage(1);
-                }}
-              >
-                Clear Filter
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu.Root>
+          <Table
+            columns={columns}
+            data={currentItems}
+            selectable={false}
+            editable={false}
+          />
 
           <PaginationContainer>
             <PaginationButton
@@ -528,7 +546,10 @@ const RequestsPage = () => {
         apiData={stockData}
       />
 
-      <ToastContainer />
+      <SummarizeModal
+        isOpen={isSummarizeModalOpen}
+        onClose={() => setSummarizeModalOpen(false)}
+      />
     </StockContainer>
   );
 };

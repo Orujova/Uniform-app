@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -370,6 +372,7 @@ const ReassignModal = ({
             {isSubmitting ? "Reassigning..." : "Reassign"}
           </SubmitButton>
         </Form>
+        <ToastContainer />
       </ModalContent>
     </ModalOverlay>
   );

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../utils/toast";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -233,13 +236,16 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedProject) return;
+    if (!selectedProject) {
+      showToast("Please select a project first", "warning");
+      return;
+    }
 
     setIsLoading(true);
     setError("");
     try {
       const response = await fetch(
-        `${apiBaseUrl}/api/UniformForEmployee/GetSumApprovedManagerOrders?ProjectId=${selectedProject}`,
+        `${apiBaseUrl}/api/UniformForEmployee/GetSumApprovedOperationOrders?ProjectId=${selectedProject}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -320,6 +326,7 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
             Show Data
           </SubmitButton>
         </ButtonContainer>
+        <ToastContainer />
       </ModalContent>
     </ModalOverlay>
   );

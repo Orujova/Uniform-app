@@ -8,6 +8,9 @@ import {
 } from "react-icons/fa";
 import Table from "../components/Table";
 import { API_BASE_URL } from "../config";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../utils/toast";
 
 const StockContainer = styled.div`
   padding: 12px;
@@ -123,6 +126,32 @@ const ActionButton = styled.button`
   }
 `;
 
+const StatusBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+  background-color: ${(props) => props.bgColor};
+  color: ${(props) => props.textColor};
+  border: 1px solid ${(props) => props.borderColor};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    background-color: ${(props) => props.dotColor};
+  }
+`;
+
 const ManagerResponse = () => {
   const token = localStorage.getItem("token");
   const [stockData, setStockData] = useState([]);
@@ -221,7 +250,7 @@ const ManagerResponse = () => {
   const handleAccept = async (requestId) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/UniformForEmployee/ApproveRejectManagerOrder`,
+        `${API_BASE_URL}/api/UniformForEmployee/ApproveRejectOperationOrder`,
         {
           method: "PUT",
           headers: {
@@ -245,6 +274,7 @@ const ManagerResponse = () => {
         );
         return updatedData.sort((a, b) => a.Id - b.Id);
       });
+      showToast("Request approved successfully");
     } catch (err) {
       setError("Error approving the request.");
     }
@@ -253,7 +283,8 @@ const ManagerResponse = () => {
   const handleReject = async (requestId) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/UniformForEmployee/ApproveRejectManagerOrder`,
+        `${API_BASE_URL}
+/api/UniformForEmployee/ApproveRejectOperationOrder`,
         {
           method: "PUT",
           headers: {
@@ -277,21 +308,49 @@ const ManagerResponse = () => {
         );
         return updatedData.sort((a, b) => a.Id - b.Id);
       });
+      showToast("Request rejected successfully");
     } catch (err) {
       setError("Error rejecting the request.");
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyles = (status) => {
     switch (status) {
       case "Pending":
-        return "#f59e0b";
-      case "Approved":
-        return "#10b981";
+        return {
+          bg: "#FFF7ED",
+          text: "#9A3412",
+          border: "#FDBA74",
+          dot: "#F97316",
+        };
+      case "Accepted":
+        return {
+          bg: "#F0FDF4",
+          text: "#166534",
+          border: "#86EFAC",
+          dot: "#22C55E",
+        };
       case "Rejected":
-        return "#ef4444";
+        return {
+          bg: "#FEF2F2",
+          text: "#991B1B",
+          border: "#FECACA",
+          dot: "#EF4444",
+        };
+      case "Intransit":
+        return {
+          bg: "#F0F9FF",
+          text: "#075985",
+          border: "#BAE6FD",
+          dot: "#0EA5E9",
+        };
       default:
-        return "#6b7280";
+        return {
+          bg: "#F9FAFB",
+          text: "#374151",
+          border: "#D1D5DB",
+          dot: "#6B7280",
+        };
     }
   };
 
@@ -308,45 +367,48 @@ const ManagerResponse = () => {
     { Header: "Created By", accessor: "CreatedBy" },
     { Header: "Unit Price", accessor: "UniformDCStockUnitPrice" },
     {
-      Header: "Store Status",
+      Header: "Store Request Status",
       accessor: "StoreRequestStatus",
-      Cell: ({ value }) => (
-        <span
-          style={{
-            backgroundColor: getStatusColor(value),
-            color: "#fff",
-            padding: "5px 10px",
-            borderRadius: "8px",
-          }}
-        >
-          {value}
-        </span>
-      ),
+      Cell: ({ value }) => {
+        const styles = getStatusStyles(value);
+        return (
+          <StatusBadge
+            bgColor={styles.bg}
+            textColor={styles.text}
+            borderColor={styles.border}
+            dotColor={styles.dot}
+          >
+            {value}
+          </StatusBadge>
+        );
+      },
     },
     {
-      Header: "Manager Status",
-      accessor: "ManagerOrderStatus",
-      Cell: ({ value }) => (
-        <span
-          style={{
-            backgroundColor: getStatusColor(value),
-            color: "#fff",
-            padding: "5px 10px",
-            borderRadius: "8px",
-          }}
-        >
-          {value}
-        </span>
-      ),
+      Header: "Operation Response Status",
+      accessor: "OperationOrderStatus",
+      Cell: ({ value }) => {
+        const styles = getStatusStyles(value);
+        return (
+          <StatusBadge
+            bgColor={styles.bg}
+            textColor={styles.text}
+            borderColor={styles.border}
+            dotColor={styles.dot}
+          >
+            {value}
+          </StatusBadge>
+        );
+      },
     },
+
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => {
-        const { StoreRequestStatus, ManagerOrderStatus, Id } = row.original;
+        const { StoreRequestStatus, OperationOrderStatus, Id } = row.original;
         const isPending = StoreRequestStatus === "Pending";
-        const isApproved = ManagerOrderStatus === "Approved";
-        const isRejected = ManagerOrderStatus === "Rejected";
+        const isApproved = OperationOrderStatus === "Approved";
+        const isRejected = OperationOrderStatus === "Rejected";
 
         return (
           <div
@@ -383,7 +445,7 @@ const ManagerResponse = () => {
   return (
     <StockContainer>
       <Header>
-        <Title>Manager Response</Title>{" "}
+        <Title>Operation Response</Title>
         <FilterContainer>
           <FilterGroup>
             <FilterLabel>Start Date</FilterLabel>
@@ -446,6 +508,7 @@ const ManagerResponse = () => {
           </PaginationContainer>
         </>
       )}
+      <ToastContainer />
     </StockContainer>
   );
 };

@@ -128,7 +128,7 @@
 
 /* Button */
 .button {
-  padding: 12px 25px;
+  padding: 10px 16px;
   background: #f5f5f5;
   color: #333;
   border: none;
@@ -153,4 +153,18 @@
 .image-group {
   display: flex;
   gap: 20px;
+}
+
+.cancel {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  background: #e74c3c;
+  color: #fff;
+  margin-left: 18px;
+}
+.cancel:hover {
+  background: #c0392b;
 }

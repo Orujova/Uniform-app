@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import Table from "../components/TableTrans";
+import Table from "../components/TablePayroll";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "react-toastify";
@@ -141,8 +141,8 @@ const PayrollPage = () => {
     { Header: "Count", accessor: "UniCount" },
     { Header: "Sender", accessor: "Sender" },
     { Header: "Sender Date", accessor: "SenderDate" },
-    { Header: "HandoveredBy", accessor: "HandoveredBy" },
-    { Header: "Enacted Date", accessor: "EnactedDate" },
+    { Header: "Handed Over By", accessor: "HandoveredBy" },
+    { Header: "Handed Over Date", accessor: "EnactedDate" },
     {
       Header: "Status",
       accessor: "TransactionStatus",
@@ -282,6 +282,7 @@ const PayrollPage = () => {
 
     try {
       setIsLoading(true);
+      showToast("Processing deduction...");
       const response = await fetch(
         `${API_BASE_URL}/api/TransactionPage/deduct-transactions`,
         {

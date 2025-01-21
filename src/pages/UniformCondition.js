@@ -11,6 +11,9 @@ import Table from "../components/Table";
 import EditUniformModal from "../components/EditUniCondition";
 import CreateUniModal from "../components/CreateUniConModal";
 import { API_BASE_URL } from "../config";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Styled components for the page
 const StockContainer = styled.div`
@@ -138,14 +141,11 @@ const StockPage = () => {
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
 
-        // Extract Uniforms array from the response
         const uniforms = data[0]?.UniformConditions || [];
 
-        // Sort uniforms by Id in ascending order
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
 
         setStockData(sortedUniforms);
-        // setStockData(uniforms);
         setTotalPages(Math.ceil(uniforms.length / itemsPerPage));
       } catch (err) {
         console.error("Error fetching uniforms:", err);
@@ -231,6 +231,7 @@ const StockPage = () => {
         // Sort new data by Id
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
+        showToast("Uniform condition created successfully!");
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -267,6 +268,7 @@ const StockPage = () => {
         // Sort new data by Id
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
+        showToast("Uniform condition updated successfully!");
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -300,7 +302,7 @@ const StockPage = () => {
         setStockData((prev) =>
           [...prev.filter((item) => item.Id !== Id)].sort((a, b) => a.Id - b.Id)
         );
-        // setStockData((prev) => prev.filter((item) => item.Id !== Id));
+        showToast("Uniform condition deleted successfully!");
         console.log("Uniform deleted successfully!");
       } catch (error) {
         console.error("Error deleting uniform:", error.message);
@@ -374,6 +376,7 @@ const StockPage = () => {
         initialData={editData}
         apiData={stockData}
       />
+      <ToastContainer />
     </StockContainer>
   );
 };
