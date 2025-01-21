@@ -220,7 +220,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         },
         { label: "DC Stock", value: "stock", path: "/stock" },
         {
-          label: "DC Response - DC Order",
+          label: "DC Response - Store Order",
           value: "dCResponse",
           path: "/dCResponse",
         },

@@ -56,20 +56,6 @@ const ContentArea = styled.div`
   overflow-y: auto;
 `;
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/loginPage", { replace: true, state: { from: location } });
-    }
-  }, [isAuthenticated, navigate, location]);
-
-  return isAuthenticated ? children : null;
-};
-
 const AuthLayout = () => {
   return (
     <AuthPagesContainer>
@@ -268,14 +254,22 @@ const MainLayout = () => {
     </AppContainer>
   );
 };
-
 const AppContent = () => {
   const dispatch = useDispatch();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
-    dispatch(loadUserFromStorage());
+    const initializeAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        await dispatch(loadUserFromStorage());
+      }
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, [dispatch]);
 
   const isAuthPage =
@@ -284,12 +278,42 @@ const AppContent = () => {
     location.pathname === "/changePassword" ||
     location.pathname === "/not-found";
 
-  // Redirect to login if not authenticated and not on an auth page
-  if (!isAuthenticated && !isAuthPage) {
+  // Show nothing while checking authentication
+  if (isLoading) {
+    return null; // or return a loading spinner
+  }
+
+  // Only redirect to login if not authenticated, not on an auth page, and there's no token
+  if (!isAuthenticated && !isAuthPage && !localStorage.getItem("token")) {
     return <Navigate to="/loginPage" replace />;
   }
 
   return isAuthPage ? <AuthLayout /> : <MainLayout />;
+};
+
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!isAuthenticated && !token) {
+        navigate("/loginPage", { replace: true, state: { from: location } });
+      }
+      setIsChecking(false);
+    };
+
+    checkAuth();
+  }, [isAuthenticated, navigate, location]);
+
+  if (isChecking) {
+    return null; // or return a loading spinner
+  }
+
+  return isAuthenticated || localStorage.getItem("token") ? children : null;
 };
 
 const App = () => (

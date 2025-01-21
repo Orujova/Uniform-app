@@ -44,13 +44,6 @@ const ReportContainer = styled.div`
   border-radius: 12px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
 const Title = styled.h2`
   margin: 0;
   font-size: 24px;
@@ -325,6 +318,111 @@ const ClearFilterButton = styled.button`
   }
 `;
 
+// Base button styles
+const ButtonBase = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+// Primary button (blue)
+const PrimaryButton = styled(ButtonBase)`
+  background-color: #0284c7;
+  color: white;
+  min-width: ${(props) => (props.fullWidth ? "100%" : "auto")};
+
+  &:hover:not(:disabled) {
+    background-color: #0369a1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+`;
+
+// Secondary button (light blue)
+const SecondaryButton = styled(ButtonBase)`
+  background-color: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+
+  &:hover:not(:disabled) {
+    background-color: #bae6fd;
+    color: #0369a1;
+  }
+
+  &:active:not(:disabled) {
+    background-color: #7dd3fc;
+  }
+`;
+
+// Outline button
+const OutlineButton = styled(ButtonBase)`
+  background-color: transparent;
+  color: #0284c7;
+  border: 1.5px solid #0284c7;
+
+  &:hover:not(:disabled) {
+    background-color: #f0f9ff;
+    border-color: #0369a1;
+    color: #0369a1;
+  }
+
+  &:active:not(:disabled) {
+    background-color: #e0f2fe;
+  }
+`;
+
+// Danger button (red)
+const DangerButton = styled(ButtonBase)`
+  background-color: #ef4444;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+`;
+
+// Ghost button
+const GhostButton = styled(ButtonBase)`
+  background-color: transparent;
+  color: #64748b;
+
+  &:hover:not(:disabled) {
+    background-color: #f1f5f9;
+    color: #334155;
+  }
+
+  &:active:not(:disabled) {
+    background-color: #e2e8f0;
+  }
+`;
+
+// Loading spinner for buttons
 const ButtonSpinner = styled.div`
   width: 16px;
   height: 16px;
@@ -332,7 +430,6 @@ const ButtonSpinner = styled.div`
   border-top: 2px solid #ffffff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-right: 8px;
 
   @keyframes spin {
     0% {
@@ -344,32 +441,21 @@ const ButtonSpinner = styled.div`
   }
 `;
 
-const ExportButton = styled.button`
+// Usage example in the header:
+const Header = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: #0284c7;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  min-width: 120px;
-  justify-content: center;
-
-  &:hover {
-    background-color: #0369a1;
-  }
-
-  &:disabled {
-    background-color: #94a3b8;
-    cursor: not-allowed;
-  }
+  margin-bottom: 24px;
+  gap: 12px;
 `;
 
+// Button group for multiple buttons
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
 const UniformList = memo(
   ({ uniforms, variant, rowIndex, isExpanded, onToggle }) => {
     const dropdownRef = useRef(null);
@@ -724,7 +810,8 @@ const UniformProvisionReport = () => {
     setExporting(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/UniformForEmployee/export-uniform-stock-requirements`,
+        `${API_BASE_URL}
+/api/UniformForEmployee/export-uniform-provision`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -758,23 +845,29 @@ const UniformProvisionReport = () => {
       <Header>
         <Title>Uniform Provision Details</Title>
 
-        <StyledButton onClick={() => setIsSummaryModalOpen(true)}>
-          <FaAlignLeft size={14} />
-          <span>Summarize</span>
-        </StyledButton>
-        <ExportButton onClick={handleExport} disabled={isLoading || exporting}>
-          {exporting ? (
-            <>
-              <ButtonSpinner />
-              Exporting...
-            </>
-          ) : (
-            <>
-              <FaDownload size={14} />
-              Export
-            </>
-          )}
-        </ExportButton>
+        <ButtonGroup>
+          <SecondaryButton onClick={() => setIsSummaryModalOpen(true)}>
+            <FaAlignLeft size={14} />
+            <span>Summarize</span>
+          </SecondaryButton>
+
+          <PrimaryButton
+            onClick={handleExport}
+            disabled={isLoading || exporting}
+          >
+            {exporting ? (
+              <>
+                <ButtonSpinner />
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <FaDownload size={14} />
+                <span>Export</span>
+              </>
+            )}
+          </PrimaryButton>
+        </ButtonGroup>
       </Header>
 
       <FilterSection>
