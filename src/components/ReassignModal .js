@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -216,7 +215,7 @@ const ReassignModal = ({
       );
     } catch (error) {
       console.error("Error fetching employees:", error);
-      showToast("Failed to fetch employees", "error");
+
       setEmployees([]);
     }
   };
@@ -252,12 +251,11 @@ const ReassignModal = ({
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
-      showToast("Transaction reassigned successfully");
+      showToast("Transaction reassigned successfully", "success");
       onReassignComplete();
       onClose();
     } catch (error) {
       console.error("Error reassigning transaction:", error);
-      showToast("Failed to reassign transaction", "error");
     } finally {
       setIsSubmitting(false);
     }

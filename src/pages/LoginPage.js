@@ -71,7 +71,6 @@ const LoginPage = () => {
         setRoles(rolesData);
       } catch (err) {
         console.error("Error fetching roles:", err);
-        toast.error("Error loading roles");
       }
     };
 

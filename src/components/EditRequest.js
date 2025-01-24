@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
-import { showToast } from "../utils/toast";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -162,7 +161,6 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
       setUniforms(uniforms);
     } catch (error) {
       console.error("Error fetching uniforms:", error);
-      showToast("Failed to load uniforms", "error");
     }
   };
 
@@ -201,12 +199,10 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
 
-      showToast("Request updated successfully", "success");
       await onSave();
       onClose();
     } catch (error) {
       console.error("Error updating request:", error);
-      showToast("Failed to update request", "error");
     } finally {
       setIsSubmitting(false);
     }

@@ -13,8 +13,7 @@ import CreateUniModal from "../components/CreateUniConModal";
 import DeleteModal from "../components/DeleteModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 // Styled components for the page
 const StockContainer = styled.div`
@@ -268,7 +267,7 @@ const StockPage = () => {
         // Sort new data by Id
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
-        showToast("Uniform condition updated successfully!");
+        showToast("Uniform condition updated successfully!", "success");
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -306,39 +305,12 @@ const StockPage = () => {
           (a, b) => a.Id - b.Id
         )
       );
-      showToast("Uniform condition deleted successfully!");
+      showToast("Uniform condition deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting uniform:", error.message);
     }
   };
-  // const handleDelete = async (Id) => {
-  //   if (window.confirm("Are you sure you want to delete this uniform?")) {
-  //     try {
-  //       const response = await fetch(API_BASE_URL + `/api/UniformCondition`, {
-  //         method: "DELETE",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({ Id }),
-  //       });
 
-  //       if (!response.ok) {
-  //         const errorDetails = await response.json();
-  //         console.error("Error details:", errorDetails);
-  //         throw new Error(errorDetails.Message || "Failed to delete uniform.");
-  //       }
-
-  //       setStockData((prev) =>
-  //         [...prev.filter((item) => item.Id !== Id)].sort((a, b) => a.Id - b.Id)
-  //       );
-  //       showToast("Uniform condition deleted successfully!");
-  //       console.log("Uniform deleted successfully!");
-  //     } catch (error) {
-  //       console.error("Error deleting uniform:", error.message);
-  //     }
-  //   }
-  // };
   return (
     <StockContainer>
       <Header>

@@ -17,6 +17,7 @@ import {
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { changePassword } from "../redux/userActions";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const UserChangePasswordModal = ({ open, handleClose, user }) => {
   const dispatch = useDispatch();
@@ -79,7 +80,6 @@ const UserChangePasswordModal = ({ open, handleClose, user }) => {
           navigate("/login"); // Redirect to login page
         }, 2000);
       } catch (error) {
-        showToast(error.message || "Failed to change password", "error");
         setErrors({ submit: error.message });
       } finally {
         setLoading(false);
@@ -252,6 +252,7 @@ const UserChangePasswordModal = ({ open, handleClose, user }) => {
           Cancel
         </Button>
       </DialogActions>
+      <ToastContainer />
     </Dialog>
   );
 };

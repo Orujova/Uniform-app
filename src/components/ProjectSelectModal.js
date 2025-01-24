@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -333,7 +332,6 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
       showToast("Summary generated successfully", "success");
     } catch (error) {
       setError("Failed to generate summary.");
-      showToast("Failed to generate summary", "error");
     } finally {
       setIsLoading(false);
     }

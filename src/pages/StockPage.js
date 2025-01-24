@@ -13,8 +13,7 @@ import AddStockModal from "../components/AddStockModal";
 import DeleteModal from "../components/DeleteModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const StockContainer = styled.div`
   padding: 16px;
@@ -333,7 +332,7 @@ const StockPage = () => {
 
   const handleSaveUniform = async () => {
     await fetchStockData();
-    showToast("Stock added successfully!");
+    showToast("Stock added successfully!", "success");
   };
 
   const handleEdit = (row) => {
@@ -344,7 +343,7 @@ const StockPage = () => {
   const handleSaveEdit = () => {
     fetchStockData();
     setEditModalOpen(false);
-    showToast("Stock updated successfully!");
+    showToast("Stock updated successfully!", "success");
   };
   const handleDelete = (Id) => {
     setDeleteId(Id);
@@ -369,35 +368,11 @@ const StockPage = () => {
 
       await fetchStockData();
 
-      showToast("Stock deleted successfully!");
+      showToast("Stock deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting uniform:", error.message);
     }
   };
-  // const handleDelete = async (Id) => {
-  //   if (window.confirm("Are you sure you want to delete this uniform?")) {
-  //     try {
-  //       const response = await fetch(API_BASE_URL + `/api/DCStock`, {
-  //         method: "DELETE",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({ Id }),
-  //       });
-
-  //       if (!response.ok) {
-  //         const errorDetails = await response.json();
-  //         throw new Error(errorDetails.Message || "Failed to delete uniform.");
-  //       }
-
-  //       await fetchStockData();
-  //       showToast("Stock deleted successfully!");
-  //     } catch (error) {
-  //       console.error("Error deleting uniform:", error.message);
-  //     }
-  //   }
-  // };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

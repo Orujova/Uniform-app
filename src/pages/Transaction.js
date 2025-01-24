@@ -1,10 +1,10 @@
 // pages/TransactionPage.js
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { API_BASE_URL } from "../config";
+import { ToastContainer } from "../utils/ToastContainer";
 import { showToast } from "../utils/toast";
+import { API_BASE_URL } from "../config";
+
 import { Header } from "../components/TransactionComp/TransHeader";
 import { Filters } from "../components/TransactionComp/TransFilters";
 import { ActionButtons } from "../components/TransactionComp/ActionButtons";
@@ -178,7 +178,7 @@ const TransactionPage = () => {
           <button
             onClick={() => {
               if (isDisabled) {
-                showToast(`Cannot reassign a ${status} transaction`, "error");
+                showToast(`Cannot reassign a ${status} transaction`, "warning");
                 return;
               }
               setSelectedRowForReassign(row.original);
@@ -406,7 +406,8 @@ const TransactionPage = () => {
       showToast(
         `${
           actionType.charAt(0).toUpperCase() + actionType.slice(1)
-        } action completed successfully`
+        } action completed successfully`,
+        "success"
       );
     } catch (error) {
       console.error(`Error performing ${actionType} action:`, error);
@@ -473,7 +474,6 @@ const TransactionPage = () => {
         </>
       )}
 
-      <ToastContainer />
       <TransEmployeeModal
         isOpen={isEmployeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
@@ -499,6 +499,7 @@ const TransactionPage = () => {
         isOpen={isUploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
       />
+      <ToastContainer />
     </StockContainer>
   );
 };

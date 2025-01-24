@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
-import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -139,12 +136,11 @@ const EditUniformModal = ({
       }
 
       const updatedData = await response.json();
-      showToast("Uniform updated successfully");
+
       onSave(updatedData);
       onClose();
     } catch (error) {
       console.error("Error updating uniform:", error.message);
-      showToast(error.message || "Failed to update uniform", "error");
     } finally {
       setLoading(false);
     }
@@ -227,7 +223,6 @@ const EditUniformModal = ({
             {loading ? "Saving..." : "Save"}
           </button>
         </ButtonGroup>
-        <ToastContainer />
       </ModalContent>
     </ModalOverlay>
   );

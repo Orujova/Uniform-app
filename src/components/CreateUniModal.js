@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import "../styles/CreateUniModal.css";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
 
 const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
@@ -39,7 +38,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         gender: "",
       },
     ]);
-    showToast("New uniform form added");
+    showToast("New uniform form added", "info");
   };
 
   const handleSave = async () => {
@@ -91,12 +90,11 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
       }
 
       const savedData = await response.json();
-      showToast(`Successfully created ${forms.length} uniform(s)`);
+      showToast(`Successfully created ${forms.length} uniform(s)`, "success");
       onSave(savedData);
       resetForms();
     } catch (error) {
       console.error("Error creating uniforms:", error.message);
-      showToast("Error creating uniforms");
     } finally {
       setLoading(false);
     }
@@ -104,7 +102,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
 
   const deleteForm = (index) => {
     setForms((prevForms) => prevForms.filter((_, i) => i !== index));
-    showToast("Form deleted");
+    showToast("Form deleted", "info");
   };
 
   const resetForms = () => {

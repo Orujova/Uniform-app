@@ -8,8 +8,7 @@ import Table from "../components/Table";
 import ProjectSelectModal from "../components/ProjectSelectModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const StockContainer = styled.div`
   padding: 16px;
@@ -177,7 +176,7 @@ const ManagerResponse = () => {
         return updatedData.sort((a, b) => a.Id - b.Id);
       });
       await fetchStockData();
-      showToast("Request approved successfully");
+      showToast("Request approved successfully", "success");
     } catch (err) {
       setError("Error approving the request.");
     }
@@ -209,7 +208,7 @@ const ManagerResponse = () => {
         return updatedData.sort((a, b) => a.Id - b.Id);
       });
       await fetchStockData();
-      showToast("Request rejected successfully");
+      showToast("Request rejected successfully", "success");
     } catch (err) {
       setError("Error rejecting the request.");
     }

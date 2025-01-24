@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { FaUpload, FaFile } from "react-icons/fa";
 import { API_BASE_URL } from "../../config";
 import { showToast } from "../../utils/toast";
+import { ToastContainer } from "../../utils/ToastContainer";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -111,13 +112,13 @@ const UploadModal = ({ isOpen, onClose }) => {
     if (file && file.type === "application/pdf") {
       setSelectedFile(file);
     } else {
-      showToast("Please select a PDF file", "error");
+      showToast("Please select a PDF file", "warning");
     }
   };
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      showToast("Please select a file", "error");
+      showToast("Please select a file", "warning");
       return;
     }
 
@@ -146,7 +147,6 @@ const UploadModal = ({ isOpen, onClose }) => {
       setSelectedFile(null);
     } catch (error) {
       console.error("Upload error:", error);
-      showToast("Failed to upload file", "error");
     } finally {
       setIsUploading(false);
     }
@@ -191,6 +191,7 @@ const UploadModal = ({ isOpen, onClose }) => {
           {isUploading ? "Uploading..." : "Upload File"}
         </UploadButton>
       </ModalContent>
+      <ToastContainer />
     </ModalOverlay>
   );
 };

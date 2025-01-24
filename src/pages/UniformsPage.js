@@ -13,8 +13,7 @@ import CreateUniModal from "../components/CreateUniModal";
 import DeleteModal from "../components/DeleteModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 // Styled components for the page
 const StockContainer = styled.div`
@@ -228,7 +227,7 @@ const StockPage = () => {
         const uniforms = data[0]?.Uniforms || [];
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
-        showToast("Uniform created successfully!");
+        showToast("Uniform created successfully!", "success");
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -263,7 +262,7 @@ const StockPage = () => {
         const uniforms = data[0]?.Uniforms || [];
         const sortedUniforms = [...uniforms].sort((a, b) => a.Id - b.Id);
         setStockData(sortedUniforms);
-        showToast("Uniform updated successfully!");
+        showToast("Uniform updated successfully!", "success");
       } catch (err) {
         console.error("Error fetching uniforms:", err);
         setError("Failed to fetch uniform data. Please try again.");
@@ -302,7 +301,7 @@ const StockPage = () => {
           (a, b) => a.Id - b.Id
         )
       );
-      showToast("Uniform deleted successfully!");
+      showToast("Uniform deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting uniform:", error.message);
     }

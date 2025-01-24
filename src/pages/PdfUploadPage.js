@@ -10,9 +10,8 @@ import {
 import theme from "../styles/theme";
 import PDFViewerModal from "../components/PDFViewerModal";
 import { API_BASE_URL } from "../config";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const PageContainer = styled.div`
   padding: 24px;
@@ -297,7 +296,7 @@ const PDFsPage = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showToast("PDF downloaded successfully");
+      showToast("PDF downloaded successfully", "success");
     } catch (error) {
       console.error("Error downloading PDF:", error);
     }

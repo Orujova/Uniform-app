@@ -4,8 +4,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Table from "../components/TablePayroll";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const StockContainer = styled.div`
   padding: 12px;
@@ -353,7 +352,6 @@ const PayrollPage = () => {
       showToast("Export completed successfully", "success");
     } catch (error) {
       console.error("Error exporting transactions:", error);
-      showToast("Failed to export transactions. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }

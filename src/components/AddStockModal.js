@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/CreateUniModal.css";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
 
 const Modal = ({ isOpen, onClose, onSave, apiData }) => {
@@ -113,7 +113,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         employee: 1,
       },
     ]);
-    showToast("New uniform form added");
+    showToast("New uniform form added", "info");
   };
 
   const handleSave = async () => {
@@ -121,7 +121,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
       setIsLoading(true);
 
       if (forms.some((form) => !form.UniCode || !form.employee)) {
-        showToast("Please fill all the fields before saving.", "error");
+        showToast("Please fill all the fields before saving.", "warning");
         return;
       }
 
@@ -171,7 +171,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
 
   const deleteForm = (index) => {
     setForms((prevForms) => prevForms.filter((_, i) => i !== index));
-    showToast("Form deleted");
+    showToast("Form deleted", "info");
   };
 
   const resetForms = () => {
@@ -305,6 +305,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
             Cancel
           </button>
         </div>
+        <ToastContainer />
       </div>
     </div>
   );

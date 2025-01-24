@@ -3,8 +3,7 @@ import { API_BASE_URL } from "../config";
 import { FaTimes } from "react-icons/fa";
 import "../styles/EmployeeModal.css";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const TransEmployeeModal = ({ isOpen, onClose }) => {
   const token = localStorage.getItem("token");
@@ -109,7 +108,6 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
         }
       } catch (error) {
         console.error("Error checking active day:", error);
-        showToast("Error checking day status", "error");
       }
     };
 
@@ -122,9 +120,12 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/Employee`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/api/Employee/GetAllStoreEmployee`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch badges: ${response.status}`);
@@ -349,7 +350,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
     });
 
     if (allUniformDetails.length === 0) {
-      showToast("Please add at least one uniform request", "error");
+      showToast("Please add at least one uniform request", "info");
       return;
     }
 
@@ -362,7 +363,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
     if (invalidRequests.length > 0) {
       showToast(
         "All selected employees must have at least one uniform request",
-        "error"
+        "warning"
       );
       return;
     }
@@ -390,7 +391,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
       console.log(payload);
 
-      showToast("Uniform requests saved successfully");
+      showToast("Uniform requests saved successfully", "success");
       resetModalState();
       onClose();
     } catch (error) {
@@ -558,7 +559,6 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
             )}
           </div>
         ))}
-        <ToastContainer />
 
         <div style={{ textAlign: "right", marginTop: "20px" }}>
           <button
@@ -599,6 +599,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
           </div>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };

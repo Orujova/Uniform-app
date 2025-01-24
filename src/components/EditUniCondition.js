@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -169,7 +168,6 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
         throw new Error(error.message);
       }
 
-      showToast("Uniform updated successfully", "success");
       const updatedData = await response.json();
       onSave(updatedData);
       onClose();

@@ -12,8 +12,8 @@ import {
   Divider,
 } from "@mui/material";
 import { Lock, User, Mail } from "lucide-react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const ChangePasswordPage = () => {
   const dispatch = useDispatch();

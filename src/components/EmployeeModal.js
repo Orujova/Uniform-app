@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
 import "../styles/EmployeeModal.css";
 import { FaTimes } from "react-icons/fa";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const EmployeeModal = ({ isOpen, onClose }) => {
   const token = localStorage.getItem("token");
@@ -280,12 +279,12 @@ const EmployeeModal = ({ isOpen, onClose }) => {
         warnings: {},
       },
     ]);
-    showToast("New employee request added");
+    showToast("New employee request added", "info");
   };
 
   const handleRemoveRequest = (index) => {
     setEmployeeRequests((prev) => prev.filter((_, i) => i !== index));
-    showToast("Employee request removed");
+    showToast("Employee request removed", "info");
   };
 
   const handleSave = async () => {
@@ -320,7 +319,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
       if (!response.ok) {
         throw new Error(`Failed to save data: ${response.statusText}`);
       }
-      showToast("Uniform requests saved successfully");
+      showToast("Uniform requests saved successfully", "success");
 
       resetModalState();
       onClose();

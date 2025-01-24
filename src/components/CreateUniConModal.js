@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
 import SearchableSelect from "./SearchableSelect ";
 
@@ -122,7 +123,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave }) => {
 
       const savedData = await response.json();
 
-      showToast("Uniforms created successfully");
+      showToast("Uniforms created successfully", "success");
       onSave(savedData);
       resetForms();
     } catch (error) {

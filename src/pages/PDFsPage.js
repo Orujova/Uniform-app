@@ -11,9 +11,8 @@ import {
 import theme from "../styles/theme";
 import PDFViewerModal from "../components/PDFViewerModal";
 import { API_BASE_URL } from "../config";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const PageContainer = styled.div`
   padding: 24px;
@@ -406,12 +405,11 @@ const PDFsPage = () => {
       }
 
       const result = await response.json();
-      showToast("Files sent successfully", { type: "success" });
+      showToast("Files sent successfully", "success");
       setSelectedPdfs([]);
       await fetchPdfs();
     } catch (error) {
       console.error("Error sending files:", error);
-      showToast("Failed to send files", { type: "error" });
     } finally {
       setLoadingStates((prev) => ({ ...prev, send: false }));
     }
@@ -471,10 +469,9 @@ const PDFsPage = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showToast("PDF downloaded successfully");
+      showToast("PDF downloaded successfully", "success");
     } catch (error) {
       console.error("Error downloading PDF:", error);
-      showToast("Failed to download PDF", { type: "error" });
     } finally {
       setLoadingStates((prev) => ({
         ...prev,

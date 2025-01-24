@@ -1,6 +1,6 @@
 import { Toaster } from "sonner";
 
-export const CustomToastContainer = () => (
+export const ToastContainer = () => (
   <Toaster
     position="top-right"
     toastOptions={{
@@ -15,4 +15,4 @@ export const CustomToastContainer = () => (
   />
 );
 
-export default CustomToastContainer;
+export default ToastContainer;

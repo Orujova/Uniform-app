@@ -5,8 +5,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Table from "../components/Table";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 // Container for First Distribution Page
 const FirstDistributionContainer = styled.div`
@@ -196,7 +195,7 @@ const FirstDistribution = () => {
 
   const handleOrderSubmit = async () => {
     if (!selectedProject) {
-      showToast("Please select a project first");
+      showToast("Please select a project first", "warning");
       return;
     }
 
@@ -216,7 +215,7 @@ const FirstDistribution = () => {
         throw new Error("Failed to submit order");
       }
 
-      showToast("Order submitted successfully");
+      showToast("Order submitted successfully", "success");
 
       handleProjectChange(selectedProject);
     } catch (error) {

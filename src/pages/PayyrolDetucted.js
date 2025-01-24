@@ -4,8 +4,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Table from "../components/Table";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const StockContainer = styled.div`
   padding: 12px;

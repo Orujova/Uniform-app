@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/CreateUniModal.css";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
 import LoadingSpinner from "./LoadingSpinner";
 
@@ -77,7 +76,6 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
       setStockData(stockMap);
     } catch (error) {
       console.error("Error fetching initial data:", error);
-      showToast("Error loading data. Please try again.");
     } finally {
       setInitialLoading(false);
     }
@@ -123,12 +121,15 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
       const stockCount = forms[index].StockCount;
 
       if (numValue > stockCount) {
-        showToast(`Cannot request more than available stock (${stockCount})`);
+        showToast(
+          `Cannot request more than available stock (${stockCount})`,
+          "warning"
+        );
         return;
       }
 
       if (numValue < 0) {
-        showToast("Request count cannot be negative");
+        showToast("Request count cannot be negative", "warning");
         return;
       }
     }
@@ -155,20 +156,21 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
         StockCount: 0,
       },
     ]);
-    showToast("New uniform form added");
+    showToast("New uniform form added", "info");
   };
 
   const handleSave = async () => {
     // Validate all forms before saving
     const isValid = forms.every((form) => {
       if (!form.UniCode || !form.RequestCount) {
-        showToast("Please fill in all required fields");
+        showToast("Please fill in all required fields", "info");
         return false;
       }
       const requestCount = parseInt(form.RequestCount);
       if (requestCount > form.StockCount) {
         showToast(
-          `Cannot request more than available stock for ${form.UniCode}`
+          `Cannot request more than available stock for ${form.UniCode}`,
+          "info"
         );
         return false;
       }
@@ -229,7 +231,7 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
 
   const deleteForm = (index) => {
     setForms((prevForms) => prevForms.filter((_, i) => i !== index));
-    showToast("Form deleted");
+    showToast("Form deleted", "info");
   };
 
   const resetForms = () => {

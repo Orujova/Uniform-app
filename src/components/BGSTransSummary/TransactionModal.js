@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { API_BASE_URL } from "../../config";
 import DateFilter from "./DateFilter";
 import SearchableCombobox from "./SearchableCombobox";

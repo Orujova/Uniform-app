@@ -10,9 +10,8 @@ import {
   FaUpload,
   FaAlignLeft,
 } from "react-icons/fa";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../utils/toast";
+import { ToastContainer } from "../utils/ToastContainer";
 import { API_BASE_URL } from "../config";
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditRequest";
@@ -255,7 +254,7 @@ const RequestsPage = () => {
       }
 
       await fetchStockData();
-      showToast("Request accepted successfully");
+      showToast("Request accepted successfully", "success");
     } catch (error) {
       console.error("Error accepting request:", error);
     }
@@ -526,7 +525,6 @@ const RequestsPage = () => {
           </PaginationContainer>
         </>
       )}
-      <ToastContainer />
       <CreateRequest
         isOpen={isCreateModalOpen}
         onClose={() => setCreateModalOpen(false)}
@@ -559,6 +557,7 @@ const RequestsPage = () => {
         isOpen={isSummarizeOpen}
         onClose={() => setSummarizeOpen(false)}
       />
+      <ToastContainer />
     </StockContainer>
   );
 };

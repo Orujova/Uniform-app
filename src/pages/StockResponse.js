@@ -12,8 +12,7 @@ import { API_BASE_URL } from "../config";
 import StatusFilter from "../components/StatusFilter";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "../utils/ToastContainer";
 
 const Modal = styled.div`
   position: fixed;
@@ -312,7 +311,7 @@ const StockResponse = () => {
       if (!response.ok) throw new Error("Failed to reject request");
 
       await fetchStockData();
-      showToast("Request rejected successfully");
+      showToast("Request rejected successfully", "success");
     } catch (err) {
       setError("Error rejecting the request.");
     }
@@ -370,12 +369,12 @@ const StockResponse = () => {
     const requestedCount = selectedRequest?.RequestCount || 0;
 
     if (newCount > requestedCount) {
-      showToast(`Cannot exceed requested count (${requestedCount})`);
+      showToast(`Cannot exceed requested count (${requestedCount})`, "warning");
       return;
     }
 
     if (newCount < 0) {
-      showToast("Count cannot be negative");
+      showToast("Count cannot be negative", "warning");
       return;
     }
 
@@ -403,7 +402,7 @@ const StockResponse = () => {
       setModalOpen(false);
       setCount(0);
       await fetchStockData();
-      showToast("Request accepted successfully");
+      showToast("Request accepted successfully", "success");
     } catch (err) {
       setError("Error processing the request.");
     } finally {
