@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
-
+import SearchableSelect from "./SearchableSelect ";
 const Modal = ({ isOpen, onClose, onSave, apiData }) => {
   const token = localStorage.getItem("token");
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +44,10 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
 
     fetchUniforms();
   }, [token]);
-
+  const uniformOption = uniformOptions.map((uni) => ({
+    value: uni.UniCode,
+    label: uni.UniCode,
+  }));
   const handleUniCodeChange = (e, index) => {
     const selectedUniCode = e.target.value;
 
@@ -214,7 +217,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
                 <label className="label" htmlFor={`UniCode_${index}`}>
                   Uniform Code
                 </label>
-                <select
+                {/* <select
                   className="input"
                   id={`UniCode_${index}`}
                   value={formData.UniCode}
@@ -229,7 +232,20 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
                       {option.UniCode}
                     </option>
                   ))}
-                </select>
+                </select> */}
+                <SearchableSelect
+                  options={uniformOption}
+                  value={formData.UniCode}
+                  onChange={(value) =>
+                    handleUniCodeChange(
+                      {
+                        target: { name: "UniCode", value },
+                      },
+                      index
+                    )
+                  }
+                  placeholder="Select Uniform"
+                />
               </div>
               <div className="form-group">
                 <label className="label" htmlFor={`employee_${index}`}>
