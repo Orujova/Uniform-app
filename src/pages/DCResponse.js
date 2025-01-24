@@ -172,12 +172,11 @@ const ManagerResponse = () => {
 
       setFilteredData((prevData) => {
         const updatedData = prevData.map((item) =>
-          item.Id === requestId
-            ? { ...item, StoreRequestStatus: "Intransit" }
-            : item
+          item.Id === requestId ? { ...item } : item
         );
         return updatedData.sort((a, b) => a.Id - b.Id);
       });
+      await fetchStockData();
       showToast("Request approved successfully");
     } catch (err) {
       setError("Error approving the request.");
@@ -205,12 +204,11 @@ const ManagerResponse = () => {
 
       setFilteredData((prevData) => {
         const updatedData = prevData.map((item) =>
-          item.Id === requestId
-            ? { ...item, StoreRequestStatus: "Rejected" }
-            : item
+          item.Id === requestId ? { ...item } : item
         );
         return updatedData.sort((a, b) => a.Id - b.Id);
       });
+      await fetchStockData();
       showToast("Request rejected successfully");
     } catch (err) {
       setError("Error rejecting the request.");

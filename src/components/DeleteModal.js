@@ -69,7 +69,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm }) => {
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <Title>Delete Uniform</Title>
+        <Title>Delete item</Title>
         <Message>
           Are you sure you want to delete this uniform? This action cannot be
           undone.
