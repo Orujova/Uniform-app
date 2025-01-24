@@ -95,7 +95,7 @@ const EditUniformModal = ({
   const [sizes, setSizes] = useState([]);
   const [types, setTypes] = useState([]);
   const [genders, setGenders] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     console.log("Initial Data in Modal:", initialData);
     setFormData(initialData || {});
@@ -123,6 +123,7 @@ const EditUniformModal = ({
 
   const handleSave = async () => {
     try {
+      setLoading(true);
       const response = await fetch(API_BASE_URL + `/api/Uniform`, {
         method: "PUT",
         headers: {
@@ -138,12 +139,14 @@ const EditUniformModal = ({
       }
 
       const updatedData = await response.json();
-      console.log(updatedData);
       showToast("Uniform updated successfully");
       onSave(updatedData);
       onClose();
     } catch (error) {
       console.error("Error updating uniform:", error.message);
+      showToast(error.message || "Failed to update uniform", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -217,11 +220,11 @@ const EditUniformModal = ({
           </select>
         </FormGroup>
         <ButtonGroup>
-          <button className="cancel" onClick={onClose}>
+          <button className="cancel" onClick={onClose} disabled={loading}>
             Cancel
           </button>
-          <button className="save" onClick={handleSave}>
-            Save
+          <button className="save" onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
           </button>
         </ButtonGroup>
         <ToastContainer />

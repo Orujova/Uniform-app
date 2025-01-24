@@ -83,68 +83,100 @@ const ButtonGroup = styled.div`
   }
 `;
 
-const EditUniformModal = ({
-  isOpen,
-  onClose,
-  onSave,
-  initialData,
-  apiData,
-}) => {
-  const [formData, setFormData] = useState(initialData || {});
+const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
+  const [formData, setFormData] = useState({
+    Id: 0,
+    PositionId: 0,
+    FunctionalArea: "",
+    UniName: "",
+    Gender: 1,
+    CountUniform: 0,
+    UniType: 1,
+    UsageDuration: 0,
+  });
+
   const token = localStorage.getItem("token");
-  const [types, setTypes] = useState([]);
-  const [genders, setGenders] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [uniforms, setUniforms] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("Initial Data in Modal:", initialData);
-    setFormData(initialData || {});
+    if (initialData) {
+      setFormData(initialData);
+    }
   }, [initialData]);
 
   useEffect(() => {
-    // Extract options from the API data when the modal opens
-    if (isOpen && apiData) {
-      const uniqueTypes = [...new Set(apiData.map((item) => item.UniType))];
-      const uniqueGenders = [...new Set(apiData.map((item) => item.Gender))];
-
-      setTypes(uniqueTypes);
-      setGenders(uniqueGenders);
+    if (isOpen) {
+      fetchPositions();
+      fetchUniforms();
     }
-  }, [isOpen, apiData]);
+  }, [isOpen]);
+
+  const fetchPositions = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Position`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch positions");
+      const data = await response.json();
+      setPositions(data[0]?.Positions || []);
+    } catch (error) {
+      showToast("Error fetching positions", "error");
+    }
+  };
+
+  const fetchUniforms = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Uniform`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch uniforms");
+      const data = await response.json();
+      setUniforms(data[0]?.Uniforms || []);
+    } catch (error) {
+      showToast("Error fetching uniforms", "error");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]:
+        name === "CountUniform"
+          ? parseInt(value)
+          : ["PositionId", "Gender", "UniType"].includes(name)
+          ? parseInt(value)
+          : value,
     }));
   };
 
   const handleSave = async () => {
     try {
-      const response = await fetch(
-        API_BASE_URL + `/api/UniformCondition`, // Ensure this matches the correct endpoint
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/UniformCondition`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
-        const errorDetails = await response.json();
-        throw new Error(errorDetails.Message || "Failed to update uniform.");
+        const error = await response.json();
+        throw new Error(error.message);
       }
 
+      showToast("Uniform updated successfully", "success");
       const updatedData = await response.json();
-      console.log(updatedData);
-      showToast("Uniform updated successfully");
-      onSave(updatedData); // Call the onSave function to update the parent component
-      onClose(); // Close the modal after saving
+      onSave(updatedData);
+      onClose();
     } catch (error) {
-      console.error("Error updating uniform:", error.message);
+      showToast(error.message || "Failed to update uniform", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -156,39 +188,55 @@ const EditUniformModal = ({
         <Header>Edit Uniform</Header>
 
         <FormGroup>
-          <label>Uniform Name</label>
-          <input
-            name="UniName"
-            value={formData.UniName || ""}
+          <label>Position</label>
+          <select
+            name="PositionId"
+            value={formData.PositionId}
             onChange={handleChange}
-            placeholder="Enter uniform name"
-          />
+          >
+            <option value={0}>Select Position</option>
+            {positions.map((pos) => (
+              <option key={pos.Id} value={pos.Id}>
+                {pos.Name}
+              </option>
+            ))}
+          </select>
         </FormGroup>
+
         <FormGroup>
-          <label>Position Name</label>
-          <input
-            name="PositionName"
-            value={formData.PositionName || ""}
+          <label>Uniform Name</label>
+          <select
+            name="UniName"
+            value={formData.UniName}
             onChange={handleChange}
-            placeholder="Enter position name"
-          />
+          >
+            <option value="">Select Uniform</option>
+            {uniforms.map((uni) => (
+              <option key={uni.Id} value={uni.UniName}>
+                {uni.UniName}
+              </option>
+            ))}
+          </select>
         </FormGroup>
+
         <FormGroup>
           <label>Functional Area</label>
           <input
             name="FunctionalArea"
-            value={formData.FunctionalArea || ""}
+            value={formData.FunctionalArea}
             onChange={handleChange}
             placeholder="Enter functional area"
           />
         </FormGroup>
+
         <FormGroup>
           <label>Count</label>
           <input
+            type="number"
             name="CountUniform"
-            value={formData.CountUniform || ""}
+            value={formData.CountUniform}
             onChange={handleChange}
-            placeholder="Enter Count"
+            min="0"
           />
         </FormGroup>
 
@@ -196,41 +244,34 @@ const EditUniformModal = ({
           <label>Type</label>
           <select
             name="UniType"
-            value={formData.UniType || ""}
+            value={formData.UniType}
             onChange={handleChange}
           >
-            <option value="">Select type</option>
-            {types.map((type, index) => (
-              <option key={index} value={type}>
-                {type}
-              </option>
-            ))}
+            <option value={1}>Pants</option>
+            <option value={2}>Shirt</option>
+            <option value={3}>Shoe</option>
+            <option value={4}>Unknown</option>
           </select>
         </FormGroup>
+
         <FormGroup>
           <label>Gender</label>
-          <select
-            name="Gender"
-            value={formData.Gender || ""}
-            onChange={handleChange}
-          >
-            <option value="">Select gender</option>
-            {genders.map((gender, index) => (
-              <option key={index} value={gender}>
-                {gender}
-              </option>
-            ))}
+          <select name="Gender" value={formData.Gender} onChange={handleChange}>
+            <option value={1}>Unisex</option>
+            <option value={2}>Male</option>
+            <option value={3}>Female</option>
+            <option value={4}>Unknown</option>
           </select>
         </FormGroup>
+
         <ButtonGroup>
-          <button className="cancel" onClick={onClose}>
+          <button className="cancel" onClick={onClose} disabled={loading}>
             Cancel
           </button>
-          <button className="save" onClick={handleSave}>
-            Save
+          <button className="save" onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
           </button>
         </ButtonGroup>
-        <ToastContainer />
       </ModalContent>
     </ModalOverlay>
   );

@@ -1,126 +1,167 @@
-import React, { useState } from "react";
-import "../styles/CreateUniModal.css";
+import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { FaTimes } from "react-icons/fa";
+import SearchableSelect from "./SearchableSelect ";
 
-const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
+const UNIFORM_TYPES = {
+  1: "Pants",
+  2: "Shirt",
+  3: "Shoe",
+  4: "Unknown",
+};
+
+const GENDER_TYPES = {
+  1: "Unisex",
+  2: "Male",
+  3: "Female",
+  4: "Unknown",
+};
+
+const CreateUniModal = ({ isOpen, onClose, onSave }) => {
   const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(false);
+  const [positions, setPositions] = useState([]);
+  const [uniforms, setUniforms] = useState([]);
+
   const [forms, setForms] = useState([
     {
-      UniName: "",
-      PositionName: "",
+      PositionId: 0,
       FunctionalArea: "",
-      UniType: "",
-      Gender: "",
-      CountUniform: "",
+      UniName: "",
+      Gender: 1,
+      CountUniform: 0,
+      UniType: 1,
+      UsageDuration: 0,
     },
   ]);
+
+  useEffect(() => {
+    fetchPositions();
+    fetchUniforms();
+  }, []);
+
+  const fetchPositions = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Position`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch positions");
+      const data = await response.json();
+      setPositions(data[0]?.Positions || []);
+    } catch (error) {
+      showToast("Error fetching positions", "error");
+    }
+  };
+
+  const fetchUniforms = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Uniform`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch uniforms");
+      const data = await response.json();
+      setUniforms(data[0]?.Uniforms || []);
+    } catch (error) {
+      showToast("Error fetching uniforms", "error");
+    }
+  };
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
     setForms((prevForms) =>
       prevForms.map((form, i) =>
-        i === index ? { ...form, [name]: value } : form
+        i === index
+          ? {
+              ...form,
+              [name]: name === "CountUniform" ? parseInt(value) || 0 : value,
+            }
+          : form
       )
     );
   };
+  const positionOptions = positions.map((pos) => ({
+    value: pos.Id,
+    label: pos.Name,
+  }));
 
-  const addForm = () => {
-    setForms((prevForms) => [
-      ...prevForms,
-      {
-        UniName: "",
-        PositionName: "",
-        FunctionalArea: "",
-        UniType: "",
-        Gender: "",
-        CountUniform: "",
-      },
-    ]);
-    showToast("New uniform form added");
-  };
-
+  const uniformOptions = uniforms.map((uni) => ({
+    value: uni.UniName,
+    label: uni.UniName,
+  }));
   const handleSave = async () => {
     try {
-      // Validate inputs
-      const invalidForms = forms.filter((form) => {
-        return (
-          !form.UniName.trim() ||
-          !form.PositionName.trim() ||
+      setLoading(true);
+      const invalidForms = forms.filter(
+        (form) =>
+          !form.PositionId ||
           !form.FunctionalArea.trim() ||
-          !form.UniType.trim() ||
-          !form.Gender.trim() ||
-          !form.CountUniform.trim()
-        );
-      });
+          !form.UniName.trim()
+      );
 
       if (invalidForms.length > 0) {
-        showToast("Please fill all fields in all forms", "error");
+        showToast("Please fill all required fields", "error");
         return;
       }
 
-      const payload = {
-        UniformItems: forms.map((form, index) => ({
-          Id: index + 1, // Assign a temporary ID or use a value from `apiData`
-          UniName: form.UniName.trim(),
-          PositionName: form.PositionName.trim(),
-          FunctionalArea: form.FunctionalArea.trim(),
-          UniType: form.UniType.trim(),
-          Gender: form.Gender.trim(),
-          CountUniform: form.CountUniform.trim(),
-        })),
-      };
-
-      const response = await fetch(API_BASE_URL + `/api/UniformCondition`, {
+      const response = await fetch(`${API_BASE_URL}/api/UniformCondition`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(forms[0]),
       });
 
+      console.log(forms);
+
       if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error("Validation Errors:", errorDetails.errors);
-        const errorMessages = Object.values(errorDetails.errors)
-          .flat()
-          .join("\n");
-        showToast(`Validation Errors:\n${errorMessages}`);
-        return;
+        const error = await response.json();
+        throw new Error(error.message);
       }
 
       const savedData = await response.json();
-      showToast(`Successfully created ${forms.length} uniform(s)`);
-      onSave(savedData); // Notify parent with saved uniforms
+
+      showToast("Uniforms created successfully");
+      onSave(savedData);
       resetForms();
     } catch (error) {
-      console.error("Error creating uniforms:", error.message);
-      alert("An error occurred while creating uniforms. Please try again.");
+      showToast(error.message, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const resetForms = () => {
     setForms([
       {
-        UniName: "",
-        PositionName: "",
+        PositionId: 0,
         FunctionalArea: "",
-        UniType: "",
-        Gender: "",
-        CountUniform: "",
+        UniName: "",
+        Gender: 1,
+        CountUniform: 0,
+        UniType: 1,
       },
     ]);
-
     onClose();
   };
 
+  const addForm = () => {
+    setForms((prev) => [
+      ...prev,
+      {
+        PositionId: 0,
+        FunctionalArea: "",
+        UniName: "",
+        Gender: 1,
+        CountUniform: 0,
+        UniType: 1,
+      },
+    ]);
+  };
+
   const deleteForm = (index) => {
-    setForms((prevForms) => prevForms.filter((_, i) => i !== index));
-    showToast("Form deleted");
+    setForms((prev) => prev.filter((_, i) => i !== index));
   };
 
   if (!isOpen) return null;
@@ -131,6 +172,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         <button className="close-button" onClick={resetForms}>
           &times;
         </button>
+
         {forms.map((formData, index) => (
           <div key={index} className="form-wrapper">
             {index > 0 && (
@@ -145,35 +187,48 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
                 />
               </div>
             )}
-            <div className="form-grid three-column">
-              <div className="form-group">
-                <label className="label" htmlFor={`UniName_${index}`}>
-                  Uniform Name
-                </label>
-                <input
-                  className="input"
-                  type="text"
-                  id={`UniName_${index}`}
-                  name="UniName"
-                  value={formData.UniName}
-                  onChange={(e) => handleChange(e, index)}
-                  placeholder="Enter uniform name"
-                />
-              </div>
+
+            <div className="form-grid ">
               <div className="form-group">
                 <label className="label" htmlFor={`PositionName_${index}`}>
                   Position Name
                 </label>
-                <input
-                  className="input"
-                  type="text"
-                  id={`PositionName_${index}`}
-                  name="PositionName"
-                  value={formData.PositionName}
-                  onChange={(e) => handleChange(e, index)}
-                  placeholder="Enter position name"
+                <SearchableSelect
+                  options={positionOptions}
+                  value={
+                    positions.find((p) => p.Id === formData.PositionId)?.Name
+                  }
+                  onChange={(value) =>
+                    handleChange(
+                      {
+                        target: { name: "PositionId", value: parseInt(value) },
+                      },
+                      index
+                    )
+                  }
+                  placeholder="Select Position"
                 />
               </div>
+
+              <div className="form-group">
+                <label className="label" htmlFor={`UniName_${index}`}>
+                  Uniform Name
+                </label>
+                <SearchableSelect
+                  options={uniformOptions}
+                  value={formData.UniName}
+                  onChange={(value) =>
+                    handleChange(
+                      {
+                        target: { name: "UniName", value },
+                      },
+                      index
+                    )
+                  }
+                  placeholder="Select Uniform"
+                />
+              </div>
+
               <div className="form-group">
                 <label className="label" htmlFor={`FunctionalArea_${index}`}>
                   Functional Area
@@ -181,75 +236,76 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
                 <input
                   className="input"
                   type="text"
-                  id={`FunctionalArea_${index}`}
                   name="FunctionalArea"
                   value={formData.FunctionalArea}
                   onChange={(e) => handleChange(e, index)}
-                  placeholder="Enter functional area"
                 />
               </div>
-            </div>
 
-            <div className="form-grid three-column">
               <div className="form-group">
                 <label className="label" htmlFor={`CountUniform_${index}`}>
                   Count
                 </label>
                 <input
                   className="input"
-                  type="text"
-                  id={`CountUniform_${index}`}
+                  type="number"
                   name="CountUniform"
                   value={formData.CountUniform}
                   onChange={(e) => handleChange(e, index)}
-                  placeholder="Enter count"
+                  min="0"
                 />
               </div>
+
               <div className="form-group">
                 <label className="label" htmlFor={`UniType_${index}`}>
                   Uniform Type
                 </label>
-                <input
+                <select
                   className="input"
-                  type="text"
-                  id={`UniType_${index}`}
                   name="UniType"
                   value={formData.UniType}
                   onChange={(e) => handleChange(e, index)}
-                  placeholder="Enter Uniform Type"
-                />
+                >
+                  {Object.entries(UNIFORM_TYPES).map(([value, label]) => (
+                    <option key={value} value={parseInt(value)}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
                 <label className="label" htmlFor={`Gender_${index}`}>
                   Gender
                 </label>
-                <input
+                <select
                   className="input"
-                  type="text"
-                  id={`Gender_${index}`}
                   name="Gender"
                   value={formData.Gender}
                   onChange={(e) => handleChange(e, index)}
-                  placeholder="Enter Uniform Gender"
-                />
+                >
+                  {Object.entries(GENDER_TYPES).map(([value, label]) => (
+                    <option key={value} value={parseInt(value)}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
         ))}
 
         <div style={{ textAlign: "right" }}>
-          <button className="button" onClick={handleSave}>
-            Save
+          <button className="button" onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
           </button>
-          <button className="button" onClick={addForm}>
+          <button className="button" onClick={addForm} disabled={loading}>
             Add More
           </button>
-          <button className="cancel" onClick={resetForms}>
+          <button className="cancel" onClick={resetForms} disabled={loading}>
             Cancel
           </button>
         </div>
-        <ToastContainer />
       </div>
     </div>
   );

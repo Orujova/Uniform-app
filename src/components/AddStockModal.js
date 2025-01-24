@@ -7,7 +7,7 @@ import { FaTimes } from "react-icons/fa";
 
 const Modal = ({ isOpen, onClose, onSave, apiData }) => {
   const token = localStorage.getItem("token");
-
+  const [isLoading, setIsLoading] = useState(false);
   const [forms, setForms] = useState([
     {
       stockCount: 1,
@@ -118,7 +118,8 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
 
   const handleSave = async () => {
     try {
-      // Validation
+      setIsLoading(true);
+
       if (forms.some((form) => !form.UniCode || !form.employee)) {
         showToast("Please fill all the fields before saving.", "error");
         return;
@@ -130,7 +131,7 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
             (uniform) => uniform.UniCode === form.UniCode
           );
           return {
-            UniformId: selectedUniform?.Id || "", // Ensure UniCode matches UniformId in your backend
+            UniformId: selectedUniform?.Id || "",
             ImportedStockCount: form.stockCount,
             UnitPrice: form.unitPrice,
             TotalPrice: form.totalPrice,
@@ -159,11 +160,12 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
       }
 
       const savedData = await response.json();
-
       onSave(savedData);
       resetForms();
     } catch (error) {
       console.error("Error creating uniforms:", error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -293,13 +295,13 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
         ))}
 
         <div style={{ textAlign: "right" }}>
-          <button className="button" onClick={handleSave}>
-            Save
+          <button className="button" onClick={handleSave} disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save"}
           </button>
-          <button className="button" onClick={addForm}>
+          <button className="button" onClick={addForm} disabled={isLoading}>
             Add More
           </button>
-          <button className="cancel" onClick={resetForms}>
+          <button className="cancel" onClick={resetForms} disabled={isLoading}>
             Cancel
           </button>
         </div>

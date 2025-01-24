@@ -21,6 +21,7 @@ import EmployeeModal from "../components/EmployeeModal";
 import RequestUploadModal from "../components/RequestUploadModal";
 import StatusFilter from "../components/StatusFilter";
 import SummarizeModal from "../components/BGSStockSummary";
+import Summarize from "../components/BGSTransSummary/TransactionModal";
 
 const StockContainer = styled.div`
   padding: 16px;
@@ -175,6 +176,7 @@ const RequestsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
   const [isSummarizeModalOpen, setSummarizeModalOpen] = useState(false);
+  const [isSummarizeOpen, setSummarizeOpen] = useState(false);
 
   useEffect(() => {
     fetchStockData();
@@ -298,7 +300,6 @@ const RequestsPage = () => {
   const handleSaveEdit = async () => {
     await fetchStockData();
     setEditModalOpen(false);
-    showToast("Request updated successfully");
   };
 
   const getStatusStyles = (status) => {
@@ -468,6 +469,10 @@ const RequestsPage = () => {
             <FaAlignLeft style={{ marginRight: "8px" }} />
             Summarize
           </StyledButton>
+          <StyledButton onClick={() => setSummarizeOpen(true)}>
+            <FaAlignLeft style={{ marginRight: "8px" }} />
+            Transaction Summarize
+          </StyledButton>
           <StyledButton onClick={handleRequestUploadModal}>
             <FaUpload style={{ marginRight: "8px" }} />
             Upload
@@ -549,6 +554,10 @@ const RequestsPage = () => {
       <SummarizeModal
         isOpen={isSummarizeModalOpen}
         onClose={() => setSummarizeModalOpen(false)}
+      />
+      <Summarize
+        isOpen={isSummarizeOpen}
+        onClose={() => setSummarizeOpen(false)}
       />
     </StockContainer>
   );

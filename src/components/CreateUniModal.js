@@ -8,6 +8,7 @@ import { FaTimes } from "react-icons/fa";
 
 const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
   const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(false);
   const [forms, setForms] = useState([
     {
       uni_code: "",
@@ -43,7 +44,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
 
   const handleSave = async () => {
     try {
-      // Validate inputs
+      setLoading(true);
       const invalidForms = forms.filter((form) => {
         return (
           !form.uni_code.trim() ||
@@ -56,6 +57,7 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
 
       if (invalidForms.length > 0) {
         showToast("Please fill all fields in all forms", "error");
+        setLoading(false);
         return;
       }
 
@@ -81,7 +83,6 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
 
       if (!response.ok) {
         const errorDetails = await response.json();
-        console.error("Validation Errors:", errorDetails.errors);
         const errorMessages = Object.values(errorDetails.errors)
           .flat()
           .join("\n");
@@ -91,12 +92,16 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
 
       const savedData = await response.json();
       showToast(`Successfully created ${forms.length} uniform(s)`);
-      onSave(savedData); // Notify parent with saved uniforms
+      onSave(savedData);
       resetForms();
     } catch (error) {
       console.error("Error creating uniforms:", error.message);
+      showToast("Error creating uniforms");
+    } finally {
+      setLoading(false);
     }
   };
+
   const deleteForm = (index) => {
     setForms((prevForms) => prevForms.filter((_, i) => i !== index));
     showToast("Form deleted");
@@ -217,13 +222,13 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
         ))}
 
         <div style={{ textAlign: "right" }}>
-          <button className="button" onClick={handleSave}>
-            Save
+          <button className="button" onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
           </button>
-          <button className="button" onClick={addForm}>
+          <button className="button" onClick={addForm} disabled={loading}>
             Add More
           </button>
-          <button className="cancel" onClick={resetForms}>
+          <button className="cancel" onClick={resetForms} disabled={loading}>
             Cancel
           </button>
         </div>

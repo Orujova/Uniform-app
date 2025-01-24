@@ -223,25 +223,6 @@ const MetaLabel = styled.span`
   color: #475569;
 `;
 
-const StyledButton = styled.button`
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  background-color: #0284c7;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background-color: #075985;
-  }
-`;
-
 const FilterSection = styled.div`
   margin-bottom: 20px;
   padding: 16px;
@@ -370,55 +351,6 @@ const SecondaryButton = styled(ButtonBase)`
 
   &:active:not(:disabled) {
     background-color: #7dd3fc;
-  }
-`;
-
-// Outline button
-const OutlineButton = styled(ButtonBase)`
-  background-color: transparent;
-  color: #0284c7;
-  border: 1.5px solid #0284c7;
-
-  &:hover:not(:disabled) {
-    background-color: #f0f9ff;
-    border-color: #0369a1;
-    color: #0369a1;
-  }
-
-  &:active:not(:disabled) {
-    background-color: #e0f2fe;
-  }
-`;
-
-// Danger button (red)
-const DangerButton = styled(ButtonBase)`
-  background-color: #ef4444;
-  color: white;
-
-  &:hover:not(:disabled) {
-    background-color: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-`;
-
-// Ghost button
-const GhostButton = styled(ButtonBase)`
-  background-color: transparent;
-  color: #64748b;
-
-  &:hover:not(:disabled) {
-    background-color: #f1f5f9;
-    color: #334155;
-  }
-
-  &:active:not(:disabled) {
-    background-color: #e2e8f0;
   }
 `;
 
@@ -598,6 +530,7 @@ const UniformProvisionReport = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+
   const handleClearFilters = () => {
     setFilters({
       storeFormat: "",
@@ -662,7 +595,8 @@ const UniformProvisionReport = () => {
 
   useEffect(() => {
     fetchProjects(filters.storeFormat);
-  }, []);
+    setCurrentPage(1);
+  }, [filters]);
 
   const fetchProvisionData = async () => {
     setError("");
@@ -826,7 +760,7 @@ const UniformProvisionReport = () => {
 
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = "uniform-stock-requirements.xlsx";
+      link.download = "uniform-provision.xlsx";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

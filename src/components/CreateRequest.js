@@ -13,6 +13,7 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
   const [stockData, setStockData] = useState({});
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+
   const [forms, setForms] = useState([
     {
       UniformId: "",

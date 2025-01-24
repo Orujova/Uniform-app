@@ -10,6 +10,7 @@ import {
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditStockModal";
 import AddStockModal from "../components/AddStockModal";
+import DeleteModal from "../components/DeleteModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "react-toastify";
@@ -181,6 +182,8 @@ const StockPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const token = localStorage.getItem("token");
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   const columns = [
     { Header: "Uni Code", accessor: "UniformCode" },
@@ -228,6 +231,7 @@ const StockPage = () => {
 
   useEffect(() => {
     applyFilters();
+    setCurrentPage(1);
   }, [filters, stockData]);
 
   const fetchStockData = async () => {
@@ -342,31 +346,58 @@ const StockPage = () => {
     setEditModalOpen(false);
     showToast("Stock updated successfully!");
   };
+  const handleDelete = (Id) => {
+    setDeleteId(Id);
+    setDeleteModalOpen(true);
+  };
 
-  const handleDelete = async (Id) => {
-    if (window.confirm("Are you sure you want to delete this uniform?")) {
-      try {
-        const response = await fetch(API_BASE_URL + `/api/DCStock`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ Id }),
-        });
+  const confirmDelete = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/DCStock`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ Id: deleteId }),
+      });
 
-        if (!response.ok) {
-          const errorDetails = await response.json();
-          throw new Error(errorDetails.Message || "Failed to delete uniform.");
-        }
-
-        await fetchStockData();
-        showToast("Stock deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting uniform:", error.message);
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.Message || "Failed to delete uniform.");
       }
+
+      await fetchStockData();
+
+      showToast("Stock deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting uniform:", error.message);
     }
   };
+  // const handleDelete = async (Id) => {
+  //   if (window.confirm("Are you sure you want to delete this uniform?")) {
+  //     try {
+  //       const response = await fetch(API_BASE_URL + `/api/DCStock`, {
+  //         method: "DELETE",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ Id }),
+  //       });
+
+  //       if (!response.ok) {
+  //         const errorDetails = await response.json();
+  //         throw new Error(errorDetails.Message || "Failed to delete uniform.");
+  //       }
+
+  //       await fetchStockData();
+  //       showToast("Stock deleted successfully!");
+  //     } catch (error) {
+  //       console.error("Error deleting uniform:", error.message);
+  //     }
+  //   }
+  // };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -572,6 +603,14 @@ const StockPage = () => {
         onSave={handleSaveEdit}
         initialData={editData}
         apiData={stockData}
+      />
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={() => {
+          confirmDelete();
+          setDeleteModalOpen(false);
+        }}
       />
       <ToastContainer />
     </StockContainer>

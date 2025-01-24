@@ -8,8 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const TransEmployeeModal = ({ isOpen, onClose }) => {
   const token = localStorage.getItem("token");
-  const [isMonday, setIsMonday] = useState(false);
-  // State for multiple employee selections
+  const [isActiveDay, setIsActiveDay] = useState(false);
   const [employeeRequests, setEmployeeRequests] = useState([
     {
       id: 0,
@@ -67,40 +66,57 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
   };
 
   const buttonStyles = {
-    // ... existing button styles
     save: {
-      backgroundColor: isMonday ? "#0284c7" : "#9CA3AF",
+      backgroundColor: isActiveDay ? "#0284c7" : "#9CA3AF",
       color: "white",
       padding: "10px 20px",
       borderRadius: "6px",
       border: "none",
-      cursor: isMonday ? "pointer" : "not-allowed",
+      cursor: isActiveDay ? "pointer" : "not-allowed",
       marginRight: "10px",
       transition: "background-color 0.3s ease",
       "&:hover": {
-        backgroundColor: isMonday ? "#075985" : "#9CA3AF",
+        backgroundColor: isActiveDay ? "#075985" : "#9CA3AF",
       },
     },
   };
 
   useEffect(() => {
-    // Check if today is Monday (0 is Sunday, 1 is Monday)
-    const checkIfMonday = () => {
-      const today = new Date().getDay();
-      setIsMonday(today === 1);
+    const checkActiveDay = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/UniformForEmployee/sys-week-days`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch active days: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const today = new Date().getDay();
+
+        const apiDayId = today === 0 ? 1 : today + 1;
+
+        const currentDay = data[0].WeekDays.find((day) => day.Id === apiDayId);
+
+        setIsActiveDay(currentDay?.IsActive);
+
+        if (!currentDay?.IsActive) {
+          showToast("Uniform creation is not allowed on this day.", "info");
+        }
+      } catch (error) {
+        console.error("Error checking active day:", error);
+        showToast("Error checking day status", "error");
+      }
     };
 
-    // Check when modal opens
     if (isOpen) {
-      checkIfMonday();
-      if (!isMonday) {
-        showToast(
-          "Uniform creation can only be performed on Mondays.",
-          "warning"
-        );
-      }
+      checkActiveDay();
     }
-  }, [isOpen]);
+  }, [isOpen, token]);
 
   // Fetch badges
   useEffect(() => {
@@ -548,13 +564,14 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
           <button
             className="button"
             onClick={handleSave}
-            disabled={!isMonday || hasWarnings() || allCountsEmpty()}
+            disabled={!isActiveDay || hasWarnings() || allCountsEmpty()}
             style={{
               ...buttonStyles.save,
               ...modalStyles.button,
-              opacity: !isMonday || hasWarnings() || allCountsEmpty() ? 0.5 : 1,
+              opacity:
+                !isActiveDay || hasWarnings() || allCountsEmpty() ? 0.5 : 1,
               cursor:
-                !isMonday || hasWarnings() || allCountsEmpty()
+                !isActiveDay || hasWarnings() || allCountsEmpty()
                   ? "not-allowed"
                   : "pointer",
             }}
@@ -569,7 +586,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {!isMonday && (
+        {!isActiveDay && (
           <div
             style={{
               color: "#EF4444",
@@ -578,7 +595,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
               textAlign: "center",
             }}
           >
-            Uniform creation can only be performed on Mondays.
+            Uniform creation is not allowed on this day!
           </div>
         )}
       </div>

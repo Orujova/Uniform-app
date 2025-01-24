@@ -8,6 +8,7 @@ import {
   FaUserPlus,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import WorkDaysModal from "../components/WeekdayManager";
 
 const SidebarContainer = styled.div`
   background-color: #ffffff;
@@ -196,6 +197,26 @@ const SidebarButton = styled.button`
   }
 `;
 
+const WorkDayButton = styled.button`
+  background: ${(props) =>
+    props.active ? "#EDF2FF" : "linear-gradient(to right, #f8f9fa, #ffffff)"};
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: none;
+
+  &:hover {
+    background: ${(props) => (props.active ? "#EDF2FF" : "#f8f9fa")};
+    transform: translateX(${(props) => (props.active ? "0" : "4px")});
+  }
+`;
+
 const ChevronIcon = styled(FaChevronDown)`
   transition: transform 0.3s ease;
   transform: ${(props) => (props.isOpen ? "rotate(180deg)" : "rotate(0)")};
@@ -206,8 +227,10 @@ const Sidebar = ({ onSelect, onLogOut }) => {
   const [active, setActive] = useState("firstDist");
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
+  const [showWorkDaysModal, setShowWorkDaysModal] = useState(false);
   const dropdownRef = useRef(null);
   const user = JSON.parse(localStorage.getItem("userData")) || {};
+  const hasRole3 = user.roleId?.includes(3);
 
   const menuGroups = {
     distribution: {
@@ -216,18 +239,18 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         {
           label: "First Distribution",
           value: "first-dist",
-          path: "/first-distribution",
+          path: "/distribution",
         },
         { label: "DC Stock", value: "stock", path: "/stock" },
         {
           label: "DC Response - Store Order",
           value: "dCResponse",
-          path: "/dCResponse",
+          path: "/responses/dc",
         },
         {
           label: "DC Response - BGS Order",
           value: "stockResponse",
-          path: "/stockResponse",
+          path: "/responses/bgs",
         },
       ],
     },
@@ -238,7 +261,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         {
           label: "Payroll Deducted",
           value: "payrollDeduct",
-          path: "/payrollDeduct",
+          path: "/payroll/deductions",
         },
       ],
     },
@@ -248,9 +271,9 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         {
           label: "Handover & Packing List",
           value: "handover-packing",
-          path: "/handover-packing",
+          path: "/documents/handover",
         },
-        { label: "Upload PDF", value: "upload-pdf", path: "/upload-pdf" },
+        { label: "Upload PDF", value: "upload-pdf", path: "/documents/upload" },
       ],
     },
     Reports: {
@@ -259,17 +282,17 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         {
           label: "Stock Requirements",
           value: "stock-requirement",
-          path: "/stock-requirement",
+          path: "/reports/stock",
         },
         {
           label: "Provision Details",
           value: "provision-detail",
-          path: "/provision-detail",
+          path: "/reports/provision",
         },
         {
           label: "Forecast Report",
           value: "forecast-report",
-          path: "/forecast-report",
+          path: "/reports/forecast",
         },
       ],
     },
@@ -279,18 +302,18 @@ const Sidebar = ({ onSelect, onLogOut }) => {
     {
       label: "BGS Stock Requests",
       value: "requestsPage",
-      path: "/requestsPage",
+      path: "/requests",
     },
     { label: "Transaction", value: "transaction", path: "/transaction" },
     {
       label: "Operation Response",
       value: "OperationResponse",
-      path: "/managerResponse",
+      path: "/responses/operation",
     },
     {
       label: "Uniform Condition",
       value: "uniformcondition",
-      path: "/uniformcondition",
+      path: "/condition",
     },
     { label: "Uniforms", value: "uniforms", path: "/uniforms" },
   ];
@@ -403,8 +426,40 @@ const Sidebar = ({ onSelect, onLogOut }) => {
               {item.label}
             </SidebarButton>
           ))}
+
+          {hasRole3 && (
+            <WorkDayButton onClick={() => setShowWorkDaysModal(true)}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  color: "#4A90E2",
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Work days
+              </div>
+            </WorkDayButton>
+          )}
         </MenuContainer>
       </ScrollableContent>
+      <WorkDaysModal
+        isOpen={showWorkDaysModal}
+        onClose={() => setShowWorkDaysModal(false)}
+      />
     </SidebarContainer>
   );
 };

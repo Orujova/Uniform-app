@@ -158,6 +158,31 @@ const SubmitButton = styled(Button)`
   }
 `;
 
+const ClearButton = styled(Button)`
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+
+  &:hover {
+    background-color: #e5e7eb;
+  }
+`;
+
+const GenerateButton = styled(Button)`
+  background-color: #22c55e;
+  border: none;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: #16a34a;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const LoadingSpinner = styled.div`
   border: 3px solid #f3f4f6;
   border-radius: 50%;
@@ -185,12 +210,35 @@ const ErrorMessage = styled.div`
   margin-bottom: 20px;
 `;
 
+const DateInputsContainer = styled.div`
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+`;
+
+const DateInput = styled.input`
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.975rem;
+  color: #374151;
+  flex: 1;
+
+  &:focus {
+    outline: none;
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+  }
+`;
+
 const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
   const [selectedProject, setSelectedProject] = useState("");
   const [projects, setProjects] = useState([]);
   const [uniformData, setUniformData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -244,12 +292,11 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/UniformForEmployee/GetSumApprovedOperationOrders?ProjectId=${selectedProject}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const url = `${apiBaseUrl}/api/UniformForEmployee/GetSumApprovedOperationOrders?ProjectId=${selectedProject}&StartDate=${startDate}&EndDate=${endDate}`;
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!response.ok) throw new Error("Failed to fetch data");
 
@@ -260,6 +307,41 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGenerateSummary = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/UniformForEmployee/generate-summary-html`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            projectId: selectedProject,
+            startDate,
+            endDate,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to generate summary");
+      showToast("Summary generated successfully", "success");
+    } catch (error) {
+      setError("Failed to generate summary.");
+      showToast("Failed to generate summary", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearDates = () => {
+    setStartDate("");
+    setEndDate("");
   };
 
   if (!isOpen) return null;
@@ -288,9 +370,25 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
           ))}
         </ProjectSelect>
 
+        <DateInputsContainer>
+          <DateInput
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            placeholder="Start Date"
+          />
+          <DateInput
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            placeholder="End Date"
+          />
+          <ClearButton onClick={handleClearDates}>Clear Dates</ClearButton>
+        </DateInputsContainer>
+
         {isLoading ? (
           <LoadingSpinner />
-        ) : uniformData.length > 0 ? (
+        ) : Array.isArray(uniformData) && uniformData.length > 0 ? (
           <TableContainer>
             <Table>
               <thead>
@@ -300,7 +398,6 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
                   <Th>Size</Th>
                   <Th>Type</Th>
                   <Th>Request Count</Th>
-                  <Th>Total Count</Th>
                 </tr>
               </thead>
               <tbody>
@@ -313,7 +410,6 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
                     </Td>
                     <Td>{item.UniType}</Td>
                     <Td>{item.TotalRequestCount}</Td>
-                    <Td>{item.TotalCount}</Td>
                   </Tr>
                 ))}
               </tbody>
@@ -325,6 +421,12 @@ const ProjectSelectModal = ({ isOpen, onClose, token, apiBaseUrl }) => {
           <SubmitButton onClick={handleSubmit} disabled={!selectedProject}>
             Show Data
           </SubmitButton>
+          <GenerateButton
+            onClick={handleGenerateSummary}
+            disabled={!selectedProject || !startDate || !endDate}
+          >
+            Generate Summary
+          </GenerateButton>
         </ButtonContainer>
         <ToastContainer />
       </ModalContent>

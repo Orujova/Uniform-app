@@ -32,6 +32,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import StockRequirements from "./pages/StockRequirements";
 import ProvisionReport from "./pages/ProvisionReport";
 import ForecastReport from "./pages/ForecastReport";
+import Home from "./pages/Home";
 
 const AuthPagesContainer = styled.div`
   min-height: 100vh;
@@ -61,8 +62,8 @@ const AuthLayout = () => {
     <AuthPagesContainer>
       <Routes>
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/loginPage" element={<LoginPage />} />
-        <Route path="/not-found" element={<NotFoundPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<NotFoundPage />} />
         <Route path="/changePassword" element={<ChangePasswordPage />} />
       </Routes>
     </AuthPagesContainer>
@@ -108,29 +109,32 @@ const MainLayout = () => {
       <ContentArea>
         <Routes>
           <Route
-            path="/first-distribution"
+            path="/distribution"
             element={
               <ProtectedRoute>
                 <FirstDistribution />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/managerResponse"
+            path="/responses/operation"
             element={
               <ProtectedRoute>
                 <ManagerResponse />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/dCResponse"
+            path="/responses/dc"
             element={
               <ProtectedRoute>
                 <DCResponse />
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/transaction"
             element={
@@ -156,45 +160,50 @@ const MainLayout = () => {
             }
           />
           <Route
-            path="/handover-packing"
+            path="/documents/handover"
             element={
               <ProtectedRoute>
                 <PDFsPage />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/upload-pdf"
+            path="/documents/upload"
             element={
               <ProtectedRoute>
                 <PdfUploadPage />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/uniformcondition"
+            path="/condition"
             element={
               <ProtectedRoute>
                 <UniformCondition />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/requestsPage"
+            path="/requests"
             element={
               <ProtectedRoute>
                 <RequestsPage />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/stockResponse"
+            path="/responses/bgs"
             element={
               <ProtectedRoute>
                 <StockResponse />
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/payroll"
             element={
@@ -204,37 +213,42 @@ const MainLayout = () => {
             }
           />
           <Route
-            path="/payrollDeduct"
+            path="/payroll/deductions"
             element={
               <ProtectedRoute>
                 <PayyrolDetucted />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/stock-requirement"
+            path="/reports/stock"
             element={
               <ProtectedRoute>
                 <StockRequirements />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/provision-detail"
+            path="/reports/provision"
             element={
               <ProtectedRoute>
                 <ProvisionReport />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/forecast-report"
+            path="/reports/forecast"
             element={
               <ProtectedRoute>
                 <ForecastReport />
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFoundPage />} />
+          <Route path="/" element={<Home />} />
         </Routes>
       </ContentArea>
 
@@ -273,10 +287,9 @@ const AppContent = () => {
   }, [dispatch]);
 
   const isAuthPage =
-    location.pathname === "/loginPage" ||
+    location.pathname === "/login" ||
     location.pathname === "/register" ||
-    location.pathname === "/changePassword" ||
-    location.pathname === "/not-found";
+    location.pathname === "/changePassword";
 
   // Show nothing while checking authentication
   if (isLoading) {
@@ -285,7 +298,7 @@ const AppContent = () => {
 
   // Only redirect to login if not authenticated, not on an auth page, and there's no token
   if (!isAuthenticated && !isAuthPage && !localStorage.getItem("token")) {
-    return <Navigate to="/loginPage" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return isAuthPage ? <AuthLayout /> : <MainLayout />;
@@ -301,7 +314,7 @@ const ProtectedRoute = ({ children }) => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
       if (!isAuthenticated && !token) {
-        navigate("/loginPage", { replace: true, state: { from: location } });
+        navigate("/login", { replace: true, state: { from: location } });
       }
       setIsChecking(false);
     };

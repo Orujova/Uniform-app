@@ -74,7 +74,6 @@ const SelectionCheckbox = styled.input`
   height: 16px;
   cursor: pointer;
 `;
-
 const Table = ({
   columns = [],
   data = [],
@@ -93,14 +92,16 @@ const Table = ({
       useSortBy
     );
 
-  const isAllSelected = data.length > 0 && selectedRows.length === data.length;
+  const enabledRows = data.filter((row) => !row.PayrollStatus);
+  const isAllSelected =
+    enabledRows.length > 0 && selectedRows.length === enabledRows.length;
 
   const handleSelectAll = (e) => {
-    onSelectAll(e.target.checked);
-  };
-
-  const handleRowSelect = (rowId) => {
-    onRowSelect(rowId);
+    if (e.target.checked) {
+      onSelectAll(enabledRows.map((row) => row.Id));
+    } else {
+      onSelectAll([]);
+    }
   };
 
   return (
@@ -124,6 +125,7 @@ const Table = ({
                         type="checkbox"
                         checked={isAllSelected}
                         onChange={handleSelectAll}
+                        disabled={enabledRows.length === 0}
                       />
                     </StyledTh>
                     {headerGroup.headers.map((column) => {
@@ -153,6 +155,7 @@ const Table = ({
                   prepareRow(row);
                   const { key: rowKey, ...rowRest } = row.getRowProps();
                   const isSelected = selectedRows.includes(row.original.Id);
+                  const isDisabled = row.original.PayrollStatus;
 
                   return (
                     <StyledTr
@@ -164,7 +167,8 @@ const Table = ({
                         <SelectionCheckbox
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => handleRowSelect(row.original.Id)}
+                          onChange={() => onRowSelect(row.original.Id)}
+                          disabled={isDisabled}
                         />
                       </StyledTd>
                       {row.cells.map((cell) => {

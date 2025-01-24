@@ -171,6 +171,31 @@ const PaginationButton = styled.button`
     border-bottom-right-radius: 4px;
   }
 `;
+
+const ClearFilterButton = styled.button`
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #4a5568;
+  background-color: #ebf4ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #4299e1;
+  color: white;
+  box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #4a5568;
+    background-color: #ebf4ff;
+  }
+`;
+
 const PDFsPage = () => {
   const token = localStorage.getItem("token");
   const [pdfs, setPdfs] = useState([]);
@@ -195,12 +220,13 @@ const PDFsPage = () => {
 
   useEffect(() => {
     filterPdfs();
+    setCurrentPage(1);
   }, [startDate, endDate, pdfs]);
 
   // Update total pages when filtered data changes
   useEffect(() => {
     setTotalPages(Math.ceil(filteredPdfs.length / itemsPerPage));
-    // Reset to first page when filter changes
+
     setCurrentPage(1);
   }, [filteredPdfs, itemsPerPage]);
 
@@ -298,6 +324,11 @@ const PDFsPage = () => {
     return pageNumbers;
   };
 
+  const handleClearFilters = () => {
+    setStartDate("");
+    setEndDate("");
+  };
+
   return (
     <PageContainer>
       <Header>
@@ -319,6 +350,9 @@ const PDFsPage = () => {
               onChange={(e) => setEndDate(e.target.value)}
             />
           </FilterGroup>
+          <ClearFilterButton onClick={handleClearFilters}>
+            Clear Filters
+          </ClearFilterButton>
         </FilterContainer>
       </Header>
 

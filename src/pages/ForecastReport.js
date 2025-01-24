@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { API_BASE_URL } from "../config";
 import Table from "../components/Table";
 import { FaChevronLeft, FaChevronRight, FaDownload } from "react-icons/fa";
+import _ from "lodash";
 
 const ReportContainer = styled.div`
   padding: 24px;
@@ -251,32 +252,60 @@ const ForecastReport = () => {
   const [itemsPerPage] = useState(10);
   const token = localStorage.getItem("token");
   const [exporting, setExporting] = useState(false);
-  const fetchData = async (count) => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/UniformForEmployee/GetUniformOrder?EmployeeCount=${count}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+  const abortControllerRef = React.useRef(null);
+
+  const fetchData = useCallback(
+    async (count) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      abortControllerRef.current = new AbortController();
+      setLoading(true);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/UniformForEmployee/GetUniformOrder?EmployeeCount=${count}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            signal: abortControllerRef.current.signal,
+          }
+        );
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+        const result = await response.json();
+        setData(result[0]);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error:", err);
         }
-      );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
-      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-      const result = await response.json();
-      setData(result[0]);
-    } catch (err) {
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const debouncedFetchData = useCallback(
+    _.debounce((count) => fetchData(count), 100),
+    [fetchData]
+  );
 
   useEffect(() => {
-    fetchData(employeeCount);
-  }, [employeeCount]);
+    if (employeeCount) {
+      debouncedFetchData(employeeCount);
+    }
+
+    return () => {
+      debouncedFetchData.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [employeeCount, debouncedFetchData]);
 
   const columns = [
     {
@@ -364,7 +393,7 @@ const ForecastReport = () => {
 
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = "uniform-stock-requirements.xlsx";
+      link.download = "uniform-orders.xlsx";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

@@ -282,7 +282,7 @@ const PayrollPage = () => {
 
     try {
       setIsLoading(true);
-      showToast("Processing deduction...");
+
       const response = await fetch(
         `${API_BASE_URL}/api/TransactionPage/deduct-transactions`,
         {

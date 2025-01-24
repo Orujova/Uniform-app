@@ -10,6 +10,7 @@ import {
 import Table from "../components/Table";
 import EditUniformModal from "../components/EditUniformModal";
 import CreateUniModal from "../components/CreateUniModal";
+import DeleteModal from "../components/DeleteModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "react-toastify";
@@ -111,8 +112,9 @@ const StockPage = () => {
   const [error, setError] = useState("");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
   const [totalPages, setTotalPages] = useState(1);
@@ -274,35 +276,37 @@ const StockPage = () => {
     setEditModalOpen(false);
   };
 
-  const handleDelete = async (Id) => {
-    if (window.confirm("Are you sure you want to delete this uniform?")) {
-      try {
-        const response = await fetch(API_BASE_URL + `/api/Uniform`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ Id }),
-        });
-
-        if (!response.ok) {
-          const errorDetails = await response.json();
-          console.error("Error details:", errorDetails);
-          throw new Error(errorDetails.Message || "Failed to delete uniform.");
-        }
-
-        setStockData((prev) =>
-          [...prev.filter((item) => item.Id !== Id)].sort((a, b) => a.Id - b.Id)
-        );
-        showToast("Uniform deleted successfully!");
-        console.log("Uniform deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting uniform:", error.message);
-      }
-    }
+  const handleDelete = (Id) => {
+    setDeleteId(Id);
+    setDeleteModalOpen(true);
   };
 
+  const confirmDelete = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Uniform`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ Id: deleteId }),
+      });
+
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.Message || "Failed to delete uniform.");
+      }
+
+      setStockData((prev) =>
+        [...prev.filter((item) => item.Id !== deleteId)].sort(
+          (a, b) => a.Id - b.Id
+        )
+      );
+      showToast("Uniform deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting uniform:", error.message);
+    }
+  };
   return (
     <StockContainer>
       <Header>
@@ -368,6 +372,15 @@ const StockPage = () => {
         onSave={handleSaveEdit}
         initialData={editData}
         apiData={stockData}
+      />
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={() => {
+          confirmDelete();
+          setDeleteModalOpen(false);
+        }}
       />
       <ToastContainer />
     </StockContainer>

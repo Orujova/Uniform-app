@@ -39,8 +39,8 @@ const carouselImages = [
 const ROLE_ROUTES = {
   1: "/transaction",
   2: "/stock",
-  3: "/requestsPage",
-  4: "/managerResponse",
+  3: "/requests",
+  4: "/responses/operation",
 };
 
 const LoginPage = () => {
@@ -117,7 +117,6 @@ const LoginPage = () => {
     } catch (err) {
       console.error("Login error:", err);
       setError("An error occurred during login");
-      toast.error("Login failed");
     }
   };
 

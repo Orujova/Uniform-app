@@ -105,6 +105,7 @@ const FilterGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+  justify-content: flex-end;
 `;
 
 const DateFilterContainer = styled.div`
@@ -143,6 +144,30 @@ const SearchInput = styled.input`
     outline: none;
     border-color: #0284c7;
     box-shadow: 0 0 0 1px #0284c7;
+  }
+`;
+
+const ClearFilterButton = styled.button`
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #4a5568;
+  background-color: #ebf4ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #4299e1;
+  color: white;
+  box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #4a5568;
+    background-color: #ebf4ff;
   }
 `;
 
@@ -258,7 +283,11 @@ const PayyrolDetucted = () => {
     setFilteredData(filtered);
     setCurrentPage(1);
   };
-
+  const handleClearFilters = () => {
+    setBadgeFilter("");
+    setStartDate("");
+    setEndDate("");
+  };
   const handleBadgeFilterChange = (e) => {
     setBadgeFilter(e.target.value);
   };
@@ -379,7 +408,6 @@ const PayyrolDetucted = () => {
       showToast("Export completed successfully", "success");
     } catch (error) {
       console.error("Error exporting transactions:", error);
-      showToast("Failed to export transactions. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -431,8 +459,12 @@ const PayyrolDetucted = () => {
             onChange={handleBadgeFilterChange}
           />
         </FilterGroup>
+        <FilterGroup>
+          <ClearFilterButton onClick={handleClearFilters}>
+            Clear Filters
+          </ClearFilterButton>
+        </FilterGroup>
       </SearchContainer>
-
       {isLoading ? (
         <p>Loading...</p>
       ) : error ? (

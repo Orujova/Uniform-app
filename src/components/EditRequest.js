@@ -25,21 +25,6 @@ const ModalContent = styled.div`
   position: relative;
 `;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #666;
-  cursor: pointer;
-
-  &:hover {
-    color: #333;
-  }
-`;
-
 const Title = styled.h2`
   margin: 0 0 20px 0;
   font-size: 18px;
@@ -160,7 +145,7 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
         UniformId: initialData.UniformId,
         RequestCount: initialData.RequestCount || "",
         ProjectId: initialData.ProjectId,
-        UniCode: selectedUniform ? selectedUniform.UniCode : "", // UniCode-u əlavə et
+        UniCode: selectedUniform ? selectedUniform.UniCode : "",
       });
     }
   }, [initialData, uniforms]);

@@ -25,6 +25,35 @@ const StockContainer = styled.div`
   gap: 20px;
 `;
 
+const ClearFilterButton = styled.button`
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #4a5568;
+  background-color: #ebf4ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #4299e1; /* Hover-da gözəl mavi */
+  color: white;
+  box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #4a5568;
+    background-color: #ebf4ff;
+  }
+`;
+
+const FilterActionsContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+`;
+
 const TransactionPage = () => {
   const [stockData, setStockData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -47,6 +76,16 @@ const TransactionPage = () => {
     startDate: "",
     endDate: "",
   });
+
+  const handleClearFilters = () => {
+    setFilters({
+      status: "",
+      badge: "",
+      order: "",
+      startDate: "",
+      endDate: "",
+    });
+  };
 
   const token = localStorage.getItem("token");
 
@@ -177,6 +216,7 @@ const TransactionPage = () => {
 
   useEffect(() => {
     applyFilters();
+    setCurrentPage(1);
   }, [filters, stockData]);
 
   const fetchStockData = async () => {
@@ -387,12 +427,19 @@ const TransactionPage = () => {
         onOpenSummaryModal={() => setSummaryModalOpen(true)}
         onOpenUploadModal={() => setUploadModalOpen(true)}
       />
+      <div>
+        <Filters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          uniqueStatuses={uniqueStatuses}
+        />
 
-      <Filters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        uniqueStatuses={uniqueStatuses}
-      />
+        <FilterActionsContainer>
+          <ClearFilterButton onClick={handleClearFilters}>
+            Clear Filters
+          </ClearFilterButton>
+        </FilterActionsContainer>
+      </div>
 
       <ActionButtons
         selectedTransactions={filteredData.filter((item) =>

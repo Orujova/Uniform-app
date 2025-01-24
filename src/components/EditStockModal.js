@@ -108,7 +108,7 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
   const [formData, setFormData] = useState(initialData || {});
   const [uniforms, setUniforms] = useState([]);
   const token = localStorage.getItem("token");
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (initialData) {
       const formattedData = {
@@ -175,14 +175,11 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
 
   const handleSave = async () => {
     try {
-      // Calculate TotalPrice based on StockCount and UnitPrice
+      setLoading(true);
       const totalPrice =
         Number(formData.StockCount) * Number(formData.UnitPrice);
-
-      // Convert StoreOrEmployee string to number (1 for Store, 2 for Employee)
       const storeOrEmployeeValue = formData.StoreOrEmployee === "Store" ? 1 : 2;
 
-      // Create request body with precise number conversions
       const requestBody = {
         Id: parseInt(formData.Id, 10),
         UniformId: parseInt(formData.UniformId, 10),
@@ -193,16 +190,6 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
         TotalPrice: parseFloat(totalPrice),
       };
 
-      // Log detailed request information
-      console.log("Sending request with data:", {
-        originalFormData: formData,
-        convertedRequestBody: requestBody,
-        uniformInfo: uniforms.find((u) => u.Id === formData.UniformId),
-      });
-
-      console.log("Request Body:", requestBody);
-
-      // Make the API request
       const response = await fetch(`${API_BASE_URL}/api/DCStock`, {
         method: "PUT",
         headers: {
@@ -212,37 +199,10 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
         body: JSON.stringify(requestBody),
       });
 
-      // Log the complete response
       const responseText = await response.text();
-      console.log("API Response:", {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        body: responseText,
-      });
 
       if (!response.ok) {
         throw new Error(responseText || "Failed to update uniform");
-      }
-
-      try {
-        if (responseText) {
-          const responseData = JSON.parse(responseText);
-          console.log("Parsed Response Data:", responseData);
-        }
-      } catch (e) {
-        console.log("Response was not JSON:", responseText);
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log("Error Response:", errorText);
-        throw new Error(errorText || "Failed to update uniform");
-      }
-
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        throw new Error(errorDetails.Message || "Failed to update uniform.");
       }
 
       showToast("Stock updated successfully");
@@ -251,6 +211,8 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
     } catch (error) {
       console.error("Error updating uniform:", error);
       showToast(error.message, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -314,22 +276,22 @@ const EditUniformModal = ({ isOpen, onClose, onSave, initialData }) => {
             step="0.01"
           />
         </FormGroup>
-
         <ButtonGroup>
-          <button className="cancel" onClick={onClose}>
+          <button className="cancel" onClick={onClose} disabled={loading}>
             Cancel
           </button>
           <button
             className="save"
             onClick={handleSave}
             disabled={
+              loading ||
               !formData.UniformId ||
               !formData.StoreOrEmployee ||
               !formData.StockCount ||
               !formData.UnitPrice
             }
           >
-            Save
+            {loading ? "Saving..." : "Save"}
           </button>
         </ButtonGroup>
       </ModalContent>
