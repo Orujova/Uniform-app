@@ -38,9 +38,15 @@ const carouselImages = [
 
 const ROLE_ROUTES = {
   1: "/transaction",
-  2: "/stock",
-  3: "/requests",
-  4: "/responses/operation",
+  9: "/stock",
+  3: "/transaction",
+  12: "/responses/operation",
+  10: "/requests",
+  7: "/payroll",
+  2: "/transaction",
+  4: "/transaction",
+  8: "/reports/stock",
+  11: "/reports/stock",
 };
 
 const LoginPage = () => {
