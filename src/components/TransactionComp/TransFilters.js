@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 const FilterContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   padding: 16px;
   background-color: #f8f9fa;
@@ -45,8 +45,54 @@ const FilterSelect = styled.select`
   }
 `;
 
-export const Filters = ({ filters, onFilterChange, uniqueStatuses }) => (
+export const Filters = ({
+  filters,
+  onFilterChange,
+  uniqueStatuses,
+  projects,
+}) => (
   <FilterContainer>
+    <FilterGroup>
+      <FilterLabel>Project</FilterLabel>
+      <FilterSelect
+        name="projectId"
+        value={filters.projectId}
+        onChange={onFilterChange}
+      >
+        <option value="">All Projects</option>
+        {projects.map((project) => (
+          <option key={project.Id} value={project.Id}>
+            {project.ProjectCode}
+          </option>
+        ))}
+      </FilterSelect>
+    </FilterGroup>
+
+    <FilterGroup>
+      <FilterLabel>Transaction Date</FilterLabel>
+      <FilterInput
+        type="date"
+        name="transactionDate"
+        value={filters.transactionDate}
+        onChange={onFilterChange}
+      />
+    </FilterGroup>
+
+    <FilterGroup>
+      <FilterLabel>Distribution Type</FilterLabel>
+      <FilterSelect
+        name="distributionType"
+        value={filters.distributionType}
+        onChange={onFilterChange}
+      >
+        <option value="">All Types</option>
+        <option value="firstDistribution">First Distribution</option>
+        <option value="store">Store</option>
+        <option value="bgs">BGS</option>
+      </FilterSelect>
+    </FilterGroup>
+
+    {/* Existing filters */}
     <FilterGroup>
       <FilterLabel>Status</FilterLabel>
       <FilterSelect
@@ -62,6 +108,7 @@ export const Filters = ({ filters, onFilterChange, uniqueStatuses }) => (
         ))}
       </FilterSelect>
     </FilterGroup>
+
     <FilterGroup>
       <FilterLabel>Badge</FilterLabel>
       <FilterInput
@@ -72,6 +119,7 @@ export const Filters = ({ filters, onFilterChange, uniqueStatuses }) => (
         placeholder="Enter badge number"
       />
     </FilterGroup>
+
     <FilterGroup>
       <FilterLabel>Order Filter</FilterLabel>
       <FilterSelect
@@ -85,6 +133,7 @@ export const Filters = ({ filters, onFilterChange, uniqueStatuses }) => (
         <option value="suitableforuse">Suitable For Use</option>
       </FilterSelect>
     </FilterGroup>
+
     <FilterGroup>
       <FilterLabel>Start Date</FilterLabel>
       <FilterInput
@@ -94,6 +143,7 @@ export const Filters = ({ filters, onFilterChange, uniqueStatuses }) => (
         onChange={onFilterChange}
       />
     </FilterGroup>
+
     <FilterGroup>
       <FilterLabel>End Date</FilterLabel>
       <FilterInput

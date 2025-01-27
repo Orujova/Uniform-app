@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaTimes, FaCheck, FaMinus } from "react-icons/fa";
-
+import { API_BASE_URL } from "../config";
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -180,7 +180,7 @@ const WorkDaysModal = ({ isOpen, onClose }) => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://192.168.197.89:7039/api/UniformForEmployee/sys-week-days",
+        `${API_BASE_URL}/api/UniformForEmployee/sys-week-days`,
         {
           headers: {
             accept: "*/*",
@@ -200,17 +200,14 @@ const WorkDaysModal = ({ isOpen, onClose }) => {
   const updateWeekDay = async (id) => {
     try {
       setLoading(true);
-      await fetch(
-        "https://192.168.197.89:7039/api/UniformForEmployee/update-week-day",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ Id: id }),
-        }
-      );
+      await fetch(`${API_BASE_URL}/api/UniformForEmployee/update-week-day`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ Id: id }),
+      });
       await fetchWeekDays();
       setSelectedDay(null);
       onClose();

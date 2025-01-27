@@ -6,12 +6,31 @@ import {
   FaDownload,
   FaChevronLeft,
   FaChevronRight,
+  FaUpload,
 } from "react-icons/fa";
 import theme from "../styles/theme";
 import PDFViewerModal from "../components/PDFViewerModal";
 import { API_BASE_URL } from "../config";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "../utils/ToastContainer";
+import RequestUploadModal from "../components/RequestUploadModal";
+import UploadModal from "../components/TransactionComp/UploadModal";
+
+const StyledButton = styled.button`
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #0284c7;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #075985;
+  }
+`;
 
 const PageContainer = styled.div`
   padding: 24px;
@@ -202,7 +221,9 @@ const PDFsPage = () => {
   const [selectedPdf, setSelectedPdf] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
+  const [isUploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isRequestUploadModalOpen, setRequestUploadModalOpen] = useState(false);
+  const userRole = JSON.parse(localStorage.getItem("userData")).roleId || {};
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
@@ -306,6 +327,9 @@ const PDFsPage = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleRequestUploadModal = () => setRequestUploadModalOpen(true);
+  const handleUploadModal = () => setUploadModalOpen(true);
+
   const getPageNumbers = () => {
     const pageNumbers = [];
     const maxPagesToShow = 5;
@@ -352,6 +376,22 @@ const PDFsPage = () => {
           <ClearFilterButton onClick={handleClearFilters}>
             Clear Filters
           </ClearFilterButton>
+
+          {/* Show RequestUpload button only for role ID 8 */}
+          {userRole.includes(8) && (
+            <StyledButton onClick={handleRequestUploadModal}>
+              <FaUpload style={{ marginRight: "8px" }} />
+              Upload PDF
+            </StyledButton>
+          )}
+
+          {/* Show Upload button only for role ID 1 */}
+          {userRole.includes(1) && (
+            <StyledButton onClick={handleUploadModal}>
+              <FaUpload style={{ marginRight: "8px" }} />
+              Upload PDF
+            </StyledButton>
+          )}
         </FilterContainer>
       </Header>
 
@@ -398,6 +438,16 @@ const PDFsPage = () => {
           )}
         </tbody>
       </Table>
+
+      <RequestUploadModal
+        isOpen={isRequestUploadModalOpen}
+        onClose={() => setRequestUploadModalOpen(false)}
+      />
+
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+      />
 
       {filteredPdfs.length > 0 && (
         <PaginationContainer>

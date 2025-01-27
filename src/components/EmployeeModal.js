@@ -137,7 +137,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
   const fetchUniformData = async (employeeId) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/UniformForEmployee/GetUniformByEmployeeId/${employeeId}`,
+        `${API_BASE_URL}/api/UniformForEmployee/GetUniformByEmployeeIdForBGS/${employeeId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

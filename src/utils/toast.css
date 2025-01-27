@@ -8,6 +8,7 @@
   max-width: 480px !important;
   border: none !important;
   position: relative !important;
+  overflow: hidden !important; /* Add overflow hidden to contain the border */
 }
 
 /* Base styles for all toasts */
@@ -19,6 +20,8 @@
   bottom: 0 !important;
   width: 4px !important;
   border-radius: 4px 0 0 4px !important;
+  transform: none !important; /* Prevent transform inheritance */
+  transition: none !important; /* Prevent transition inheritance */
 }
 
 /* Info Toast */
@@ -78,6 +81,11 @@
   transform: translateY(-1px) !important;
   transition: all 0.2s ease-in-out !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Active state styles */
+.sonner-toast-custom:active {
+  transform: translateY(0) !important;
 }
 
 /* Remove any default borders or dividers */

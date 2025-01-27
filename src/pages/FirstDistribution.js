@@ -99,7 +99,7 @@ const FirstDistribution = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [isOrderLoading, setIsOrderLoading] = useState(false);
   // Get token from localStorage
   const token = localStorage.getItem("token");
 
@@ -199,6 +199,7 @@ const FirstDistribution = () => {
       return;
     }
 
+    setIsOrderLoading(true);
     try {
       const response = await fetch(
         `${API_BASE_URL}/api/TransactionPage/assign-uniforms`,
@@ -216,11 +217,12 @@ const FirstDistribution = () => {
       }
 
       showToast("Order submitted successfully", "success");
-
       handleProjectChange(selectedProject);
     } catch (error) {
       console.error("Error submitting order:", error);
-      alert("Failed to submit order. Please try again.");
+      showToast("Failed to submit order. Please try again.", "error");
+    } finally {
+      setIsOrderLoading(false);
     }
   };
 
@@ -292,8 +294,8 @@ const FirstDistribution = () => {
           isClearable={true}
         />
 
-        <StyledButton onClick={handleOrderSubmit}>
-          Order for Employee
+        <StyledButton onClick={handleOrderSubmit} disabled={isOrderLoading}>
+          {isOrderLoading ? "Ordering..." : "Order for Employee"}
         </StyledButton>
       </TopBar>
 

@@ -481,7 +481,7 @@ const PayyrolDetucted = () => {
           />
 
           {filteredData.length === 0 ? (
-            <p>No records found matching the filter criteria.</p>
+            <p></p>
           ) : (
             <PaginationContainer>
               <PaginationButton

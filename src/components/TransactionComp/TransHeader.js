@@ -56,10 +56,10 @@ export const Header = ({
         <FaAlignLeft style={{ marginRight: "6px" }} />
         Summarize
       </StyledButton>
-      <StyledButton onClick={onOpenUploadModal}>
+      {/* <StyledButton onClick={onOpenUploadModal}>
         <FaUpload style={{ marginRight: "6px" }} />
         Upload
-      </StyledButton>
+      </StyledButton> */}
     </ButtonGroup>
   </HeaderContainer>
 );

@@ -1,17 +1,6 @@
 import React, { useEffect, useState } from "react";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { Building2, User } from "lucide-react";
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-`;
 
 const WelcomeContainer = styled.div`
   height: 90vh;
@@ -27,13 +16,11 @@ const WelcomeContainer = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  animation: ${fadeIn} 1s ease-out;
   z-index: 2;
 `;
 
 const IconContainer = styled.div`
   margin-bottom: 24px;
-  animation: ${float} 3s ease-in-out infinite;
 
   svg {
     width: 80px;
@@ -90,7 +77,6 @@ const Time = styled.div`
   padding: 8px 16px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  animation: ${fadeIn} 1s ease-out;
 `;
 
 const UserIcon = styled(User)`

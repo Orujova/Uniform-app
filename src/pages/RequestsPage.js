@@ -7,7 +7,6 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
-  FaUpload,
   FaAlignLeft,
 } from "react-icons/fa";
 import { showToast } from "../utils/toast";
@@ -472,10 +471,10 @@ const RequestsPage = () => {
             <FaAlignLeft style={{ marginRight: "8px" }} />
             Transaction Summarize
           </StyledButton>
-          <StyledButton onClick={handleRequestUploadModal}>
+          {/* <StyledButton onClick={handleRequestUploadModal}>
             <FaUpload style={{ marginRight: "8px" }} />
             Upload
-          </StyledButton>
+          </StyledButton> */}
         </ButtonGroup>
       </Header>
 
@@ -536,10 +535,10 @@ const RequestsPage = () => {
         isOpen={isEmployeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
       />
-      <RequestUploadModal
+      {/* <RequestUploadModal
         isOpen={isRequestUploadModalOpen}
         onClose={() => setRequestUploadModalOpen(false)}
-      />
+      /> */}
 
       <EditUniformModal
         isOpen={isEditModalOpen}

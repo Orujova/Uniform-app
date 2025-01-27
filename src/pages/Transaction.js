@@ -75,7 +75,12 @@ const TransactionPage = () => {
     order: "",
     startDate: "",
     endDate: "",
+    projectId: "",
+    transactionDate: "",
+    distributionType: "", // This will store "firstDistribution", "store", or "bgs"
   });
+
+  const [projects, setProjects] = useState([]);
 
   const handleClearFilters = () => {
     setFilters({
@@ -84,10 +89,33 @@ const TransactionPage = () => {
       order: "",
       startDate: "",
       endDate: "",
+      projectId: "",
+      transactionDate: "",
+      distributionType: "",
     });
   };
 
   const token = localStorage.getItem("token");
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Project`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch projects");
+      const data = await response.json();
+      setProjects(data[0]?.Projects || []);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
+
+  // Call this in useEffect
+  useEffect(() => {
+    fetchProjects();
+  }, [token]);
 
   // Update the columns definition in TransactionPage.js
   const columns = [
@@ -101,7 +129,7 @@ const TransactionPage = () => {
     { Header: "Project Name", accessor: "ProjectName" },
     { Header: "Count", accessor: "UniCount" },
     { Header: "Sender", accessor: "Sender" },
-    { Header: "Sender Date", accessor: "SenderDate" },
+    { Header: "Transaction Date", accessor: "SenderDate" },
     { Header: "Handed Over By", accessor: "HandoveredBy" },
     { Header: "Handed Over Date", accessor: "EnactedDate" },
     {
@@ -247,6 +275,48 @@ const TransactionPage = () => {
 
   const applyFilters = () => {
     let filtered = [...stockData];
+
+    // Project filter
+    if (filters.projectId) {
+      filtered = filtered.filter(
+        (item) => String(item.ProjectId) === String(filters.projectId)
+      );
+    }
+
+    // Transaction Date filter
+    if (filters.transactionDate) {
+      filtered = filtered.filter((item) => {
+        try {
+          if (!item.SenderDate) return false;
+          const transactionDate = new Date(item.SenderDate);
+          const filterDate = new Date(filters.transactionDate);
+
+          return (
+            transactionDate.getFullYear() === filterDate.getFullYear() &&
+            transactionDate.getMonth() === filterDate.getMonth() &&
+            transactionDate.getDate() === filterDate.getDate()
+          );
+        } catch (error) {
+          console.error("Date comparison error:", error);
+          return false;
+        }
+      });
+    }
+
+    if (filters.distributionType) {
+      filtered = filtered.filter((item) => {
+        switch (filters.distributionType) {
+          case "firstDistribution":
+            return item.IsFirstDistribution;
+          case "store":
+            return item.IsStore;
+          case "bgs":
+            return item.IsBBgs;
+          default:
+            return true;
+        }
+      });
+    }
 
     if (filters.status) {
       filtered = filtered.filter(
@@ -433,8 +503,8 @@ const TransactionPage = () => {
           filters={filters}
           onFilterChange={handleFilterChange}
           uniqueStatuses={uniqueStatuses}
+          projects={projects}
         />
-
         <FilterActionsContainer>
           <ClearFilterButton onClick={handleClearFilters}>
             Clear Filters
@@ -495,10 +565,10 @@ const TransactionPage = () => {
         isOpen={isSummaryModalOpen}
         onClose={() => setSummaryModalOpen(false)}
       />
-      <UploadModal
+      {/* <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
-      />
+      /> */}
       <ToastContainer />
     </StockContainer>
   );
