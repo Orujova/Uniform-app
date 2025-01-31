@@ -72,31 +72,120 @@ const ErrorMessage = styled.div`
   padding: 20px;
 `;
 
+const FilterSection = styled.div`
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FilterLabel = styled.label`
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+`;
+
+const FilterSelect = styled.select`
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: #0284c7;
+  }
+`;
+
 const SummaryModal = ({ isOpen, onClose }) => {
   const [summaryData, setSummaryData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    transactionDate: "",
+  });
+  const [transactionDates, setTransactionDates] = useState([]);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchSummaryData();
+  const token = localStorage.getItem("token");
+  const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+  const fetchTransactionDates = async (projectId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/TransactionPage/GetAllTransactionDates?ProjectId=${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch transaction dates");
+      const data = await response.json();
+
+      if (data && data[0]?.Transactions) {
+        const transactions = data[0].Transactions;
+        if (Array.isArray(transactions)) {
+          transactions.forEach((transaction) => {
+            if (transaction.SenderDate) {
+              setTransactionDates((prev) => [
+                ...new Set([...prev, transaction.SenderDate]),
+              ]);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching transaction dates:", error);
     }
-  }, [isOpen]);
+  };
 
-  const fetchSummaryData = async () => {
+  const fetchProjectID = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Project`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch projects");
+      const data = await response.json();
+
+      const userProjects =
+        data[0]?.Projects.filter(
+          (project) => project.StoreManagerMail === userData.email
+        ) || [];
+
+      setTransactionDates([]); // Clear old dates
+
+      for (const project of userProjects) {
+        if (project.Id) {
+          await fetchTransactionDates(project.Id);
+        }
+      }
+    } catch (error) {
+      console.error("Error in fetchProjectID:", error);
+    }
+  };
+
+  const fetchSummaryData = async (selectedDate) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE_URL}/api/TransactionPage/pending`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const url = selectedDate
+        ? `${API_BASE_URL}/api/TransactionPage/pending?TransactionDate=${selectedDate}`
+        : `${API_BASE_URL}/api/TransactionPage/pending`;
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -112,6 +201,25 @@ const SummaryModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleFilterChange = async (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Fetch data with new date value
+    await fetchSummaryData(value);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchProjectID();
+      // Initial fetch without date filter
+      fetchSummaryData();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -123,6 +231,24 @@ const SummaryModal = ({ isOpen, onClose }) => {
             &times;
           </button>
         </ModalHeader>
+
+        <FilterSection>
+          <FilterGroup>
+            <FilterLabel>Transaction Date</FilterLabel>
+            <FilterSelect
+              name="transactionDate"
+              value={filters.transactionDate}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Dates</option>
+              {transactionDates.sort().map((date) => (
+                <option key={date} value={date}>
+                  {new Date(date).toLocaleDateString()}
+                </option>
+              ))}
+            </FilterSelect>
+          </FilterGroup>
+        </FilterSection>
 
         {isLoading ? (
           <LoadingSpinner>Loading summary data...</LoadingSpinner>

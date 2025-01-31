@@ -9,7 +9,6 @@ import { Header } from "../components/TransactionComp/TransHeader";
 import { Filters } from "../components/TransactionComp/TransFilters";
 import { ActionButtons } from "../components/TransactionComp/ActionButtons";
 import { Pagination } from "../components/Pagination";
-import UploadModal from "../components/TransactionComp/UploadModal";
 import Table from "../components/TableTrans";
 import TransEmployeeModal from "../components/TransEmployeeModal";
 import TrackStatusModal from "../components/TrackStatusModal";
@@ -73,22 +72,23 @@ const TransactionPage = () => {
     status: "",
     badge: "",
     order: "",
-    startDate: "",
-    endDate: "",
+    handoveredDate: "", // Changed from handovered to handoveredDate
     projectId: "",
     transactionDate: "",
-    distributionType: "", // This will store "firstDistribution", "store", or "bgs"
+    distributionType: "",
   });
 
   const [projects, setProjects] = useState([]);
+  const [projectID, setProjectID] = useState([]);
+  const [handoveredDates, setHandoveredDates] = useState([]);
+  const [transactionDates, setTransactionDates] = useState([]);
 
   const handleClearFilters = () => {
     setFilters({
       status: "",
       badge: "",
       order: "",
-      startDate: "",
-      endDate: "",
+      handoveredDate: "",
       projectId: "",
       transactionDate: "",
       distributionType: "",
@@ -96,6 +96,127 @@ const TransactionPage = () => {
   };
 
   const token = localStorage.getItem("token");
+  const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+  const fetchHandoveredDates = async (projectId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/TransactionPage/GetAllHandoveredDates?ProjectId=${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch handovered dates");
+      const data = await response.json();
+      console.log("Handovered dates response:", data);
+
+      if (data && data[0]?.Transactions) {
+        const datas = data[0].Transactions;
+        console.log("Transactions data:", datas);
+
+        if (Array.isArray(datas)) {
+          datas.forEach((transaction) => {
+            if (transaction.HandoveredDate) {
+              setHandoveredDates((prev) => [
+                ...new Set([...prev, transaction.HandoveredDate]),
+              ]);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching handovered dates for projectId:",
+        projectId,
+        error
+      );
+    }
+  };
+
+  const fetchTransactionDates = async (projectId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}
+/api/TransactionPage/GetAllTransactionDates?ProjectId=${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch handovered dates");
+      const data = await response.json();
+      console.log("Handovered dates response:", data);
+
+      if (data && data[0]?.Transactions) {
+        const datas = data[0].Transactions;
+        console.log("Transactions data:", datas);
+
+        if (Array.isArray(datas)) {
+          datas.forEach((transaction) => {
+            if (transaction.SenderDate) {
+              setTransactionDates((prev) => [
+                ...new Set([...prev, transaction.SenderDate]),
+              ]);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching handovered dates for projectId:",
+        projectId,
+        error
+      );
+    }
+  };
+
+  const fetchProjectID = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Project`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch projects");
+      const data = await response.json();
+
+      const userProjects =
+        data[0]?.Projects.filter(
+          (project) => project.StoreManagerMail === userData.email
+        ) || [];
+
+      setProjectID(userProjects);
+      setHandoveredDates([]); // Köhnə tarixləri təmizlə
+      setTransactionDates([]); // Köhnə tarixləri təmizlə
+
+      // ProjectID-ləri konsola yaz
+      console.log("User Projects:", userProjects);
+
+      // Hər layihə üçün handovered tarixləri gətir
+      for (const project of userProjects) {
+        if (project.Id) {
+          console.log("Fetching dates for project:", project.Id); // Debug log
+          await fetchHandoveredDates(project.Id);
+        }
+      }
+      for (const project of userProjects) {
+        if (project.Id) {
+          console.log("Fetching dates for project:", project.Id); // Debug log
+          await fetchTransactionDates(project.Id);
+        }
+      }
+    } catch (error) {
+      console.error("Error in fetchProjectID:", error);
+    }
+  };
+
+  // useEffect-də belə istifadə et
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchProjectID();
+    };
+
+    fetchData();
+  }, []);
 
   const fetchProjects = async () => {
     try {
@@ -283,23 +404,30 @@ const TransactionPage = () => {
       );
     }
 
-    // Transaction Date filter
+    if (filters.handoveredDate) {
+      filtered = filtered.filter((item) => {
+        if (!item.EnactedDate) return false;
+        const itemDate = new Date(item.EnactedDate);
+        const filterDate = new Date(filters.handoveredDate);
+
+        return (
+          itemDate.getFullYear() === filterDate.getFullYear() &&
+          itemDate.getMonth() === filterDate.getMonth() &&
+          itemDate.getDate() === filterDate.getDate()
+        );
+      });
+    }
     if (filters.transactionDate) {
       filtered = filtered.filter((item) => {
-        try {
-          if (!item.SenderDate) return false;
-          const transactionDate = new Date(item.SenderDate);
-          const filterDate = new Date(filters.transactionDate);
+        if (!item.SenderDate) return false;
+        const itemDate = new Date(item.SenderDate);
+        const filterDate = new Date(filters.transactionDate);
 
-          return (
-            transactionDate.getFullYear() === filterDate.getFullYear() &&
-            transactionDate.getMonth() === filterDate.getMonth() &&
-            transactionDate.getDate() === filterDate.getDate()
-          );
-        } catch (error) {
-          console.error("Date comparison error:", error);
-          return false;
-        }
+        return (
+          itemDate.getFullYear() === filterDate.getFullYear() &&
+          itemDate.getMonth() === filterDate.getMonth() &&
+          itemDate.getDate() === filterDate.getDate()
+        );
       });
     }
 
@@ -504,7 +632,10 @@ const TransactionPage = () => {
           onFilterChange={handleFilterChange}
           uniqueStatuses={uniqueStatuses}
           projects={projects}
+          transactionDates={transactionDates}
+          handoveredDates={handoveredDates}
         />
+
         <FilterActionsContainer>
           <ClearFilterButton onClick={handleClearFilters}>
             Clear Filters

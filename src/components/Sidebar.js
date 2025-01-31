@@ -179,7 +179,6 @@ const SidebarButton = styled.button`
   border: none;
   padding: 14px 16px;
   border-radius: 10px;
-  cursor: pointer;
   font-size: 15px;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -190,10 +189,12 @@ const SidebarButton = styled.button`
   text-align: left;
   box-shadow: ${(props) =>
     props.active ? "0px 4px 12px rgba(74, 144, 226, 0.1)" : "none"};
+  opacity: ${(props) => (props.disabled ? "0.5" : "1")};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 
   &:hover {
     background: ${(props) => (props.active ? "#EDF2FF" : "#f8f9fa")};
-    transform: translateX(${(props) => (props.active ? "0" : "4px")});
+    transform: ${(props) => (props.disabled ? "none" : "translateX(4px)")};
   }
 `;
 
@@ -240,28 +241,42 @@ const Sidebar = ({ onSelect, onLogOut }) => {
           label: "First Distribution",
           value: "first-dist",
           path: "/distribution",
+          allowedRoles: [3, 2, 9],
         },
-        { label: "DC Stock", value: "stock", path: "/stock" },
+        {
+          label: "DC Stock",
+          value: "stock",
+          path: "/stock",
+          allowedRoles: [3, 2, 9, 4, 10, 12],
+        },
         {
           label: "DC Response - Store Order",
           value: "dCResponse",
           path: "/responses/dc",
+          allowedRoles: [3, 4, 2, 1, 9],
         },
         {
           label: "DC Response - BGS Order",
           value: "stockResponse",
           path: "/responses/bgs",
+          allowedRoles: [3, 2, 9],
         },
       ],
     },
     payroll: {
       label: "Payroll Management",
       items: [
-        { label: "Payroll", value: "payroll", path: "/payroll" },
+        {
+          label: "Payroll",
+          value: "payroll",
+          path: "/payroll",
+          allowedRoles: [3, 2, 7],
+        },
         {
           label: "Payroll Deducted",
           value: "payrollDeduct",
           path: "/payroll/deductions",
+          allowedRoles: [3, 2, 7],
         },
       ],
     },
@@ -272,8 +287,14 @@ const Sidebar = ({ onSelect, onLogOut }) => {
           label: "Handover & Packing List",
           value: "handover-packing",
           path: "/documents/handover",
+          allowedRoles: [3, 4, 2, 1, 9, 10, 12],
         },
-        { label: "Upload PDF", value: "upload-pdf", path: "/documents/upload" },
+        {
+          label: "Upload PDF",
+          value: "upload-pdf",
+          path: "/documents/upload",
+          allowedRoles: [3, 4, 2, 1, 9, 10, 12, 7],
+        },
       ],
     },
     Reports: {
@@ -283,16 +304,19 @@ const Sidebar = ({ onSelect, onLogOut }) => {
           label: "Stock Requirements",
           value: "stock-requirement",
           path: "/reports/stock",
+          allowedRoles: [3, 9, 10, 4, 2, 8, 11, 12],
         },
         {
           label: "Provision Details",
           value: "provision-detail",
           path: "/reports/provision",
+          allowedRoles: [3, 9, 10, 4, 2, 8, 11, 12],
         },
         {
           label: "Forecast Report",
           value: "forecast-report",
           path: "/reports/forecast",
+          allowedRoles: [3, 9, 10, 4, 2, 8, 11, 12],
         },
       ],
     },
@@ -303,20 +327,38 @@ const Sidebar = ({ onSelect, onLogOut }) => {
       label: "BGS Stock Requests",
       value: "requestsPage",
       path: "/requests",
+      allowedRoles: [3, 2, 10, 4, 9],
     },
-    { label: "Transaction", value: "transaction", path: "/transaction" },
+    {
+      label: "Transaction",
+      value: "transaction",
+      path: "/transaction",
+      allowedRoles: [3, 4, 2, 1, 8, 12, 9, 11],
+    },
     {
       label: "Operation Response",
       value: "OperationResponse",
       path: "/responses/operation",
+      allowedRoles: [3, 4, 2, 11, 12],
     },
     {
       label: "Uniform Condition",
       value: "uniformcondition",
       path: "/condition",
+      allowedRoles: [3, 4, 2, 12],
     },
-    { label: "Uniforms", value: "uniforms", path: "/uniforms" },
+    {
+      label: "Uniforms",
+      value: "uniforms",
+      path: "/uniforms",
+      allowedRoles: [3, 4, 2, 9, 10],
+    },
   ];
+
+  const hasAccess = (allowedRoles) => {
+    if (!user.roleId) return false;
+    return allowedRoles.some((role) => user.roleId.includes(role));
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -337,6 +379,8 @@ const Sidebar = ({ onSelect, onLogOut }) => {
   };
 
   const handleSelect = (item) => {
+    if (!hasAccess(item.allowedRoles)) return;
+
     setActive(item.value);
     onSelect(item.value);
     navigate(item.path);
@@ -392,7 +436,6 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         </UserProfile>
 
         <MenuContainer>
-          {/* Grouped Items */}
           {Object.entries(menuGroups).map(([key, group]) => (
             <div key={key}>
               <GroupHeader
@@ -408,6 +451,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
                     key={item.value}
                     active={active === item.value}
                     onClick={() => handleSelect(item)}
+                    disabled={!hasAccess(item.allowedRoles)}
                   >
                     {item.label}
                   </SidebarButton>
@@ -416,12 +460,12 @@ const Sidebar = ({ onSelect, onLogOut }) => {
             </div>
           ))}
 
-          {/* Standalone Items */}
           {standaloneItems.map((item) => (
             <SidebarButton
               key={item.value}
               active={active === item.value}
               onClick={() => handleSelect(item)}
+              disabled={!hasAccess(item.allowedRoles)}
             >
               {item.label}
             </SidebarButton>

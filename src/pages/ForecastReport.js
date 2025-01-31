@@ -447,7 +447,7 @@ const ForecastReport = () => {
           <StatsGrid>
             <StatCard highlight>
               <StatHeader>
-                <StatLabel>Total Uniform Orders</StatLabel>
+                <StatLabel>Total Uniform Count</StatLabel>
                 <StatValue>{data.TotalUniformOrderCount}</StatValue>
               </StatHeader>
               <GenderStats>

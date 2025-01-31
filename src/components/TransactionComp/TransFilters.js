@@ -50,6 +50,7 @@ export const Filters = ({
   onFilterChange,
   uniqueStatuses,
   projects,
+  handoveredDates,
 }) => (
   <FilterContainer>
     <FilterGroup>
@@ -70,12 +71,18 @@ export const Filters = ({
 
     <FilterGroup>
       <FilterLabel>Transaction Date</FilterLabel>
-      <FilterInput
-        type="date"
+      <FilterSelect
         name="transactionDate"
         value={filters.transactionDate}
         onChange={onFilterChange}
-      />
+      >
+        <option value="">Select Transaction Date</option>
+        {handoveredDates.sort().map((date) => (
+          <option key={date} value={date}>
+            {new Date(date).toLocaleDateString()}
+          </option>
+        ))}
+      </FilterSelect>
     </FilterGroup>
 
     <FilterGroup>
@@ -92,7 +99,6 @@ export const Filters = ({
       </FilterSelect>
     </FilterGroup>
 
-    {/* Existing filters */}
     <FilterGroup>
       <FilterLabel>Status</FilterLabel>
       <FilterSelect
@@ -135,23 +141,19 @@ export const Filters = ({
     </FilterGroup>
 
     <FilterGroup>
-      <FilterLabel>Start Date</FilterLabel>
-      <FilterInput
-        type="date"
-        name="startDate"
-        value={filters.startDate}
+      <FilterLabel>Handovered Date</FilterLabel>
+      <FilterSelect
+        name="handoveredDate"
+        value={filters.handoveredDate}
         onChange={onFilterChange}
-      />
-    </FilterGroup>
-
-    <FilterGroup>
-      <FilterLabel>End Date</FilterLabel>
-      <FilterInput
-        type="date"
-        name="endDate"
-        value={filters.endDate}
-        onChange={onFilterChange}
-      />
+      >
+        <option value="">Select Handovered Date</option>
+        {handoveredDates.sort().map((date) => (
+          <option key={date} value={date}>
+            {new Date(date).toLocaleDateString()}
+          </option>
+        ))}
+      </FilterSelect>
     </FilterGroup>
   </FilterContainer>
 );

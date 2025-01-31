@@ -329,9 +329,15 @@ const PDFsPage = () => {
 
       if (!response.ok) throw new Error("Failed to fetch PDFs");
       const data = await response.json();
+
+
       const pdfList = data[0]?.PdfFiles || [];
-      setPdfs(pdfList);
-      setFilteredPdfs(pdfList);
+      // Sort PDFs by date in descending order (newest first)
+      const sortedPdfList = [...pdfList].sort((a, b) => 
+        new Date(b.CreatedDate) - new Date(a.CreatedDate)
+      );
+      setPdfs(sortedPdfList);
+      setFilteredPdfs(sortedPdfList);
     } catch (error) {
       console.error("Error fetching PDFs:", error);
     }

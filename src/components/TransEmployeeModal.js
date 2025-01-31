@@ -99,8 +99,10 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
         const apiDayId = today === 0 ? 1 : today + 1;
 
-        const currentDay = data[0].WeekDays.find((day) => day.Id === apiDayId);
+        console.log(apiDayId);
 
+        const currentDay = data[0].WeekDays.find((day) => day.Id === apiDayId);
+        console.log(currentDay);
         setIsActiveDay(currentDay?.IsActive);
 
         if (!currentDay?.IsActive) {
@@ -115,7 +117,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
       checkActiveDay();
     }
   }, [isOpen, token]);
-
+  console.log(isActiveDay);
   // Fetch badges
   useEffect(() => {
     const fetchBadges = async () => {
@@ -522,7 +524,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                       </p>
                       <p className="employeeInfoText">
                         <strong className="label">Available Stock:</strong>{" "}
-                        {uniform.AvailableBGSStockCount}
+                        {uniform.AvailableDCStockCount}
                       </p>
 
                       <label className="label">Required Count:</label>
@@ -533,7 +535,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                           handleRequiredCountChange(
                             e,
                             uniform.UniformId,
-                            uniform.AvailableBGSStockCount,
+                            uniform.AvailableDCStockCount,
                             index
                           )
                         }

@@ -16,7 +16,6 @@ import Table from "../components/Table";
 import EditUniformModal from "../components/EditRequest";
 import CreateRequest from "../components/CreateRequest";
 import EmployeeModal from "../components/EmployeeModal";
-import RequestUploadModal from "../components/RequestUploadModal";
 import StatusFilter from "../components/StatusFilter";
 import SummarizeModal from "../components/BGSStockSummary";
 import Summarize from "../components/BGSTransSummary/TransactionModal";
@@ -194,9 +193,18 @@ const RequestsPage = () => {
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const data = await response.json();
 
+      // const stockRequests = data[0]?.BGSStockRequests || [];
+
+      // const sortedRequests = [...stockRequests].sort((a, b) => b.Id - a.Id);
       const stockRequests = data[0]?.BGSStockRequests || [];
 
-      const sortedRequests = [...stockRequests].sort((a, b) => b.Id - a.Id);
+      // Sort requests by Id in descending order (newest first)
+      // Sort requests by CreatedDate in descending order (newest first)
+      const sortedRequests = [...stockRequests].sort((a, b) => {
+        const dateA = new Date(a.CreatedDate);
+        const dateB = new Date(b.CreatedDate);
+        return dateB - dateA;
+      });
 
       // Fetch uniform details
       const uniformIds = sortedRequests.map((item) => item.UniformId);
