@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { FaPlus, FaHistory, FaAlignLeft, FaUpload } from "react-icons/fa";
+import { FaPlus, FaHistory, FaAlignLeft } from "react-icons/fa";
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -39,7 +39,8 @@ export const Header = ({
   onOpenEmployeeModal,
   onOpenTrackStatusModal,
   onOpenSummaryModal,
-  onOpenUploadModal,
+  user,
+  isTrackAllowed,
 }) => (
   <HeaderContainer>
     <Title>Transaction Page</Title>
@@ -48,18 +49,14 @@ export const Header = ({
         <FaPlus style={{ marginRight: "6px" }} />
         Order For Employee
       </StyledButton>
-      <StyledButton onClick={onOpenTrackStatusModal}>
+      <StyledButton onClick={onOpenTrackStatusModal} disabled={!isTrackAllowed}>
         <FaHistory style={{ marginRight: "6px" }} />
         Track Status
       </StyledButton>
-      <StyledButton onClick={onOpenSummaryModal}>
+      <StyledButton onClick={onOpenSummaryModal} disabled={!user}>
         <FaAlignLeft style={{ marginRight: "6px" }} />
         Summarize
       </StyledButton>
-      {/* <StyledButton onClick={onOpenUploadModal}>
-        <FaUpload style={{ marginRight: "6px" }} />
-        Upload
-      </StyledButton> */}
     </ButtonGroup>
   </HeaderContainer>
 );

@@ -197,6 +197,12 @@ const ManagerResponse = () => {
   const [itemsPerPage] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
 
+  const user = JSON.parse(localStorage.getItem("userData")) || {};
+  const isActionAllowed =
+    user.roleId?.includes(3) ||
+    user.roleId?.includes(2) ||
+    user.roleId?.includes(12);
+
   useEffect(() => {
     fetchStockData();
   }, []);
@@ -447,6 +453,7 @@ const ManagerResponse = () => {
                   onClick={() => handleAccept(Id)}
                   bgColor="#28a745"
                   hoverColor="#218838"
+                  disabled={!isActionAllowed}
                 >
                   Accept
                 </ActionButton>
@@ -454,6 +461,7 @@ const ManagerResponse = () => {
                   onClick={() => handleReject(Id)}
                   bgColor="#dc3545"
                   hoverColor="#c82333"
+                  disabled={!isActionAllowed}
                 >
                   Reject
                 </ActionButton>

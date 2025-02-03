@@ -175,6 +175,12 @@ const RequestsPage = () => {
   const [isSummarizeModalOpen, setSummarizeModalOpen] = useState(false);
   const [isSummarizeOpen, setSummarizeOpen] = useState(false);
 
+  const user = JSON.parse(localStorage.getItem("userData")) || {};
+  const isActionAllowed =
+    user.roleId?.includes(3) ||
+    user.roleId?.includes(2) ||
+    user.roleId?.includes(10);
+
   useEffect(() => {
     fetchStockData();
   }, [token]);
@@ -354,6 +360,40 @@ const RequestsPage = () => {
     { Header: "Type", accessor: "UniformDetails.UniType" },
     { Header: "Size", accessor: "UniformDetails.Size" },
     { Header: "Gender", accessor: "UniformDetails.Gender" },
+    {
+      Header: "Image",
+      accessor: "UniformImageUrl",
+      Cell: ({ value }) => {
+        const imageUrl = value
+          ? value.replace("/uniform/", "/uploads/uniform/")
+          : null;
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Uniform"
+                style={{
+                  width: "20%",
+                  height: "20%",
+                  borderRadius: "4px",
+                }}
+              />
+            ) : (
+              <div>No Image</div>
+            )}
+          </div>
+        );
+      },
+    },
     { Header: "Imported Count", accessor: "ImportedCount" },
     { Header: "Count", accessor: "Count" },
     { Header: "Request Count", accessor: "RequestCount" },
@@ -393,6 +433,7 @@ const RequestsPage = () => {
                 }}
               >
                 <FaEdit
+                  disabled={!isActionAllowed}
                   style={{ cursor: "pointer", color: "#2980b9" }}
                   onClick={() => handleEdit(row.original)}
                 />
@@ -463,7 +504,10 @@ const RequestsPage = () => {
       <Header>
         <Title>BGS Requests</Title>
         <ButtonGroup>
-          <StyledButton onClick={handleCreateUniform}>
+          <StyledButton
+            onClick={handleCreateUniform}
+            disabled={!isActionAllowed}
+          >
             <FaPlus style={{ marginRight: "8px" }} />
             Create Request
           </StyledButton>

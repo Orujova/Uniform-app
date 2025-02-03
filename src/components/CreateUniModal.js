@@ -5,40 +5,44 @@ import { showToast } from "../utils/toast";
 import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
 
-const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
+const CreateUniModal = ({ isOpen, onClose, onSave }) => {
   const token = localStorage.getItem("token");
   const [loading, setLoading] = useState(false);
   const [forms, setForms] = useState([
     {
-      uni_code: "",
+      uniCode: "",
       uniName: "",
       uniType: "",
       size: "",
       gender: "",
+      usageDuration: 0,
+      imageFile: null,
     },
   ]);
 
   const handleChange = (e, index) => {
-    const { name, value } = e.target;
-    setForms((prevForms) =>
-      prevForms.map((form, i) =>
-        i === index ? { ...form, [name]: value } : form
-      )
-    );
-  };
+    const { name, value, files } = e.target;
 
-  const addForm = () => {
-    setForms((prevForms) => [
-      ...prevForms,
-      {
-        uni_code: "",
-        uniName: "",
-        uniType: "",
-        size: "",
-        gender: "",
-      },
-    ]);
-    showToast("New uniform form added", "info");
+    if (name === "imageFile") {
+      setForms((prevForms) =>
+        prevForms.map((form, i) =>
+          i === index ? { ...form, [name]: files[0] } : form
+        )
+      );
+    } else if (name === "usageDuration") {
+      const numValue = parseInt(value) || 0;
+      setForms((prevForms) =>
+        prevForms.map((form, i) =>
+          i === index ? { ...form, [name]: numValue } : form
+        )
+      );
+    } else {
+      setForms((prevForms) =>
+        prevForms.map((form, i) =>
+          i === index ? { ...form, [name]: value } : form
+        )
+      );
+    }
   };
 
   const handleSave = async () => {
@@ -46,58 +50,89 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
       setLoading(true);
       const invalidForms = forms.filter((form) => {
         return (
-          !form.uni_code.trim() ||
-          !form.uniName.trim() ||
-          !form.uniType.trim() ||
-          !form.size.trim() ||
-          !form.gender.trim()
+          !form.uniCode?.trim() ||
+          !form.uniName?.trim() ||
+          !form.uniType?.trim() ||
+          !form.size?.trim() ||
+          !form.gender?.trim()
         );
       });
 
       if (invalidForms.length > 0) {
-        showToast("Please fill all fields in all forms", "error");
+        showToast("Please fill all required fields", "error");
         setLoading(false);
         return;
       }
 
-      const payload = {
-        UniformItems: forms.map((form, index) => ({
-          Id: index + 1,
-          UniCode: form.uni_code.trim(),
-          UniName: form.uniName.trim(),
-          UniType: form.uniType.trim(),
-          Size: form.size.trim(),
-          Gender: form.gender.trim(),
-        })),
-      };
+      // Create FormData
+      const formData = new FormData();
 
-      const response = await fetch(API_BASE_URL + `/api/Uniform`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+      // Log request data for debugging
+      console.log("Forms data:", forms);
+
+      forms.forEach((form, index) => {
+        // Main form fields
+        formData.append(`uniformItems[${index}].uniCode`, form.uniCode.trim());
+        formData.append(`uniformItems[${index}].uniName`, form.uniName.trim());
+        formData.append(`uniformItems[${index}].uniType`, form.uniType.trim());
+        formData.append(`uniformItems[${index}].size`, form.size.trim());
+        formData.append(`uniformItems[${index}].gender`, form.gender.trim());
+        formData.append(
+          `uniformItems[${index}].usageDuration`,
+          form.usageDuration.toString()
+        );
+
+        // Handle image file if exists
+        if (form.imageFile) {
+          formData.append(`uniformItems[${index}].imageFile`, form.imageFile);
+        }
       });
 
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        const errorMessages = Object.values(errorDetails.errors)
-          .flat()
-          .join("\n");
-        showToast(`Validation Errors:\n${errorMessages}`);
-        return;
+      // Log FormData entries for debugging
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
       }
 
-      const savedData = await response.json();
-      showToast(`Successfully created ${forms.length} uniform(s)`, "success");
-      onSave(savedData);
+      const response = await fetch(`${API_BASE_URL}/api/Uniform`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      console.log("Response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "An error occurred");
+      }
+
+      showToast(data.message || "Uniforms created successfully", "success");
+      onSave(data);
       resetForms();
     } catch (error) {
-      console.error("Error creating uniforms:", error.message);
+      console.error("Error details:", error);
+      showToast(error.message || "Failed to create uniforms", "error");
     } finally {
       setLoading(false);
     }
+  };
+
+  const addForm = () => {
+    setForms((prevForms) => [
+      ...prevForms,
+      {
+        uniCode: "",
+        uniName: "",
+        uniType: "",
+        size: "",
+        gender: "",
+        usageDuration: 0,
+        imageFile: null,
+      },
+    ]);
+    showToast("New uniform form added", "info");
   };
 
   const deleteForm = (index) => {
@@ -108,14 +143,15 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
   const resetForms = () => {
     setForms([
       {
-        uni_code: "",
+        uniCode: "",
         uniName: "",
         uniType: "",
         size: "",
         gender: "",
+        usageDuration: 0,
+        imageFile: null,
       },
     ]);
-
     onClose();
   };
 
@@ -143,15 +179,15 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
             )}
             <div className="form-grid">
               <div className="form-group">
-                <label className="label" htmlFor={`uni_code_${index}`}>
-                  UniCode
+                <label className="label" htmlFor={`uniCode_${index}`}>
+                  Uniform Code
                 </label>
                 <input
                   className="input"
                   type="text"
-                  id={`uni_code_${index}`}
-                  name="uni_code"
-                  value={formData.uni_code}
+                  id={`uniCode_${index}`}
+                  name="uniCode" // Changed from uni_code
+                  value={formData.uniCode}
                   onChange={(e) => handleChange(e, index)}
                   placeholder="Enter Uniform Code"
                 />
@@ -214,6 +250,42 @@ const CreateUniModal = ({ isOpen, onClose, onSave, apiData }) => {
                   onChange={(e) => handleChange(e, index)}
                   placeholder="Enter Uniform Gender"
                 />
+              </div>
+            </div>
+
+            <div className="form-grid two-column">
+              <div className="form-group">
+                <label className="label" htmlFor={`usageDuration_${index}`}>
+                  Usage Duration (months)
+                </label>
+                <input
+                  className="input"
+                  type="number"
+                  id={`usageDuration_${index}`}
+                  name="usageDuration"
+                  value={formData.usageDuration}
+                  onChange={(e) => handleChange(e, index)}
+                  min="1"
+                  placeholder="Enter Usage Duration"
+                />
+              </div>
+              <div className="form-group">
+                <label className="label" htmlFor={`imageFile_${index}`}>
+                  Image
+                </label>
+                <input
+                  className="input"
+                  type="file"
+                  id={`imageFile_${index}`}
+                  name="imageFile"
+                  accept="image/*"
+                  onChange={(e) => handleChange(e, index)}
+                />
+                {formData.imageFile && (
+                  <p className="file-name">
+                    Selected: {formData.imageFile.name}
+                  </p>
+                )}
               </div>
             </div>
           </div>

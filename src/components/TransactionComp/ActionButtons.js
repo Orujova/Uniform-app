@@ -30,7 +30,7 @@ const ActionButton = styled.button`
   }
 `;
 
-export const ActionButtons = ({ selectedTransactions, onAction }) => {
+export const ActionButtons = ({ selectedTransactions, onAction, user }) => {
   if (selectedTransactions.length === 0) return null;
 
   const allPending = selectedTransactions.every(
@@ -44,12 +44,17 @@ export const ActionButtons = ({ selectedTransactions, onAction }) => {
     <ActionButtonGroup>
       {allPending && (
         <>
-          <ActionButton variant="accept" onClick={() => onAction("accept")}>
+          <ActionButton
+            variant="accept"
+            onClick={() => onAction("accept")}
+            disabled={!user}
+          >
             Accept
           </ActionButton>
           <ActionButton
             variant="accept"
             onClick={() => onAction("acceptAndHandover")}
+            disabled={!user}
           >
             Accept & Handover
           </ActionButton>
@@ -59,7 +64,7 @@ export const ActionButtons = ({ selectedTransactions, onAction }) => {
         <ActionButton
           variant="handover"
           onClick={() => onAction("handover")}
-          disabled={allPending}
+          disabled={allPending || !user}
         >
           Handover
         </ActionButton>

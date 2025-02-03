@@ -168,6 +168,7 @@ const StockPage = () => {
     { Header: "Type", accessor: "UniType" },
     { Header: "Gender", accessor: "Gender" },
     { Header: "Count", accessor: "CountUniform" },
+
     {
       Header: "Actions",
       accessor: "actions",

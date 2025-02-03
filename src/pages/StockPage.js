@@ -195,6 +195,7 @@ const StockPage = () => {
     { Header: "Unit Price", accessor: "UnitPrice" },
     { Header: "Total Price", accessor: "TotalPrice" },
     { Header: "Option", accessor: "StoreOrEmployee" },
+
     {
       Header: "Actions",
       accessor: "actions",

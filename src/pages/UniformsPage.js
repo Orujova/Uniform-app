@@ -166,6 +166,41 @@ const StockPage = () => {
     { Header: "Type", accessor: "UniType" },
     { Header: "Gender", accessor: "Gender" },
     {
+      Header: "Image",
+      accessor: "ImageUrl",
+      Cell: ({ value }) => {
+        const imageUrl = value
+          ? value.replace("/uniform/", "/uploads/uniform/")
+          : null;
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Uniform"
+                style={{
+                  width: "20%",
+                  height: "20%",
+
+                  borderRadius: "4px",
+                }}
+              />
+            ) : (
+              <div>No Image</div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (

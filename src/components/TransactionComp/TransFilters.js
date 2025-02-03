@@ -51,6 +51,7 @@ export const Filters = ({
   uniqueStatuses,
   projects,
   handoveredDates,
+  user,
 }) => (
   <FilterContainer>
     <FilterGroup>
@@ -59,6 +60,7 @@ export const Filters = ({
         name="projectId"
         value={filters.projectId}
         onChange={onFilterChange}
+        disabled={!user}
       >
         <option value="">All Projects</option>
         {projects.map((project) => (

@@ -83,6 +83,23 @@ const TransactionPage = () => {
   const [handoveredDates, setHandoveredDates] = useState([]);
   const [transactionDates, setTransactionDates] = useState([]);
 
+  const user = JSON.parse(localStorage.getItem("userData")) || {};
+  const isProjectFilterAllowed =
+    user.roleId?.includes(8) ||
+    user.roleId?.includes(9) ||
+    user.roleId?.includes(3);
+  const isActionAllowed =
+    user.roleId?.includes(3) ||
+    user.roleId?.includes(2) ||
+    user.roleId?.includes(1);
+
+  const isTrackAllowed =
+    user.roleId?.includes(3) ||
+    user.roleId?.includes(12) ||
+    user.roleId?.includes(1) ||
+    user.roleId?.includes(2) ||
+    user.roleId?.includes(4);
+
   const handleClearFilters = () => {
     setFilters({
       status: "",
@@ -247,6 +264,40 @@ const TransactionPage = () => {
     { Header: "Size", accessor: "UniformSize" },
     { Header: "Type", accessor: "UniformType" },
     { Header: "Unit Price", accessor: "UnitPrice" },
+    {
+      Header: "Image",
+      accessor: "UniformImageUrl",
+      Cell: ({ value }) => {
+        const imageUrl = value
+          ? value.replace("/uniform/", "/uploads/uniform/")
+          : null;
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Uniform"
+                style={{
+                  width: "20%",
+                  height: "20%",
+                  borderRadius: "4px",
+                }}
+              />
+            ) : (
+              <div>No Image</div>
+            )}
+          </div>
+        );
+      },
+    },
     { Header: "Project Name", accessor: "ProjectName" },
     { Header: "Count", accessor: "UniCount" },
     { Header: "Sender", accessor: "Sender" },
@@ -341,7 +392,7 @@ const TransactionPage = () => {
               borderRadius: "4px",
               cursor: isDisabled ? "not-allowed" : "pointer",
             }}
-            disabled={isDisabled}
+            disabled={isDisabled || !isActionAllowed}
           >
             Reassign
           </button>
@@ -625,6 +676,8 @@ const TransactionPage = () => {
         onOpenTrackStatusModal={() => setTrackStatusModalOpen(true)}
         onOpenSummaryModal={() => setSummaryModalOpen(true)}
         onOpenUploadModal={() => setUploadModalOpen(true)}
+        user={isActionAllowed}
+        isTrackAllowed={isTrackAllowed}
       />
       <div>
         <Filters
@@ -634,6 +687,7 @@ const TransactionPage = () => {
           projects={projects}
           transactionDates={transactionDates}
           handoveredDates={handoveredDates}
+          user={isProjectFilterAllowed}
         />
 
         <FilterActionsContainer>
@@ -648,6 +702,7 @@ const TransactionPage = () => {
           selectedRows.includes(item.Id)
         )}
         onAction={handleAction}
+        user={isActionAllowed}
       />
 
       {isLoading ? (
@@ -696,10 +751,7 @@ const TransactionPage = () => {
         isOpen={isSummaryModalOpen}
         onClose={() => setSummaryModalOpen(false)}
       />
-      {/* <UploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setUploadModalOpen(false)}
-      /> */}
+
       <ToastContainer />
     </StockContainer>
   );

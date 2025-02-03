@@ -329,6 +329,7 @@ const ForecastReport = () => {
       Header: "Type",
       accessor: "UniType",
     },
+
     {
       Header: "DC Stock",
       accessor: "DCStockCount",
