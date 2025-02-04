@@ -69,9 +69,14 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
 
       // Process stock data
       const stocks = stockData[0]?.DCStocks || [];
+
       const stockMap = {};
       stocks.forEach((item) => {
-        stockMap[item.Id] = item.StockCount;
+        if (stockMap[item.UniformId]) {
+          stockMap[item.UniformId] += item.StockCount;
+        } else {
+          stockMap[item.UniformId] = item.StockCount;
+        }
       });
       setStockData(stockMap);
     } catch (error) {
@@ -191,7 +196,7 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const response = await fetch(API_BASE_URL + "/api/BGSStockRequest", {
         method: "POST",

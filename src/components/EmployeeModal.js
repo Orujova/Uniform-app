@@ -142,6 +142,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       if (!response.ok) {
         throw new Error(`Failed to fetch uniform data: ${response.status}`);
       }

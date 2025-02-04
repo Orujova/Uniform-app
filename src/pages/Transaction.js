@@ -286,8 +286,8 @@ const TransactionPage = () => {
                 src={imageUrl}
                 alt="Uniform"
                 style={{
-                  width: "20%",
-                  height: "20%",
+                  width: "50px",
+                  height: "50px",
                   borderRadius: "4px",
                 }}
               />

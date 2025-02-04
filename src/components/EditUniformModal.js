@@ -48,6 +48,21 @@ const FormGroup = styled.div`
   }
 `;
 
+const ImagePreview = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+`;
+
 const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -93,6 +108,8 @@ const EditUniformModal = ({
   const [types, setTypes] = useState([]);
   const [genders, setGenders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+
   useEffect(() => {
     console.log("Initial Data in Modal:", initialData);
     setFormData(initialData || {});
@@ -111,24 +128,55 @@ const EditUniformModal = ({
   }, [isOpen, apiData]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { name, value, files } = e.target;
+    if (name === "ImageFile") {
+      const file = files[0];
+      if (file) {
+        setImageFile(file);
+        // Generate a new image URL
+        const fileExtension = file.name.split(".").pop();
+        const randomId = Math.random().toString(36).substring(2, 15);
+        const imageUrl = `/uniform/${randomId}.${fileExtension}`;
+        setFormData((prev) => ({
+          ...prev,
+          ImageUrl: imageUrl,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSave = async () => {
     try {
       setLoading(true);
+      const formDataToSend = new FormData();
+
+      // Append all form fields
+      Object.keys(formData).forEach((key) => {
+        if (key !== "ImageFile" && key !== "ImageUrl") {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      // Append the image file if it exists
+      if (imageFile) {
+        formDataToSend.append("ImageFile", imageFile);
+        formDataToSend.append("ImageUrl", formData.ImageUrl);
+      }
+
       const response = await fetch(API_BASE_URL + `/api/Uniform`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
+
+      console.log(formDataToSend);
 
       if (!response.ok) {
         const errorDetails = await response.json();
@@ -136,7 +184,6 @@ const EditUniformModal = ({
       }
 
       const updatedData = await response.json();
-
       onSave(updatedData);
       onClose();
     } catch (error) {
@@ -147,6 +194,10 @@ const EditUniformModal = ({
   };
 
   if (!isOpen) return null;
+
+  const currentImageUrl = formData.ImageUrl
+    ? formData.ImageUrl.replace("/uniform/", "/uploads/uniform/")
+    : null;
 
   return (
     <ModalOverlay>
@@ -214,6 +265,25 @@ const EditUniformModal = ({
               </option>
             ))}
           </select>
+        </FormGroup>
+        <FormGroup>
+          <label>Image</label>
+          <input
+            type="file"
+            name="ImageFile"
+            onChange={handleChange}
+            accept="image/*"
+          />
+          {/* {(currentImageUrl || imageFile) && (
+            <ImagePreview>
+              {currentImageUrl && !imageFile && (
+                <img src={currentImageUrl} alt="Current uniform" />
+              )}
+              {imageFile && (
+                <img src={URL.createObjectURL(imageFile)} alt="New uniform" />
+              )}
+            </ImagePreview>
+          )} */}
         </FormGroup>
         <ButtonGroup>
           <button className="cancel" onClick={onClose} disabled={loading}>

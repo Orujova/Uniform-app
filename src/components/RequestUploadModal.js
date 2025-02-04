@@ -102,7 +102,7 @@ const FileName = styled.span`
   white-space: nowrap;
 `;
 
-const RequestUploadModal = ({ isOpen, onClose }) => {
+const RequestUploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const token = localStorage.getItem("token");
@@ -143,6 +143,7 @@ const RequestUploadModal = ({ isOpen, onClose }) => {
       }
 
       showToast("File uploaded successfully", "success");
+      onUploadSuccess();
       onClose();
       setSelectedFile(null);
     } catch (error) {

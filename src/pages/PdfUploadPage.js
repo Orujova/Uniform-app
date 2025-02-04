@@ -356,6 +356,10 @@ const PDFsPage = () => {
     setEndDate("");
   };
 
+  const handleRefresh = () => {
+    fetchPdfs();
+  };
+
   return (
     <PageContainer>
       <Header>
@@ -382,18 +386,17 @@ const PDFsPage = () => {
           </ClearFilterButton>
 
           {/* Show RequestUpload button only for role ID 8 */}
-          {userRole.includes(10) && (
+          {(userRole.includes(10) || userRole.includes(3)) && (
             <StyledButton onClick={handleRequestUploadModal}>
               <FaUpload style={{ marginRight: "8px" }} />
-              Upload PDF
+              Upload BGS PDF
             </StyledButton>
           )}
 
-          {/* Show Upload button only for role ID 1 */}
-          {userRole.includes(1) && (
+          {(userRole.includes(1) || userRole.includes(3)) && (
             <StyledButton onClick={handleUploadModal}>
               <FaUpload style={{ marginRight: "8px" }} />
-              Upload PDF
+              Upload Store PDF
             </StyledButton>
           )}
         </FilterContainer>
@@ -446,11 +449,13 @@ const PDFsPage = () => {
       <RequestUploadModal
         isOpen={isRequestUploadModalOpen}
         onClose={() => setRequestUploadModalOpen(false)}
+        onUploadSuccess={handleRefresh}
       />
 
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
+        onUploadSuccess={handleRefresh}
       />
 
       {filteredPdfs.length > 0 && (
