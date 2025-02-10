@@ -8,11 +8,13 @@ import {
   FaChevronRight,
   FaTimes,
   FaAlignLeft,
+  FaUserPlus,
 } from "react-icons/fa";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "../utils/ToastContainer";
 import { API_BASE_URL } from "../config";
 import Table from "../components/Table";
+import AddEmployeeModal from "../components/AddEmployeeModal ";
 import EditUniformModal from "../components/EditRequest";
 import CreateRequest from "../components/CreateRequest";
 import EmployeeModal from "../components/EmployeeModal";
@@ -48,7 +50,7 @@ const ButtonGroup = styled.div`
 
 const StyledButton = styled.button`
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #fff;
   background-color: #0284c7;
@@ -164,7 +166,7 @@ const RequestsPage = () => {
   const [stockData, setStockData] = useState([]);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isEmployeeModalOpen, setEmployeeModalOpen] = useState(false);
-  const [isRequestUploadModalOpen, setRequestUploadModalOpen] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
@@ -174,6 +176,7 @@ const RequestsPage = () => {
   const [itemsPerPage] = useState(6);
   const [isSummarizeModalOpen, setSummarizeModalOpen] = useState(false);
   const [isSummarizeOpen, setSummarizeOpen] = useState(false);
+  const [isAddEmployeeModalOpen, setAddEmployeeModalOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("userData")) || {};
   const isActionAllowed =
@@ -199,13 +202,8 @@ const RequestsPage = () => {
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const data = await response.json();
 
-      // const stockRequests = data[0]?.BGSStockRequests || [];
-
-      // const sortedRequests = [...stockRequests].sort((a, b) => b.Id - a.Id);
       const stockRequests = data[0]?.BGSStockRequests || [];
 
-      // Sort requests by Id in descending order (newest first)
-      // Sort requests by CreatedDate in descending order (newest first)
       const sortedRequests = [...stockRequests].sort((a, b) => {
         const dateA = new Date(a.CreatedDate);
         const dateB = new Date(b.CreatedDate);
@@ -298,7 +296,6 @@ const RequestsPage = () => {
 
   const handleCreateUniform = () => setCreateModalOpen(true);
   const handleEmployeeModal = () => setEmployeeModalOpen(true);
-  const handleRequestUploadModal = () => setRequestUploadModalOpen(true);
 
   const handleSaveUniform = async () => {
     await fetchStockData();
@@ -523,10 +520,10 @@ const RequestsPage = () => {
             <FaAlignLeft style={{ marginRight: "8px" }} />
             Transaction Summarize
           </StyledButton>
-          {/* <StyledButton onClick={handleRequestUploadModal}>
-            <FaUpload style={{ marginRight: "8px" }} />
-            Upload
-          </StyledButton> */}
+          <StyledButton onClick={() => setAddEmployeeModalOpen(true)}>
+            <FaUserPlus style={{ marginRight: "8px" }} />
+            Add Employee
+          </StyledButton>
         </ButtonGroup>
       </Header>
 
@@ -587,10 +584,6 @@ const RequestsPage = () => {
         isOpen={isEmployeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
       />
-      {/* <RequestUploadModal
-        isOpen={isRequestUploadModalOpen}
-        onClose={() => setRequestUploadModalOpen(false)}
-      /> */}
 
       <EditUniformModal
         isOpen={isEditModalOpen}
@@ -607,6 +600,10 @@ const RequestsPage = () => {
       <Summarize
         isOpen={isSummarizeOpen}
         onClose={() => setSummarizeOpen(false)}
+      />
+      <AddEmployeeModal
+        isOpen={isAddEmployeeModalOpen}
+        onClose={() => setAddEmployeeModalOpen(false)}
       />
       <ToastContainer />
     </StockContainer>

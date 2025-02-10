@@ -17,7 +17,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { User, Mail, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
-import { showToast } from "../utils/toast";
+
 import { ToastContainer } from "../utils/ToastContainer";
 
 const RegisterPage = () => {

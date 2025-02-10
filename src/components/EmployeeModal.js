@@ -4,6 +4,7 @@ import "../styles/EmployeeModal.css";
 import { FaTimes } from "react-icons/fa";
 import { showToast } from "../utils/toast";
 import { ToastContainer } from "../utils/ToastContainer";
+import ChangeSizeModal from "./ChangeSize";
 
 const EmployeeModal = ({ isOpen, onClose }) => {
   const token = localStorage.getItem("token");
@@ -22,6 +23,8 @@ const EmployeeModal = ({ isOpen, onClose }) => {
     },
   ]);
   const [badges, setBadges] = useState([]);
+  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
+  const [activeSizeRequest, setActiveSizeRequest] = useState(null);
 
   // Inline styles
   const modalStyles = {
@@ -88,6 +91,52 @@ const EmployeeModal = ({ isOpen, onClose }) => {
 
     fetchBadges();
   }, [token]);
+
+  const handleOpenSizeModal = (request) => {
+    setActiveSizeRequest(request);
+    setIsSizeModalOpen(true);
+  };
+
+  const handleCloseSizeModal = async (wasUpdated = false) => {
+    setIsSizeModalOpen(false);
+    setActiveSizeRequest(null);
+
+    if (wasUpdated) {
+      // Find the index of the updated employee
+      const index = employeeRequests.findIndex(
+        (req) => req.selectedBadge?.Id === activeSizeRequest.selectedBadge?.Id
+      );
+
+      if (index !== -1) {
+        try {
+          // Fetch fresh employee data
+          const employee = await fetchEmployeeData(
+            activeSizeRequest.selectedBadge.Id
+          );
+          // Fetch fresh uniform data
+          const uniforms = await fetchUniformData(
+            activeSizeRequest.selectedBadge.Id
+          );
+
+          // Update the state with new data
+          updateEmployeeRequest(index, {
+            employeeData: employee,
+            uniformData: uniforms,
+            // Preserve existing required counts and warnings
+            requiredCounts: {
+              ...employeeRequests[index].requiredCounts,
+            },
+            warnings: {
+              ...employeeRequests[index].warnings,
+            },
+          });
+        } catch (error) {
+          console.error("Error refreshing data:", error);
+          showToast("Error refreshing uniform data", "error");
+        }
+      }
+    }
+  };
 
   // Update useEffect for suggestions
   useEffect(() => {
@@ -429,8 +478,41 @@ const EmployeeModal = ({ isOpen, onClose }) => {
             )}
 
             {request.uniformData && request.uniformData.length > 0 && (
+              // <div className="employeeInfo">
+              //   <h3 className="employeeInfoHeader">Uniform Details:</h3>
+
+              //   <button
+              //     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              //     onClick={() => handleOpenSizeModal(request)}
+              //   >
+              //     Change size
+              //   </button>
+
               <div className="employeeInfo">
-                <h3 className="employeeInfoHeader">Uniform Details:</h3>
+                <div className="employeeInfoHeader">
+                  <h3>Uniform Details</h3>
+                  <button
+                    className="changeSizeButton"
+                    onClick={() => handleOpenSizeModal(request)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                    </svg>
+                    Change size
+                  </button>
+                </div>
+
                 <div className="detailsContainer">
                   {request.uniformData.map((uniform) => (
                     <div key={uniform.UniformId} className="uniformItem">
@@ -510,6 +592,19 @@ const EmployeeModal = ({ isOpen, onClose }) => {
             Cancel
           </button>
         </div>
+
+        {isSizeModalOpen && (
+          <ChangeSizeModal
+            isOpen={isSizeModalOpen}
+            onClose={handleCloseSizeModal}
+            badge={activeSizeRequest?.selectedBadge?.Badge}
+            employeeData={activeSizeRequest?.employeeData}
+            onSizeUpdate={() => {
+              // Refresh the employee data after size update
+              handleCloseSizeModal(true);
+            }}
+          />
+        )}
         <ToastContainer />
       </div>
     </div>
