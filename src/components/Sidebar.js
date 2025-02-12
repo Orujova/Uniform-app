@@ -20,7 +20,7 @@ const SidebarContainer = styled.div`
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   border-radius: 16px;
   height: 100vh;
-  // min-height: 100vh;
+
   position: relative;
   width: 20%;
   overflow: hidden;

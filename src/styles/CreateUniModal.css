@@ -168,3 +168,39 @@
 .cancel:hover {
   background: #c0392b;
 }
+
+.react-select-container {
+  width: 100%;
+}
+
+.react-select__control {
+  min-height: 38px;
+  /* border: 1px solid #ddd !important; */
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.react-select__control:hover {
+  border-color: #999 !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #075985 !important;
+  box-shadow: 0 0 0 1px #075985 !important;
+}
+
+.react-select__menu {
+  z-index: 1000 !important;
+}
+
+.react-select__option {
+  padding: 8px 12px !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #075985 !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #deebff !important;
+}

@@ -5,7 +5,7 @@ import { showToast } from "../utils/toast";
 import { ToastContainer } from "../utils/ToastContainer";
 import { FaTimes } from "react-icons/fa";
 import LoadingSpinner from "./LoadingSpinner";
-
+import Select from "react-select";
 const CreateRequest = ({ isOpen, onClose, onSave }) => {
   const [bgsProjectss, setBgsProject] = useState(null);
   const token = localStorage.getItem("token");
@@ -64,7 +64,7 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
       // Process projects
       const projects = projectsData[0]?.Projects || [];
       console.log(projects);
-      const bgsProject = projects.find((project) => project.Id == "506");
+      const bgsProject = projects.find((project) => project.Id == "530");
       console.log(bgsProject);
       setBgsProject(bgsProject);
       setProjectName(bgsProject?.ProjectName || "");
@@ -94,8 +94,30 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
     }
   }, [isOpen]);
 
-  const handleUniCodeChange = (e, index) => {
-    const selectedUniCode = e.target.value;
+  const handleUniCodeChange = (selectedOption, index) => {
+    if (!selectedOption) {
+      // Handle clearing the selection
+      setForms((prevForms) =>
+        prevForms.map((form, i) =>
+          i === index
+            ? {
+                ...form,
+                UniformId: "",
+                UniCode: "",
+                UniName: "",
+                UniType: "",
+                Size: "",
+                Gender: "",
+                Project: projectName,
+                StockCount: 0,
+              }
+            : form
+        )
+      );
+      return;
+    }
+
+    const selectedUniCode = selectedOption.value;
     const selectedUniform = uniformOptions.find(
       (uniform) => uniform.UniCode === selectedUniCode
     );
@@ -119,6 +141,10 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
       )
     );
   };
+  const selectOptions = uniformOptions.map((option) => ({
+    value: option.UniCode,
+    label: `${option.UniCode}`,
+  }));
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
@@ -286,22 +312,21 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
                 <label className="label" htmlFor={`UniCode_${index}`}>
                   Uniform Code
                 </label>
-                <select
-                  className="input"
+                <Select
                   id={`UniCode_${index}`}
-                  value={formData.UniCode}
-                  onChange={(e) => handleUniCodeChange(e, index)}
-                >
-                  <option value="">Select Uniform Code</option>
-                  {uniformOptions.map((option, idx) => (
-                    <option
-                      key={`${option.UniCode}-${idx}`}
-                      value={option.UniCode}
-                    >
-                      {option.UniCode}
-                    </option>
-                  ))}
-                </select>
+                  value={
+                    selectOptions.find(
+                      (option) => option.value === formData.UniCode
+                    ) || null
+                  }
+                  onChange={(option) => handleUniCodeChange(option, index)}
+                  options={selectOptions}
+                  isClearable
+                  isSearchable
+                  placeholder="Uniform code..."
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                />
               </div>
 
               <div className="form-group">
