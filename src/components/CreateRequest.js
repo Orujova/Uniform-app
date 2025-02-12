@@ -64,7 +64,7 @@ const CreateRequest = ({ isOpen, onClose, onSave }) => {
       // Process projects
       const projects = projectsData[0]?.Projects || [];
       console.log(projects);
-      const bgsProject = projects.find((project) => project.Id == "530");
+      const bgsProject = projects.find((project) => project.Id == "506");
       console.log(bgsProject);
       setBgsProject(bgsProject);
       setProjectName(bgsProject?.ProjectName || "");
