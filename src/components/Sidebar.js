@@ -19,7 +19,8 @@ const SidebarContainer = styled.div`
   justify-content: space-between;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   border-radius: 16px;
-  height: 95vh;
+  height: 100vh;
+  // min-height: 100vh;
   position: relative;
   width: 20%;
   overflow: hidden;
@@ -65,6 +66,28 @@ const MenuContainer = styled.div`
   padding-bottom: 20px;
 `;
 
+// const UserInfoSection = styled.div`
+//   display: flex;
+//   align-items: center;
+//   gap: 12px;
+// `;
+
+// const UserInfo = styled.div`
+//   display: flex;
+//   flex-direction: column;
+// `;
+
+// const Username = styled.span`
+//   font-size: 14px;
+//   font-weight: 600;
+//   color: #2d3a45;
+// `;
+
+// const UserRole = styled.span`
+//   font-size: 14px;
+//   color: #7d8996;
+// `;
+
 const UserProfile = styled.div`
   position: relative;
   cursor: pointer;
@@ -72,6 +95,7 @@ const UserProfile = styled.div`
   border-radius: 12px;
   border: 1px solid #e6e9ec;
   transition: all 0.3s ease;
+  max-width: 100%;
 
   &:hover {
     background-color: #f8f9fa;
@@ -82,30 +106,52 @@ const UserProfile = styled.div`
 const UserProfileContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
   justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 `;
 
 const UserInfoSection = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0; // Important for text truncation
+  flex: 1;
+`;
+
+const UserAvatar = styled(FaUserCircle)`
+  flex-shrink: 0; // Prevent avatar from shrinking
+  min-width: 38px;
 `;
 
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0; // Important for text truncation
+  flex: 1;
 `;
 
 const Username = styled.span`
   font-size: 14px;
   font-weight: 600;
   color: #2d3a45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 `;
 
 const UserRole = styled.span`
   font-size: 14px;
   color: #7d8996;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+`;
+
+const ChevronContainer = styled.div`
+  flex-shrink: 0; // Prevent chevron from shrinking
 `;
 
 const DropdownMenu = styled.div`
@@ -408,7 +454,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
           onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
           ref={dropdownRef}
         >
-          <UserProfileContent>
+          {/* <UserProfileContent>
             <UserInfoSection>
               <FaUserCircle size={38} color="#4A90E2" />
               <UserInfo>
@@ -417,17 +463,34 @@ const Sidebar = ({ onSelect, onLogOut }) => {
               </UserInfo>
             </UserInfoSection>
             <ChevronIcon isOpen={isUserDropdownOpen} />
+          </UserProfileContent> */}
+
+          <UserProfileContent>
+            <UserInfoSection>
+              <UserAvatar size={38} color="#4A90E2" />
+              <UserInfo>
+                <Username>{user.fullName}</Username>
+                <UserRole>{user.email}</UserRole>
+              </UserInfo>
+            </UserInfoSection>
+            <ChevronContainer>
+              <ChevronIcon isOpen={isUserDropdownOpen} />
+            </ChevronContainer>
           </UserProfileContent>
 
           <DropdownMenu isOpen={isUserDropdownOpen}>
-            <DropdownItem onClick={handleCreateUser}>
-              <FaUserPlus size={16} />
-              Create User
-            </DropdownItem>
+            {hasRole3 && (
+              <DropdownItem onClick={handleCreateUser}>
+                <FaUserPlus size={16} />
+                Create User
+              </DropdownItem>
+            )}
+
             <DropdownItem onClick={handleChangePassword}>
               <FaKey size={16} />
               Change Password
             </DropdownItem>
+
             <DropdownItem isLogout onClick={handleLogOut}>
               <FaSignOutAlt size={16} />
               Log Out

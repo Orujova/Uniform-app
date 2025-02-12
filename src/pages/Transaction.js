@@ -205,9 +205,6 @@ const TransactionPage = () => {
       setHandoveredDates([]); // Köhnə tarixləri təmizlə
       setTransactionDates([]); // Köhnə tarixləri təmizlə
 
-      // ProjectID-ləri konsola yaz
-      console.log("User Projects:", userProjects);
-
       // Hər layihə üçün handovered tarixləri gətir
       for (const project of userProjects) {
         if (project.Id) {

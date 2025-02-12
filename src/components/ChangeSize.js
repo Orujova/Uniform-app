@@ -26,6 +26,10 @@ const ChangeSizeModal = ({
     ShoeSize: "",
   });
 
+  const [errors, setErrors] = useState({
+    ShoeSize: "",
+  });
+
   useEffect(() => {
     if (employeeData) {
       setSizes({
@@ -33,11 +37,30 @@ const ChangeSizeModal = ({
         ShirtSize: employeeData.ShirtSize || "",
         ShoeSize: employeeData.ShoeSize || "",
       });
+      setErrors({ ShoeSize: "" }); // Reset errors when modal opens
     }
   }, [employeeData]);
 
+  const validateShoeSize = (size) => {
+    const numSize = Number(size);
+    if (size === "") return ""; // Allow empty value
+    if (isNaN(numSize)) return "Please enter a valid number";
+    if (numSize < 36) return "Shoe size cannot be less than 36";
+    if (numSize > 45) return "Shoe size cannot be greater than 45";
+    return ""; // No error
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "ShoeSize") {
+      const error = validateShoeSize(value);
+      setErrors((prev) => ({
+        ...prev,
+        ShoeSize: error,
+      }));
+    }
+
     setSizes((prev) => ({
       ...prev,
       [name]: value,
@@ -45,6 +68,17 @@ const ChangeSizeModal = ({
   };
 
   const handleSubmit = async () => {
+    // Validate shoe size before submission
+    const shoeSizeError = validateShoeSize(sizes.ShoeSize);
+    if (shoeSizeError) {
+      setErrors((prev) => ({
+        ...prev,
+        ShoeSize: shoeSizeError,
+      }));
+      showToast(shoeSizeError, "error");
+      return;
+    }
+
     try {
       const response = await fetch(
         `${API_BASE_URL_HeadCount}/api/Employee/update-employee-size`,
@@ -71,13 +105,11 @@ const ChangeSizeModal = ({
         onSizeUpdate();
       }
 
-      // Close modal with update flag
       onClose(true);
-
-      // Show success message
       showToast("Sizes updated successfully", "success");
     } catch (error) {
       console.error("Error updating sizes:", error);
+      showToast("Failed to update sizes", "error");
     }
   };
 
@@ -109,20 +141,30 @@ const ChangeSizeModal = ({
         </FormGroup>
 
         <FormGroup>
-          <Label>Shoe Size</Label>
+          <Label>Shoe Size (36-45)</Label>
           <Input
             type="text"
             name="ShoeSize"
             value={sizes.ShoeSize}
             onChange={handleChange}
+            error={errors.ShoeSize}
           />
+          {errors.ShoeSize && (
+            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+              {errors.ShoeSize}
+            </div>
+          )}
         </FormGroup>
 
         <ButtonGroup>
           <Button variant="secondary" onClick={() => onClose(false)}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit}>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={errors.ShoeSize !== ""}
+          >
             Save Changes
           </Button>
         </ButtonGroup>

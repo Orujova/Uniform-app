@@ -33,11 +33,47 @@ const TransactionModal = ({ isOpen, onClose }) => {
     week: null,
   });
 
+  const fetchTransactions = async (year, week) => {
+    const token = localStorage.getItem("token");
+    let url = `${API_BASE_URL}/api/TransactionPage/GetAllBGSTransactions`;
+
+    // Add query parameters if they exist
+    const params = new URLSearchParams();
+    if (year) params.append("Year", year);
+    if (week) params.append("Week", week);
+    if (params.toString()) url += `?${params.toString()}`;
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.json();
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchInitialData();
     }
   }, [isOpen]);
+
+  // Add effect to refetch when year or week changes
+  useEffect(() => {
+    if (isOpen && (filters.year || filters.week)) {
+      fetchFilteredData();
+    }
+  }, [filters.year, filters.week]);
+
+  const fetchFilteredData = async () => {
+    setLoading(true);
+    try {
+      const transData = await fetchTransactions(filters.year, filters.week);
+      setAllTransactions(transData[0]?.Transactions || []);
+    } catch (err) {
+      console.error("Error fetching filtered data:", err);
+      setError("Failed to fetch filtered data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -62,7 +98,6 @@ const TransactionModal = ({ isOpen, onClose }) => {
       ]);
 
       setAllTransactions(transData[0]?.Transactions || []);
-
       setProjects(projData[0]?.Projects || []);
       setUniforms(uniData[0]?.Uniforms || []);
     } catch (err) {
@@ -76,25 +111,6 @@ const TransactionModal = ({ isOpen, onClose }) => {
   const getFilteredTransactions = () => {
     let filtered = [...allTransactions];
 
-    if (filters.year) {
-      filtered = filtered.filter((trans) => {
-        const transDate = new Date(trans.TransactionDate);
-        return transDate.getFullYear() === filters.year;
-      });
-    }
-
-    if (filters.week) {
-      filtered = filtered.filter((trans) => {
-        const transDate = new Date(trans.TransactionDate);
-        const startDate = new Date(transDate.getFullYear(), 0, 1);
-        const days = Math.floor(
-          (transDate - startDate) / (24 * 60 * 60 * 1000)
-        );
-        const week = Math.ceil((days + startDate.getDay() + 1) / 7);
-        return week === filters.week;
-      });
-    }
-
     if (filters.selectedProject) {
       filtered = filtered.filter(
         (trans) => trans.ProjectCode === filters.selectedProject.ProjectCode
@@ -103,7 +119,7 @@ const TransactionModal = ({ isOpen, onClose }) => {
 
     if (filters.selectedUniform) {
       filtered = filtered.filter(
-        (trans) => trans.UniCode === filters.selectedUniform.UniCode
+        (trans) => trans.UniformCode === filters.selectedUniform.UniCode
       );
     }
 
@@ -116,7 +132,7 @@ const TransactionModal = ({ isOpen, onClose }) => {
       setFilters((prev) => ({
         ...prev,
         year,
-        week: null, // Reset week when year changes
+        week: null,
       }));
     }
   };
@@ -162,10 +178,7 @@ const TransactionModal = ({ isOpen, onClose }) => {
   const filteredUniforms = uniforms.filter((uniform) => {
     if (!uniform) return false;
     const searchTerm = uniformSearch.toLowerCase();
-    return (
-      uniform.UniCode?.toLowerCase().includes(searchTerm) ||
-      uniform.UniName?.toLowerCase().includes(searchTerm)
-    );
+    return uniform.UniCode?.toLowerCase().includes(searchTerm);
   });
 
   const hasActiveFilters = () => {
@@ -177,7 +190,7 @@ const TransactionModal = ({ isOpen, onClose }) => {
     );
   };
 
-  const clearAllFilters = () => {
+  const clearAllFilters = async () => {
     setFilters({
       selectedProject: null,
       selectedUniform: null,
@@ -186,6 +199,9 @@ const TransactionModal = ({ isOpen, onClose }) => {
     });
     setProjectSearch("");
     setUniformSearch("");
+
+    // Refetch initial data when clearing filters
+    await fetchInitialData();
   };
 
   if (!isOpen) return null;
@@ -196,9 +212,6 @@ const TransactionModal = ({ isOpen, onClose }) => {
         <ModalHeader>
           <Title>BGS Transactions</Title>
           <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            {/* <CloseButton onClick={onClose}>
-              <X size={20} />
-            </CloseButton> */}
             <button className="close-button" onClick={onClose}>
               &times;
             </button>

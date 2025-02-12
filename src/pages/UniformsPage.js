@@ -115,7 +115,7 @@ const StockPage = () => {
   const [deleteId, setDeleteId] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(8);
+  const [itemsPerPage] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
 
   // Calculate pagination values
