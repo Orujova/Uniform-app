@@ -179,6 +179,7 @@ const SummarizeModal = ({ isOpen, onClose }) => {
                     <Th>Code</Th>
                     <Th>Name</Th>
                     <Th>Project</Th>
+                    <Th>Size</Th>
                     <Th style={{ textAlign: "right" }}>Count</Th>
                     <Th style={{ textAlign: "right" }}>Imported</Th>
                     <Th style={{ textAlign: "center" }}>Status</Th>
@@ -190,6 +191,7 @@ const SummarizeModal = ({ isOpen, onClose }) => {
                       <Td>{item.UniformCode}</Td>
                       <Td>{item.UniformName}</Td>
                       <Td>{item.ProjectName}</Td>
+                      <Td>{item.UniformSize}</Td>
                       <Td style={{ textAlign: "right" }}>{item.Count}</Td>
                       <Td style={{ textAlign: "right" }}>
                         {item.ImportedCount}
