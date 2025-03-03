@@ -27,9 +27,9 @@ const ChangeSizeModal = ({
   });
 
   // Define available sizes
-  const pantSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"]; // Added pants sizes
+  const pantSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"];
   const shirtSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"];
-  const shoeSizes = Array.from({ length: 10 }, (_, i) => (i + 36).toString()); // Creates ["36", "37", ..., "45"]
+  const shoeSizes = Array.from({ length: 10 }, (_, i) => (i + 36).toString());
 
   useEffect(() => {
     if (employeeData) {

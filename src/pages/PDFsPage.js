@@ -279,6 +279,8 @@ const PDFsPage = () => {
   const [selectedPdf, setSelectedPdf] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Change selectedPdfs to store ids of ALL selected PDFs across pages
   const [selectedPdfs, setSelectedPdfs] = useState([]);
 
   // Pagination states
@@ -311,10 +313,6 @@ const PDFsPage = () => {
     setCurrentPage(1);
   }, [filteredPdfs, itemsPerPage]);
 
-  useEffect(() => {
-    setSelectedPdfs([]);
-  }, [currentPage, filteredPdfs]);
-
   const fetchPdfs = async () => {
     try {
       const response = await fetch(
@@ -330,11 +328,10 @@ const PDFsPage = () => {
       if (!response.ok) throw new Error("Failed to fetch PDFs");
       const data = await response.json();
 
-
       const pdfList = data[0]?.PdfFiles || [];
       // Sort PDFs by date in descending order (newest first)
-      const sortedPdfList = [...pdfList].sort((a, b) => 
-        new Date(b.CreatedDate) - new Date(a.CreatedDate)
+      const sortedPdfList = [...pdfList].sort(
+        (a, b) => new Date(b.CreatedDate) - new Date(a.CreatedDate)
       );
       setPdfs(sortedPdfList);
       setFilteredPdfs(sortedPdfList);
@@ -362,12 +359,16 @@ const PDFsPage = () => {
   const handleClearFilters = () => {
     setStartDate("");
     setEndDate("");
+    setSelectedPdfs([]); // Clear selections when filters are cleared
   };
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedPdfs(currentItems.map((pdf) => pdf.Id));
+      // Select ALL PDFs across all pages
+      const allPdfIds = filteredPdfs.map((pdf) => pdf.Id);
+      setSelectedPdfs(allPdfIds);
     } else {
+      // Deselect ALL PDFs
       setSelectedPdfs([]);
     }
   };
@@ -509,6 +510,7 @@ const PDFsPage = () => {
   const handleClosePdfViewer = () => {
     setSelectedPdf(null);
   };
+
   return (
     <PageContainer>
       <Header>
@@ -559,10 +561,7 @@ const PDFsPage = () => {
           <tr>
             <CheckboxHeader>
               <Checkbox
-                checked={
-                  currentItems.length > 0 &&
-                  selectedPdfs.length === currentItems.length
-                }
+                checked={selectedPdfs.length === filteredPdfs.length}
                 onChange={handleSelectAll}
               />
             </CheckboxHeader>
