@@ -26,9 +26,9 @@ const ChangeSizeModal = ({
     ShoeSize: "",
   });
 
-  const [errors, setErrors] = useState({
-    ShoeSize: "",
-  });
+  // Define available sizes
+  const shirtSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"];
+  const shoeSizes = Array.from({ length: 10 }, (_, i) => (i + 36).toString()); // Creates ["36", "37", ..., "45"]
 
   useEffect(() => {
     if (employeeData) {
@@ -37,30 +37,11 @@ const ChangeSizeModal = ({
         ShirtSize: employeeData.ShirtSize || "",
         ShoeSize: employeeData.ShoeSize || "",
       });
-      setErrors({ ShoeSize: "" }); // Reset errors when modal opens
     }
   }, [employeeData]);
 
-  const validateShoeSize = (size) => {
-    const numSize = Number(size);
-    if (size === "") return ""; // Allow empty value
-    if (isNaN(numSize)) return "Please enter a valid number";
-    if (numSize < 36) return "Shoe size cannot be less than 36";
-    if (numSize > 45) return "Shoe size cannot be greater than 45";
-    return ""; // No error
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "ShoeSize") {
-      const error = validateShoeSize(value);
-      setErrors((prev) => ({
-        ...prev,
-        ShoeSize: error,
-      }));
-    }
-
     setSizes((prev) => ({
       ...prev,
       [name]: value,
@@ -68,17 +49,6 @@ const ChangeSizeModal = ({
   };
 
   const handleSubmit = async () => {
-    // Validate shoe size before submission
-    const shoeSizeError = validateShoeSize(sizes.ShoeSize);
-    if (shoeSizeError) {
-      setErrors((prev) => ({
-        ...prev,
-        ShoeSize: shoeSizeError,
-      }));
-      showToast(shoeSizeError, "error");
-      return;
-    }
-
     try {
       const response = await fetch(
         `${API_BASE_URL_HeadCount}/api/Employee/update-employee-size`,
@@ -132,39 +102,55 @@ const ChangeSizeModal = ({
 
         <FormGroup>
           <Label>Shirt Size</Label>
-          <Input
-            type="text"
+          <select
             name="ShirtSize"
             value={sizes.ShirtSize}
             onChange={handleChange}
-          />
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontSize: "14px",
+            }}
+          >
+            <option value="">Select Size</option>
+            {shirtSizes.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
         </FormGroup>
 
         <FormGroup>
-          <Label>Shoe Size (36-45)</Label>
-          <Input
-            type="text"
+          <Label>Shoe Size</Label>
+          <select
             name="ShoeSize"
             value={sizes.ShoeSize}
             onChange={handleChange}
-            error={errors.ShoeSize}
-          />
-          {errors.ShoeSize && (
-            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-              {errors.ShoeSize}
-            </div>
-          )}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontSize: "14px",
+            }}
+          >
+            <option value="">Select Size</option>
+            {shoeSizes.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
         </FormGroup>
 
         <ButtonGroup>
           <Button variant="secondary" onClick={() => onClose(false)}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            disabled={errors.ShoeSize !== ""}
-          >
+          <Button variant="primary" onClick={handleSubmit}>
             Save Changes
           </Button>
         </ButtonGroup>

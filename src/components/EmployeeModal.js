@@ -412,6 +412,7 @@ const EmployeeModal = ({ isOpen, onClose }) => {
           <div key={request.id} className="employee-request-section">
             <div className="section-header">
               <h3>Employee Request #{index + 1}</h3>
+
               {index > 0 && (
                 <FaTimes
                   style={{
@@ -451,66 +452,58 @@ const EmployeeModal = ({ isOpen, onClose }) => {
               )}
 
             {request.employeeData && (
-              <div className="employeeInfo">
-                <div className="detailContainer">
-                  <p className="employeeInfoText">
-                    <strong className="label">Full Name:</strong>
-                    <br />
-                    {request.employeeData.FullName}
-                  </p>
-                  <p className="employeeInfoText">
-                    <strong className="label">Position:</strong>
-                    <br />
-                    {request.employeeData.Position.Name}
-                  </p>
-                  <p className="employeeInfoText">
-                    <strong className="label">Section:</strong>
-                    <br />
-                    {request.employeeData.Section.Name}
-                  </p>
-                  <p className="employeeInfoText">
-                    <strong className="label">Project:</strong>
-                    <br />
-                    {request.employeeData.Project.ProjectCode}
-                  </p>
+              <>
+                <button
+                  className="changeSizeButton"
+                  onClick={() => handleOpenSizeModal(request)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                  </svg>
+                  Change size
+                </button>
+                <div className="employeeInfo">
+                  <div className="detailContainer">
+                    <p className="employeeInfoText">
+                      <strong className="label">Full Name:</strong>
+                      <br />
+                      {request.employeeData.FullName}
+                    </p>
+                    <p className="employeeInfoText">
+                      <strong className="label">Position:</strong>
+                      <br />
+                      {request.employeeData.Position.Name}
+                    </p>
+                    <p className="employeeInfoText">
+                      <strong className="label">Section:</strong>
+                      <br />
+                      {request.employeeData.Section.Name}
+                    </p>
+                    <p className="employeeInfoText">
+                      <strong className="label">Project:</strong>
+                      <br />
+                      {request.employeeData.Project.ProjectCode}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             {request.uniformData && request.uniformData.length > 0 && (
-              // <div className="employeeInfo">
-              //   <h3 className="employeeInfoHeader">Uniform Details:</h3>
-
-              //   <button
-              //     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              //     onClick={() => handleOpenSizeModal(request)}
-              //   >
-              //     Change size
-              //   </button>
-
               <div className="employeeInfo">
                 <div className="employeeInfoHeader">
                   <h3>Uniform Details</h3>
-                  <button
-                    className="changeSizeButton"
-                    onClick={() => handleOpenSizeModal(request)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                      <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
-                    </svg>
-                    Change size
-                  </button>
                 </div>
 
                 <div className="detailsContainer">
