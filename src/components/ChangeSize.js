@@ -27,6 +27,7 @@ const ChangeSizeModal = ({
   });
 
   // Define available sizes
+  const pantSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"]; // Added pants sizes
   const shirtSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"];
   const shoeSizes = Array.from({ length: 10 }, (_, i) => (i + 36).toString()); // Creates ["36", "37", ..., "45"]
 
@@ -85,6 +86,15 @@ const ChangeSizeModal = ({
 
   if (!isOpen) return null;
 
+  // Common select styles
+  const selectStyles = {
+    width: "100%",
+    padding: "8px 12px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+  };
+
   return (
     <ModalOverlay>
       <ModalContainer>
@@ -92,12 +102,19 @@ const ChangeSizeModal = ({
 
         <FormGroup>
           <Label>Pants Size</Label>
-          <Input
-            type="text"
+          <select
             name="PantSize"
             value={sizes.PantSize}
             onChange={handleChange}
-          />
+            style={selectStyles}
+          >
+            <option value="">Select Size</option>
+            {pantSizes.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
         </FormGroup>
 
         <FormGroup>
@@ -106,13 +123,7 @@ const ChangeSizeModal = ({
             name="ShirtSize"
             value={sizes.ShirtSize}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-              fontSize: "14px",
-            }}
+            style={selectStyles}
           >
             <option value="">Select Size</option>
             {shirtSizes.map((size) => (
@@ -129,13 +140,7 @@ const ChangeSizeModal = ({
             name="ShoeSize"
             value={sizes.ShoeSize}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-              fontSize: "14px",
-            }}
+            style={selectStyles}
           >
             <option value="">Select Size</option>
             {shoeSizes.map((size) => (
