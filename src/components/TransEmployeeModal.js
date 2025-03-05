@@ -117,8 +117,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
       checkActiveDay();
     }
   }, [isOpen, token]);
-  console.log(isActiveDay);
-  // Fetch badges
+
   useEffect(() => {
     const fetchBadges = async () => {
       try {
@@ -197,6 +196,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       if (!response.ok) {
         throw new Error(`Failed to fetch uniform data: ${response.status}`);
       }
@@ -506,27 +506,55 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                 <div className="detailsContainer">
                   {request.uniformData.map((uniform) => (
                     <div key={uniform.UniformId} className="uniformItem">
-                      <p className="employeeInfoText">
-                        <strong className="label">Uniform Code:</strong>
-                        {uniform.UniCode}
-                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "12px",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
+                          <p className="employeeInfoText">
+                            <strong className="label">Uniform Code:</strong>
+                            {uniform.UniCode}
+                          </p>
+
+                          <p className="employeeInfoText">
+                            <strong className="label">Uniform Size:</strong>
+                            {uniform.Size}
+                          </p>
+                          <p className="employeeInfoText">
+                            <strong className="label">Uniform Gender:</strong>
+                            {uniform.Gender}
+                          </p>
+                          <p className="employeeInfoText">
+                            <strong className="label">Available Stock:</strong>{" "}
+                            {uniform.AvailableDCStockCount}
+                          </p>
+                        </div>
+                        {uniform.ImageUrl && (
+                          <img
+                            style={{
+                              width: "100px",
+                              height: "100px",
+                              borderRadius: "10%",
+                              border: "none",
+                            }}
+                            src={
+                              uniform.ImageUrl
+                                ? uniform.ImageUrl.replace(
+                                    "/uniform/",
+                                    "/uploads/uniform/"
+                                  )
+                                : null
+                            }
+                          />
+                        )}
+                      </div>
                       <p className="employeeInfoText">
                         <strong className="label">Uniform Name:</strong>
                         {uniform.UniName}
                       </p>
-                      <p className="employeeInfoText">
-                        <strong className="label">Uniform Size:</strong>
-                        {uniform.Size}
-                      </p>
-                      <p className="employeeInfoText">
-                        <strong className="label">Uniform Gender:</strong>
-                        {uniform.Gender}
-                      </p>
-                      <p className="employeeInfoText">
-                        <strong className="label">Available Stock:</strong>{" "}
-                        {uniform.AvailableDCStockCount}
-                      </p>
-
                       <label className="label">Required Count:</label>
                       <input
                         type="text"
