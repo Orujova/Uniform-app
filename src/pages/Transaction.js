@@ -123,6 +123,7 @@ const TransactionPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      console.log(projectId);
 
       if (!response.ok) throw new Error("Failed to fetch handovered dates");
       const data = await response.json();
@@ -154,8 +155,7 @@ const TransactionPage = () => {
   const fetchTransactionDates = async (projectId) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}
-/api/TransactionPage/GetAllTransactionDates?ProjectId=${projectId}`,
+        `${API_BASE_URL}/api/TransactionPage/GetAllTransactionDates?ProjectId=${projectId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

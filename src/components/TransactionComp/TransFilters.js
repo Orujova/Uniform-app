@@ -51,6 +51,7 @@ export const Filters = ({
   uniqueStatuses,
   projects,
   handoveredDates,
+  transactionDates,
   user,
 }) => (
   <FilterContainer>
@@ -79,7 +80,7 @@ export const Filters = ({
         onChange={onFilterChange}
       >
         <option value="">Select Transaction Date</option>
-        {handoveredDates.sort().map((date) => (
+        {transactionDates.sort().map((date) => (
           <option key={date} value={date}>
             {new Date(date).toLocaleDateString()}
           </option>
