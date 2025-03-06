@@ -12,7 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import { Lock, User, Mail } from "lucide-react";
-import { showToast } from "../utils/toast";
+
 import { ToastContainer } from "../utils/ToastContainer";
 
 const ChangePasswordPage = () => {
