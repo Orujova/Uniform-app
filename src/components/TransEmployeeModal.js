@@ -101,9 +101,12 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
         console.log(apiDayId);
 
-        const currentDay = data[0].WeekDays.find((day) => day.Id === apiDayId);
+        // Added null check for data[0]?.WeekDays
+        const currentDay = data[0]?.WeekDays?.find(
+          (day) => day.Id === apiDayId
+        );
         console.log(currentDay);
-        setIsActiveDay(currentDay?.IsActive);
+        setIsActiveDay(currentDay?.IsActive || false);
 
         if (!currentDay?.IsActive) {
           showToast("Uniform creation is not allowed on this day.", "info");
@@ -133,6 +136,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
         }
 
         const data = await response.json();
+        // Added null check for data[0]?.Employees
         const BadgesData = data[0]?.Employees || [];
         setBadges(BadgesData);
       } catch (error) {
@@ -148,8 +152,9 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
     const updateSuggestions = () => {
       const newRequests = employeeRequests.map((request) => {
         if (request.searchTerm) {
+          // Added null check for badge.Badge
           const filtered = badges.filter((b) =>
-            b.Badge.toLowerCase().includes(request.searchTerm.toLowerCase())
+            b.Badge?.toLowerCase().includes(request.searchTerm.toLowerCase())
           );
           return {
             ...request,
@@ -221,17 +226,18 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
     const counts = {};
     const warnings = {};
-    uniforms.forEach((uniform) => {
+    // Added null check for uniforms array
+    (uniforms || []).forEach((uniform) => {
       counts[uniform.UniformId] = 0;
       warnings[uniform.UniformId] = "";
     });
 
     updateEmployeeRequest(index, {
       selectedBadge: badge,
-      searchTerm: badge.Badge,
+      searchTerm: badge.Badge || "",
       suggestions: [],
       employeeData: employee,
-      uniformData: uniforms,
+      uniformData: uniforms || [],
       requiredCounts: counts,
       warnings: warnings,
     });
@@ -241,21 +247,22 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
     const value = e.target.value;
     updateEmployeeRequest(index, {
       searchTerm: value,
-
       selectedBadge: null,
       employeeData: null,
       uniformData: [],
-      suggestions: badges.filter((b) =>
-        b.Badge.toLowerCase().includes(value.toLowerCase())
+      // Added null check for badges array
+      suggestions: (badges || []).filter((b) =>
+        b.Badge?.toLowerCase().includes(value.toLowerCase())
       ),
     });
   };
 
   const handleRequiredCountChange = (e, uniformId, availableStock, index) => {
-    const uniform = employeeRequests[index].uniformData.find(
+    // Added null check for uniformData
+    const uniform = employeeRequests[index].uniformData?.find(
       (u) => u.UniformId === uniformId
     );
-    const maxAllowed = uniform.RequiredCount;
+    const maxAllowed = uniform?.RequiredCount || 0;
     let value = parseInt(e.target.value, 10) || 0;
 
     // Cap the value at maxAllowed and set warnings accordingly
@@ -299,8 +306,8 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
       warnings: {
         ...employeeRequests[index].warnings,
         [uniformId]:
-          value > availableStock
-            ? `Required count exceeds available stock (${availableStock})!`
+          value > (availableStock || 0)
+            ? `Required count exceeds available stock (${availableStock || 0})!`
             : "",
       },
     });
@@ -308,13 +315,13 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
   const hasWarnings = () => {
     return employeeRequests.some((request) =>
-      Object.values(request.warnings).some((warning) => warning !== "")
+      Object.values(request.warnings || {}).some((warning) => warning !== "")
     );
   };
 
   const allCountsEmpty = () => {
     return employeeRequests.every((request) =>
-      Object.values(request.requiredCounts).every(
+      Object.values(request.requiredCounts || {}).every(
         (count) => !count || count === 0
       )
     );
@@ -342,12 +349,15 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
   const handleSave = async () => {
     const allUniformDetails = employeeRequests.flatMap((request) => {
-      return request.uniformData
-        .filter((uniform) => request.requiredCounts[uniform.UniformId] > 0)
+      // Added null check for uniformData
+      return (request.uniformData || [])
+        .filter(
+          (uniform) => (request.requiredCounts[uniform.UniformId] || 0) > 0
+        )
         .map((uniform) => ({
           EmployeeId: request.selectedBadge?.Id,
           UniformId: uniform.UniformId,
-          RequestCount: request.requiredCounts[uniform.UniformId],
+          RequestCount: request.requiredCounts[uniform.UniformId] || 0,
         }));
     });
 
@@ -359,7 +369,9 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
     const invalidRequests = employeeRequests.filter(
       (req) =>
         req.selectedBadge &&
-        !req.uniformData.some((u) => req.requiredCounts[u.UniformId] > 0)
+        !(req.uniformData || []).some(
+          (u) => (req.requiredCounts[u.UniformId] || 0) > 0
+        )
     );
 
     if (invalidRequests.length > 0) {
@@ -438,7 +450,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
               {index > 0 && (
                 <FaTimes
                   style={{
-                    cursor: "default",
+                    cursor: "pointer",
                     fontSize: "20px",
                     color: "#dc3545",
                     textAlign: "right",
@@ -450,14 +462,14 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
 
             <input
               type="text"
-              value={request.searchTerm}
+              value={request.searchTerm || ""}
               onChange={(e) => handleInputChange(e, index)}
               placeholder="Enter or select badge number..."
               style={modalStyles.input}
               aria-label="Search by badge number"
             />
 
-            {request.suggestions.length > 0 &&
+            {(request.suggestions || []).length > 0 &&
               !request.selectedBadge &&
               !request.employeeData && (
                 <ul className="suggestionsList">
@@ -467,7 +479,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                       onClick={() => handleSelectBadge(badge, index)}
                       className="suggestionsItem"
                     >
-                      {badge.Badge}
+                      {badge.Badge || "N/A"}
                     </li>
                   ))}
                 </ul>
@@ -479,28 +491,28 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                   <p className="employeeInfoText">
                     <strong className="label">Full Name:</strong>
                     <br />
-                    {request.employeeData.FullName}
+                    {request.employeeData.FullName || "N/A"}
                   </p>
                   <p className="employeeInfoText">
                     <strong className="label">Position:</strong>
                     <br />
-                    {request.employeeData.Position.Name}
+                    {request.employeeData.Position?.Name || "N/A"}
                   </p>
                   <p className="employeeInfoText">
                     <strong className="label">Section:</strong>
                     <br />
-                    {request.employeeData.Section.Name}
+                    {request.employeeData.Section?.Name || "N/A"}
                   </p>
                   <p className="employeeInfoText">
                     <strong className="label">Project:</strong>
                     <br />
-                    {request.employeeData.Project.ProjectCode}
+                    {request.employeeData.Project?.ProjectCode || "N/A"}
                   </p>
                 </div>
               </div>
             )}
 
-            {request.uniformData && request.uniformData.length > 0 && (
+            {(request.uniformData || []).length > 0 && (
               <div className="employeeInfo">
                 <h3 className="employeeInfoHeader">Uniform Details:</h3>
                 <div className="detailsContainer">
@@ -516,20 +528,20 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                         <div>
                           <p className="employeeInfoText">
                             <strong className="label">Uniform Code:</strong>
-                            {uniform.UniCode}
+                            {uniform.UniCode || "N/A"}
                           </p>
 
                           <p className="employeeInfoText">
                             <strong className="label">Uniform Size:</strong>
-                            {uniform.Size}
+                            {uniform.Size || "N/A"}
                           </p>
                           <p className="employeeInfoText">
                             <strong className="label">Uniform Gender:</strong>
-                            {uniform.Gender}
+                            {uniform.Gender || "N/A"}
                           </p>
                           <p className="employeeInfoText">
                             <strong className="label">Available Stock:</strong>{" "}
-                            {uniform.AvailableDCStockCount}
+                            {uniform.AvailableDCStockCount || 0}
                           </p>
                         </div>
                         {uniform.ImageUrl && (
@@ -548,12 +560,13 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                                   )
                                 : null
                             }
+                            alt={uniform.UniName || "Uniform Image"}
                           />
                         )}
                       </div>
                       <p className="employeeInfoText">
                         <strong className="label">Uniform Name:</strong>
-                        {uniform.UniName}
+                        {uniform.UniName || "N/A"}
                       </p>
                       <label className="label">Required Count:</label>
                       <input
@@ -567,7 +580,7 @@ const TransEmployeeModal = ({ isOpen, onClose }) => {
                             index
                           )
                         }
-                        max={uniform.RequiredCount}
+                        max={uniform.RequiredCount || 0}
                         min="0"
                         style={modalStyles.input}
                       />
