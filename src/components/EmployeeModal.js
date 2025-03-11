@@ -673,7 +673,22 @@ const EmployeeModal = ({ isOpen, onClose }) => {
                             </p>
                           )}
                       </div>
-                    ) : null
+                    ) : (
+                      <div
+                        className="no-uniform-message"
+                        style={{
+                          padding: "20px",
+                          textAlign: "center",
+                          color: "#666",
+                          fontSize: "16px",
+                          backgroundColor: "#f8f8f8",
+                          borderRadius: "8px",
+                          margin: "10px 0",
+                        }}
+                      >
+                        No conditions found for the employee's position.
+                      </div>
+                    )
                   )}
                 </div>
               </div>
