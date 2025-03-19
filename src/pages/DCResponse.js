@@ -52,6 +52,7 @@ const ManagerResponse = () => {
 
   const columns = [
     { Header: "Employee Name", accessor: "EmployeeName" },
+    { Header: "Employee Project", accessor: "EmployeeProject" },
     { Header: "Uniform Name", accessor: "UniformName" },
     { Header: "Request Count", accessor: "RequestCount" },
     { Header: "Created By", accessor: "CreatedBy" },
@@ -99,7 +100,9 @@ const ManagerResponse = () => {
       const response = await fetch(
         `${API_BASE_URL}/api/UniformForEmployee/GetApprovedOperationOrdersForDC`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -119,7 +122,9 @@ const ManagerResponse = () => {
   const fetchEmployees = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Employee`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -160,6 +165,7 @@ const ManagerResponse = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             UniformForEmployeeIds: [requestId],
             IsApproved: true,

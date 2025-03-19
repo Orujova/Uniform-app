@@ -309,7 +309,9 @@ const ManagerResponse = () => {
     setProjectsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/Project`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const data = await response.json();
@@ -354,7 +356,9 @@ const ManagerResponse = () => {
       }`;
 
       const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -645,6 +649,7 @@ const ManagerResponse = () => {
   const columns = useMemo(
     () => [
       { Header: "Employee Name", accessor: "EmployeeName" },
+      { Header: "Employee Project", accessor: "EmployeeProject" },
       { Header: "Uniform Name", accessor: "UniformName" },
       { Header: "Request Count", accessor: "RequestCount" },
       { Header: "Created Date", accessor: "CreatedDate" },
