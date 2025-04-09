@@ -66,28 +66,6 @@ const MenuContainer = styled.div`
   padding-bottom: 20px;
 `;
 
-// const UserInfoSection = styled.div`
-//   display: flex;
-//   align-items: center;
-//   gap: 12px;
-// `;
-
-// const UserInfo = styled.div`
-//   display: flex;
-//   flex-direction: column;
-// `;
-
-// const Username = styled.span`
-//   font-size: 14px;
-//   font-weight: 600;
-//   color: #2d3a45;
-// `;
-
-// const UserRole = styled.span`
-//   font-size: 14px;
-//   color: #7d8996;
-// `;
-
 const UserProfile = styled.div`
   position: relative;
   cursor: pointer;
@@ -391,7 +369,7 @@ const Sidebar = ({ onSelect, onLogOut }) => {
       label: "Uniform Condition",
       value: "uniformcondition",
       path: "/condition",
-      allowedRoles: [3, 4, 2, 12],
+      allowedRoles: [3, 4, 2, 12, 9],
     },
     {
       label: "Uniforms",
