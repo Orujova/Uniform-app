@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo } from "react";
+import React, { useRef, useCallback, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { useTable, useSortBy, useRowSelect } from "react-table";
 import PropTypes from "prop-types";
@@ -149,6 +149,7 @@ const Table = ({
   error = "",
   selectable = false,
   onSelectedRowsChange = () => {},
+  selectedRowIds = [], // New prop to receive already selected row IDs
 }) => {
   // Refs for tracking selection state
   const selectedRows = useRef([]);
@@ -156,6 +157,14 @@ const Table = ({
   // Memoize the data to prevent unnecessary re-renders
   const memoizedData = useMemo(() => (Array.isArray(data) ? data : []), [data]);
   const memoizedColumns = useMemo(() => columns, [columns]);
+
+  // Create a memoized object of selected row IDs for the table's initial state
+  const initialSelectedRowIds = useMemo(() => {
+    return selectedRowIds.reduce((acc, id) => {
+      acc[id] = true;
+      return acc;
+    }, {});
+  }, [selectedRowIds]);
 
   // Determine if a row is selectable (Pending status and not already approved/rejected)
   const isRowSelectable = useCallback((row) => {
@@ -186,10 +195,17 @@ const Table = ({
               // Determine if this row is selectable
               const rowSelectable = isRowSelectable(row);
 
+              // Get toggle props for this row
+              const rowProps = row.getToggleRowSelectedProps();
+
+              // Check if this row is already selected (from another page)
+              const isSelected = selectedRowIds.includes(parseInt(row.id));
+
               return (
                 <IndeterminateCheckbox
-                  {...row.getToggleRowSelectedProps()}
+                  {...rowProps}
                   disabled={!rowSelectable}
+                  checked={isSelected || rowProps.checked}
                 />
               );
             },
@@ -198,7 +214,7 @@ const Table = ({
         ]);
       },
     ];
-  }, [selectable, isRowSelectable]);
+  }, [selectable, isRowSelectable, selectedRowIds]);
 
   // Use React Table hooks for data, column configuration, and row selection
   const tableInstance = useTable(
@@ -210,6 +226,9 @@ const Table = ({
       // Disable row selection for non-selectable rows
       getRowId: (row) => row.Id?.toString() || Math.random().toString(),
       isRowSelectable: isRowSelectable,
+      initialState: {
+        selectedRowIds: initialSelectedRowIds, // Set initial selected rows
+      },
     },
     useSortBy,
     useRowSelect,
@@ -223,22 +242,39 @@ const Table = ({
     rows,
     prepareRow,
     selectedFlatRows,
-    state: { selectedRowIds },
+    state: { selectedRowIds: tableSelectedRowIds },
   } = tableInstance;
 
+  // Sync external selectedRowIds with table's internal state when it changes
+  useEffect(() => {
+    // Set selected rows in the table based on selectedRowIds prop
+    selectedRowIds.forEach((id) => {
+      const rowId = id.toString();
+      // Find the row in current page data
+      const rowInCurrentPage = rows.find((row) => row.id === rowId);
+      if (rowInCurrentPage && !tableSelectedRowIds[rowId]) {
+        // Select the row if it's in current page data
+        rowInCurrentPage.toggleRowSelected(true);
+      }
+    });
+  }, [selectedRowIds, rows]);
+
   // Notify parent component when selection changes
-  React.useEffect(() => {
-    // Convert selectedRowIds to array to avoid dependency on the object reference
-    const selectedIds = Object.keys(selectedRowIds).map((id) =>
-      parseInt(id, 10)
-    );
-    // Only trigger the callback if we have selections or had selections before
-    if (selectedIds.length > 0 || selectedRows.current?.length > 0) {
+  useEffect(() => {
+    // Only trigger the callback if we have selections
+    if (
+      Object.keys(tableSelectedRowIds).length > 0 ||
+      selectedRows.current?.length > 0
+    ) {
       const selectedItems = selectedFlatRows.map((row) => row.original);
       onSelectedRowsChange(selectedItems);
       selectedRows.current = selectedItems;
     }
-  }, [JSON.stringify(selectedRowIds), selectedFlatRows, onSelectedRowsChange]);
+  }, [
+    JSON.stringify(tableSelectedRowIds),
+    selectedFlatRows,
+    onSelectedRowsChange,
+  ]);
 
   return (
     <StyledTableContainer>
@@ -319,6 +355,7 @@ Table.propTypes = {
   error: PropTypes.string,
   selectable: PropTypes.bool,
   onSelectedRowsChange: PropTypes.func,
+  selectedRowIds: PropTypes.array,
 };
 
 export default Table;

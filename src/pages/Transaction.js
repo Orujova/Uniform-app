@@ -87,6 +87,7 @@ const TransactionPage = () => {
   const isProjectFilterAllowed =
     user.roleId?.includes(8) ||
     user.roleId?.includes(9) ||
+    user.roleId?.includes(12) ||
     user.roleId?.includes(3);
   const isActionAllowed =
     user.roleId?.includes(3) ||
@@ -120,7 +121,9 @@ const TransactionPage = () => {
       const response = await fetch(
         `${API_BASE_URL}/api/TransactionPage/GetAllHandoveredDates?ProjectId=${projectId}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       console.log(projectId);
@@ -157,7 +160,9 @@ const TransactionPage = () => {
       const response = await fetch(
         `${API_BASE_URL}/api/TransactionPage/GetAllTransactionDates?ProjectId=${projectId}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -191,7 +196,9 @@ const TransactionPage = () => {
   const fetchProjectID = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Project`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!response.ok) throw new Error("Failed to fetch projects");
       const data = await response.json();

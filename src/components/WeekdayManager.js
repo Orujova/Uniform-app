@@ -200,14 +200,24 @@ const WorkDaysModal = ({ isOpen, onClose }) => {
   const updateWeekDay = async (id) => {
     try {
       setLoading(true);
+      // Find the day name from the weekDays array using the ID
+      const selectedDayObj = weekDays.find((day) => day.Id === id);
+
+      if (!selectedDayObj) {
+        console.error("Day not found");
+        return;
+      }
+
       await fetch(`${API_BASE_URL}/api/UniformForEmployee/update-week-day`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ Id: id }),
+        // Send Day instead of Id to match the API specification
+        body: JSON.stringify({ Day: selectedDayObj.Day }),
       });
+
       await fetchWeekDays();
       setSelectedDay(null);
       onClose();

@@ -8,6 +8,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaSearch,
+  FaFilter,
 } from "react-icons/fa";
 import Table from "../components/TableOperation"; // Import your enhanced Table component
 import { API_BASE_URL } from "../config";
@@ -251,6 +252,15 @@ const ManagerResponse = () => {
     endDate: "",
     projectId: null,
   });
+  const [statusFilter, setStatusFilter] = useState(null);
+
+  // Status options for dropdown
+  const statusOptions = [
+    { value: null, label: "All Statuses" },
+    { value: 1, label: "Pending" },
+    { value: 2, label: "Approved" },
+    { value: 3, label: "Rejected" },
+  ];
 
   // Projects state
   const [projects, setProjects] = useState([]);
@@ -262,6 +272,7 @@ const ManagerResponse = () => {
   // API parameters
   const [apiParams, setApiParams] = useState({
     ProjectId: null,
+    OperationOrderStatus: null,
   });
 
   const handleClearFilters = () => {
@@ -270,9 +281,11 @@ const ManagerResponse = () => {
       endDate: "",
       projectId: null,
     });
+    setStatusFilter(null);
     setApiParams((prev) => ({
       ...prev,
       ProjectId: null,
+      OperationOrderStatus: null,
     }));
   };
 
@@ -299,10 +312,6 @@ const ManagerResponse = () => {
   useEffect(() => {
     applyFilters();
   }, [filters, stockData]);
-
-  useEffect(() => {
-    setSelectedRows([]);
-  }, [filteredData.length]);
 
   // Fetch projects from API
   const fetchProjects = async () => {
@@ -348,6 +357,11 @@ const ManagerResponse = () => {
       const queryParams = new URLSearchParams();
       if (apiParams.ProjectId)
         queryParams.append("ProjectId", apiParams.ProjectId);
+      if (apiParams.OperationOrderStatus)
+        queryParams.append(
+          "OperationOrderStatus",
+          apiParams.OperationOrderStatus
+        );
 
       // Only add the query parameters if they exist
       const queryString = queryParams.toString();
@@ -398,8 +412,6 @@ const ManagerResponse = () => {
     setFilteredData(filtered);
     setCurrentPage(1);
     setTotalPages(Math.ceil(filtered.length / itemsPerPage));
-    // Clear selections when filters change
-    setSelectedRows([]);
   };
 
   const handleFilterChange = (e) => {
@@ -422,10 +434,18 @@ const ManagerResponse = () => {
     }));
   };
 
+  const handleStatusChange = (selectedOption) => {
+    setStatusFilter(selectedOption);
+
+    setApiParams((prev) => ({
+      ...prev,
+      OperationOrderStatus: selectedOption ? selectedOption.value : null,
+    }));
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    // Clear selections when page changes
-    setSelectedRows([]);
+    // We no longer clear selections when changing pages
   };
 
   const getPageNumbers = () => {
@@ -574,7 +594,21 @@ const ManagerResponse = () => {
   // Handle selected rows change with memoization to prevent infinite loops
   const handleSelectedRowsChange = useCallback(
     (rows) => {
-      // Filter out any rows that are not in "Pending" status or already have operation response
+      // Create a map of existing selected row IDs for quick lookup
+      const existingSelectedIds = selectedRows.reduce((map, row) => {
+        map[row.Id] = true;
+        return map;
+      }, {});
+
+      // Get the currently visible rows on this page
+      const currentPageIds = currentItems.map((item) => item.Id);
+
+      // Keep selections from other pages (not on current page)
+      const selectionsFromOtherPages = selectedRows.filter(
+        (row) => !currentPageIds.includes(row.Id)
+      );
+
+      // Filter current page selections to only include eligible rows
       const eligibleRows = rows.filter(
         (row) =>
           row.StoreRequestStatus === "Pending" &&
@@ -582,20 +616,26 @@ const ManagerResponse = () => {
           row.OperationOrderStatus !== "Rejected"
       );
 
-      // Only update state if the selection has actually changed
-      // Compare the IDs to avoid reference equality issues
-      const currentIds = selectedRows
-        .map((row) => row.Id)
-        .sort()
-        .join(",");
-      const newIds = eligibleRows
-        .map((row) => row.Id)
-        .sort()
-        .join(",");
+      // Combine selections from other pages with new selections from current page
+      const combinedSelections = [...selectionsFromOtherPages, ...eligibleRows];
 
-      if (currentIds !== newIds) {
-        setSelectedRows(eligibleRows);
-      }
+      // Remove any duplicates by creating a map and then converting back to array
+      const uniqueSelections = Object.values(
+        combinedSelections.reduce((map, row) => {
+          map[row.Id] = row;
+          return map;
+        }, {})
+      );
+
+      setSelectedRows(uniqueSelections);
+    },
+    [selectedRows, currentItems]
+  );
+
+  // Function to check if a row is selected
+  const isRowSelected = useCallback(
+    (rowId) => {
+      return selectedRows.some((row) => row.Id === rowId);
     },
     [selectedRows]
   );
@@ -781,6 +821,18 @@ const ManagerResponse = () => {
             />
           </FilterGroup>
           <FilterGroup>
+            <FilterLabel>Status</FilterLabel>
+            <Select
+              isClearable
+              isSearchable
+              options={statusOptions}
+              value={statusFilter}
+              onChange={handleStatusChange}
+              placeholder="Select Status"
+              styles={customSelectStyles}
+            />
+          </FilterGroup>
+          <FilterGroup>
             <FilterLabel>&nbsp;</FilterLabel>
             <ClearFilterButton onClick={handleClearFilters}>
               Clear Filters
@@ -841,6 +893,7 @@ const ManagerResponse = () => {
             data={currentItems}
             selectable={pendingItemsCount > 0 && isActionAllowed}
             onSelectedRowsChange={handleSelectedRowsChange}
+            selectedRowIds={selectedRows.map((row) => row.Id)}
           />
 
           <PaginationContainer>
