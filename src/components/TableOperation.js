@@ -89,9 +89,9 @@ const Checkbox = styled.input`
   padding: 0;
 `;
 
-// Create a memoized event handler for the checkbox to prevent unnecessary re-renders
+// Create a custom checkbox component
 const IndeterminateCheckbox = React.forwardRef(
-  ({ indeterminate, disabled, ...rest }, ref) => {
+  ({ indeterminate, disabled, checked, onChange, onClick, ...rest }, ref) => {
     const defaultRef = React.useRef();
     const resolvedRef = ref || defaultRef;
 
@@ -112,11 +112,11 @@ const IndeterminateCheckbox = React.forwardRef(
         }
 
         // Call the original onClick handler from rest props
-        if (rest.onClick) {
-          rest.onClick(event);
+        if (onClick) {
+          onClick(event);
         }
       },
-      [rest.onClick, disabled]
+      [onClick, disabled]
     );
 
     return (
@@ -129,8 +129,10 @@ const IndeterminateCheckbox = React.forwardRef(
           ref={resolvedRef}
           disabled={disabled}
           $disabled={disabled}
-          {...rest}
+          checked={checked || false}
+          onChange={onChange}
           onClick={handleClick}
+          {...rest}
         />
       </CheckboxContainer>
     );
@@ -140,6 +142,9 @@ const IndeterminateCheckbox = React.forwardRef(
 IndeterminateCheckbox.propTypes = {
   indeterminate: PropTypes.bool,
   disabled: PropTypes.bool,
+  checked: PropTypes.bool,
+  onChange: PropTypes.func,
+  onClick: PropTypes.func,
 };
 
 const Table = ({
@@ -157,14 +162,14 @@ const Table = ({
   // Memoize the data to prevent unnecessary re-renders
   const memoizedData = useMemo(() => (Array.isArray(data) ? data : []), [data]);
   const memoizedColumns = useMemo(() => columns, [columns]);
-
+  
   // Create a memoized object of selected row IDs for the table's initial state
   const initialSelectedRowIds = useMemo(() => {
     return selectedRowIds.reduce((acc, id) => {
       acc[id] = true;
       return acc;
     }, {});
-  }, [selectedRowIds]);
+  }, []);
 
   // Determine if a row is selectable (Pending status and not already approved/rejected)
   const isRowSelectable = useCallback((row) => {
@@ -194,18 +199,25 @@ const Table = ({
             Cell: ({ row }) => {
               // Determine if this row is selectable
               const rowSelectable = isRowSelectable(row);
-
+              
               // Get toggle props for this row
               const rowProps = row.getToggleRowSelectedProps();
-
+              
               // Check if this row is already selected (from another page)
               const isSelected = selectedRowIds.includes(parseInt(row.id));
+
+              // Create a custom onChange handler to handle both checking and unchecking
+              const handleChange = (e) => {
+                // This will toggle the row's selected state
+                row.toggleRowSelected(!row.isSelected);
+              };
 
               return (
                 <IndeterminateCheckbox
                   {...rowProps}
                   disabled={!rowSelectable}
                   checked={isSelected || rowProps.checked}
+                  onChange={handleChange}
                 />
               );
             },
@@ -248,10 +260,10 @@ const Table = ({
   // Sync external selectedRowIds with table's internal state when it changes
   useEffect(() => {
     // Set selected rows in the table based on selectedRowIds prop
-    selectedRowIds.forEach((id) => {
+    selectedRowIds.forEach(id => {
       const rowId = id.toString();
       // Find the row in current page data
-      const rowInCurrentPage = rows.find((row) => row.id === rowId);
+      const rowInCurrentPage = rows.find(row => row.id === rowId);
       if (rowInCurrentPage && !tableSelectedRowIds[rowId]) {
         // Select the row if it's in current page data
         rowInCurrentPage.toggleRowSelected(true);
@@ -261,20 +273,11 @@ const Table = ({
 
   // Notify parent component when selection changes
   useEffect(() => {
-    // Only trigger the callback if we have selections
-    if (
-      Object.keys(tableSelectedRowIds).length > 0 ||
-      selectedRows.current?.length > 0
-    ) {
-      const selectedItems = selectedFlatRows.map((row) => row.original);
-      onSelectedRowsChange(selectedItems);
-      selectedRows.current = selectedItems;
-    }
-  }, [
-    JSON.stringify(tableSelectedRowIds),
-    selectedFlatRows,
-    onSelectedRowsChange,
-  ]);
+    // Get the actual selected items from the table
+    const selectedItems = selectedFlatRows.map((row) => row.original);
+    onSelectedRowsChange(selectedItems);
+    selectedRows.current = selectedItems;
+  }, [selectedFlatRows, onSelectedRowsChange]);
 
   return (
     <StyledTableContainer>
