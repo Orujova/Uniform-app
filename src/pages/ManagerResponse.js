@@ -311,12 +311,9 @@ const ManagerResponse = () => {
   // Handle selected rows change with memoization to prevent infinite loops
   const handleSelectedRowsChange = useCallback(
     (rows) => {
-      // Create a map of existing selected row IDs for quick lookup
-      const existingSelectedIds = selectedRows.reduce((map, row) => {
-        map[row.Id] = true;
-        return map;
-      }, {});
-
+      // When rows are received from the Table component, they represent
+      // the current selection state of the current page
+      
       // Get the currently visible rows on this page
       const currentPageIds = currentItems.map(item => item.Id);
       
@@ -332,6 +329,12 @@ const ManagerResponse = () => {
           row.OperationOrderStatus !== "Approved" &&
           row.OperationOrderStatus !== "Rejected"
       );
+      
+      // Create a map of current page row IDs for faster lookups
+      const currentPageRowMap = {};
+      currentItems.forEach(item => {
+        currentPageRowMap[item.Id] = item;
+      });
       
       // Combine selections from other pages with new selections from current page
       const combinedSelections = [...selectionsFromOtherPages, ...eligibleRows];
