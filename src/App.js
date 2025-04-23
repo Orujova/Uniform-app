@@ -16,6 +16,8 @@ import FirstDistribution from "./pages/FirstDistribution";
 import Transaction from "./pages/Transaction";
 import Stock from "./pages/StockPage";
 import UniformsPage from "./pages/UniformsPage";
+import TrolleyTypePage from "./pages/TrolleyTypePage";
+import TrolleyPage from "./pages/TrolleyPage";
 import PDFsPage from "./pages/PDFsPage";
 import PdfUploadPage from "./pages/PdfUploadPage";
 import UniformCondition from "./pages/UniformCondition";
@@ -156,6 +158,22 @@ const MainLayout = () => {
             element={
               <ProtectedRoute>
                 <UniformsPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/trolley-types" 
+            element={
+              <ProtectedRoute>
+                <TrolleyTypePage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/trolleys" 
+            element={
+              <ProtectedRoute>
+                <TrolleyPage />
               </ProtectedRoute>
             }
           />

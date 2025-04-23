@@ -259,8 +259,8 @@ const Modal = ({ isOpen, onClose, onSave, apiData }) => {
                   value={formData.employee}
                   onChange={(e) => handleChange(e, index)}
                 >
-                  <option value={1}>Employee</option>
-                  <option value={2}>Store</option>
+                  <option value={1}>Store</option>
+                  <option value={2}>Employee</option>
                 </select>
               </div>
             </div>
