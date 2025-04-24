@@ -364,6 +364,24 @@ const Sidebar = ({ onSelect, onLogOut }) => {
         // Veya Management butonları ayrı kalabilir, mevcut haliyle devam ediyoruz
       ],
     },
+    palletCountingMgmt: {
+      label: "Pallet Management",
+      icon: FaClipboardList, // Uygun ikon
+      items: [
+        {
+          label: "Pallet Deposits",
+          value: "palletdeposits",
+          path: "/palletdeposits",
+          allowedRoles: [3, 12],
+        },
+        {
+          label: "Pallet Countings",
+          value: "palletcountings",
+          path: "/palletcountings",
+          allowedRoles: [3, 1, 12],
+        },
+      ],
+    },
     // *** --- ***
   };
 
@@ -399,7 +417,6 @@ const Sidebar = ({ onSelect, onLogOut }) => {
       path: "/uniforms",
       allowedRoles: [3, 4, 2, 9, 10],
     },
-    // Trolley ile ilgili olanlar yukarıdaki gruba taşındı
   ];
 
   // Rol kontrol fonksiyonu (Aynı)

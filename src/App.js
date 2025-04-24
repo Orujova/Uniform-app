@@ -18,6 +18,8 @@ import Stock from "./pages/StockPage";
 import UniformsPage from "./pages/UniformsPage";
 import TrolleyTypePage from "./pages/TrolleyTypePage";
 import TrolleyPage from "./pages/TrolleyPage";
+import PalletDepositPage from "./pages/PalletDepositPage"
+import PalletCountingPage from "./pages/PalletCountingPage"
 import PDFsPage from "./pages/PDFsPage";
 import PdfUploadPage from "./pages/PdfUploadPage";
 import UniformCondition from "./pages/UniformCondition";
@@ -174,6 +176,22 @@ const MainLayout = () => {
             element={
               <ProtectedRoute>
                 <TrolleyPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/palletdeposits" 
+            element={
+              <ProtectedRoute>
+                <PalletDepositPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/palletcountings" 
+            element={
+              <ProtectedRoute>
+                <PalletCountingPage />
               </ProtectedRoute>
             }
           />

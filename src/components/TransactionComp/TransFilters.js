@@ -1,6 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
+const monthNamesTr = [
+  "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
+  "Iyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"
+];
+
 const FilterContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -45,6 +50,28 @@ const FilterSelect = styled.select`
   }
 `;
 
+const formatDateCustom = (dateString) => {
+  if (!dateString) return ""; // Boş veya geçersiz tarih gelirse boş dön
+  try {
+    const dateObj = new Date(dateString);
+    const day = dateObj.getDate();
+    const monthIndex = dateObj.getMonth(); // 0-11 arası
+    const year = dateObj.getFullYear();
+    // Ay indeksinin geçerli olduğundan emin ol
+    if (monthIndex >= 0 && monthIndex < monthNamesTr.length) {
+        return `${day} ${monthNamesTr[monthIndex]} ${year}`;
+    } else {
+        // Geçersiz ay indeksi durumunda, standart formatı kullan
+        console.warn("Invalid month index for date:", dateString);
+        return dateObj.toLocaleDateString('tr-TR'); // Veya başka bir fallback
+    }
+  } catch (error) {
+    console.error("Error formatting date:", dateString, error);
+    // Hata durumunda, yine standart format veya orijinal string
+    return new Date(dateString).toLocaleDateString('tr-TR');
+  }
+};
+
 export const Filters = ({
   filters,
   onFilterChange,
@@ -73,20 +100,22 @@ export const Filters = ({
     </FilterGroup>
 
     <FilterGroup>
-      <FilterLabel>Transaction Date</FilterLabel>
-      <FilterSelect
-        name="transactionDate"
-        value={filters.transactionDate}
-        onChange={onFilterChange}
-      >
-        <option value="">Select Transaction Date</option>
-        {transactionDates.sort().map((date) => (
-          <option key={date} value={date}>
-            {new Date(date).toLocaleDateString()}
-          </option>
-        ))}
-      </FilterSelect>
-    </FilterGroup>
+  <FilterLabel>Transaction Date</FilterLabel>
+  <FilterSelect
+    name="transactionDate"
+    value={filters.transactionDate}
+    onChange={onFilterChange}
+  >
+    <option value="">Select Transaction Date</option>
+    {transactionDates
+      .sort((a, b) => new Date(a) - new Date(b))
+      .map((date) => (
+        <option key={date} value={date}> 
+          {formatDateCustom(date)} 
+        </option>
+      ))}
+  </FilterSelect>
+</FilterGroup>
 
     <FilterGroup>
       <FilterLabel>Distribution Type</FilterLabel>
@@ -144,19 +173,21 @@ export const Filters = ({
     </FilterGroup>
 
     <FilterGroup>
-      <FilterLabel>Handovered Date</FilterLabel>
-      <FilterSelect
-        name="handoveredDate"
-        value={filters.handoveredDate}
-        onChange={onFilterChange}
-      >
-        <option value="">Select Handovered Date</option>
-        {handoveredDates.sort().map((date) => (
-          <option key={date} value={date}>
-            {new Date(date).toLocaleDateString()}
-          </option>
-        ))}
-      </FilterSelect>
-    </FilterGroup>
+  <FilterLabel>Handovered Date</FilterLabel>
+  <FilterSelect
+    name="handoveredDate"
+    value={filters.handoveredDate}
+    onChange={onFilterChange}
+  >
+    <option value="">Select Handovered Date</option>
+    {handoveredDates
+      .sort((a, b) => new Date(a) - new Date(b)) 
+      .map((date) => (
+        <option key={date} value={date}> 
+          {formatDateCustom(date)} 
+        </option>
+      ))}
+  </FilterSelect>
+</FilterGroup>
   </FilterContainer>
 );
