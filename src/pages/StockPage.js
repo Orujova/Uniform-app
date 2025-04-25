@@ -192,8 +192,8 @@ const StockPage = () => {
     { Header: "Gender", accessor: "Gender" },
     { Header: "Stock Count", accessor: "StockCount" },
     { Header: "Imported Stock", accessor: "ImportedStockCount" },
-    { Header: "Unit Price", accessor: "UnitPrice" },
-    { Header: "Total Price", accessor: "TotalPrice" },
+    { Header: "Unit Price(AZN)", accessor: "UnitPrice" },
+    { Header: "Total Price(AZN)", accessor: "TotalPrice" },
     { Header: "Option", accessor: "StoreOrEmployee" },
 
     {

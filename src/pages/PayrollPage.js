@@ -135,7 +135,7 @@ const PayrollPage = () => {
     { Header: "Uniform Name", accessor: "UniformName" },
     { Header: "Size", accessor: "UniformSize" },
     { Header: "Type", accessor: "UniformType" },
-    { Header: "Unit Price", accessor: "UnitPrice" },
+    { Header: "Unit Price(AZN)", accessor: "UnitPrice" },
 
     { Header: "Project Name", accessor: "ProjectName" },
     { Header: "Count", accessor: "UniCount" },

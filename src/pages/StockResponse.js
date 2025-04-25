@@ -24,54 +24,81 @@ const Modal = styled.div`
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 1050;
 `;
 
 const ModalContent = styled.div`
   background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
+  padding: 25px 30px;
+  border-radius: 10px;
+  width: 450px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
 `;
 
 const ModalInput = styled.input`
-  padding: 10px;
-  width: 90%;
-  margin-bottom: 10px;
+  padding: 12px;
+  width: 100%;
+  margin-bottom: 15px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: ${props => props.disabled ? '#e9ecef' : '#fff'};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 `;
 
 const ModalButton = styled.button`
-  padding: 10px 16px;
-  font-size: 16px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
   color: #fff;
-  background-color: ${(props) => (props.disabled ? "#9CA3AF" : "#0284c7")};
+  background-color: ${(props) => (props.disabled ? "#adb5bd" : "#0284c7")};
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-  opacity: ${(props) => (props.disabled ? "0.6" : "1")};
+  opacity: ${(props) => (props.disabled ? "0.7" : "1")};
+  transition: background-color 0.2s ease-in-out;
+  margin-right: 10px;
 
-  &:hover {
-    background-color: ${(props) => (props.disabled ? "#9CA3AF" : "#075985")};
+  &:hover:not(:disabled) {
+    background-color: ${(props) => (props.disabled ? "#adb5bd" : "#075985")};
   }
 `;
 
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+
+  &:hover {
+    color: #343a40;
+  }
+`;
+
+
 const WarningMessage = styled.div`
-  color: #dc2626;
+  color: #b91c1c;
   font-size: 14px;
   margin-bottom: 15px;
-  padding: 8px;
+  padding: 10px 15px;
   background-color: #fee2e2;
+  border-left: 4px solid #ef4444;
   border-radius: 4px;
-  text-align: center;
+  text-align: left;
 `;
 
 const InfoSection = styled.div`
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
   border-radius: 8px;
-  padding: 16px;
+  padding: 15px;
   margin-bottom: 20px;
 `;
 
@@ -79,8 +106,8 @@ const InfoItem = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
 
   &:last-child {
     border-bottom: none;
@@ -89,68 +116,78 @@ const InfoItem = styled.div`
 
 const InfoLabel = styled.span`
   font-weight: 500;
-  color: #64748b;
+  color: #6c757d;
   font-size: 14px;
+  flex-shrink: 0;
+  margin-right: 10px;
 `;
 
 const InfoValue = styled.span`
   font-weight: 600;
-  color: #1e293b;
+  color: #212529;
   font-size: 14px;
+  text-align: right;
 `;
 
 const StockContainer = styled.div`
-  padding: 16px;
+  padding: 20px;
   background-color: #ffffff;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 15px;
 `;
 
 const Title = styled.h2`
   margin: 0;
-  font-size: 24px;
-  color: #2d3a45;
+  font-size: 22px;
+  color: #1f2937;
+  font-weight: 600;
 `;
 
 const StyledButton = styled.button`
-  padding: 10px 16px;
-  font-size: 16px;
+  padding: 10px 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background-color: #dc3545;
-  margin-left: 8px;
+  background-color: #6c757d;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease-in-out;
 
-  &:hover {
-    background-color: #c82333;
+  &:hover:not(:disabled) {
+    background-color: #5a6268;
   }
+   &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+   }
 `;
 
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 25px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 `;
 
 const PaginationButton = styled.button`
-  padding: 4px 8px;
-  min-width: 32px;
-  height: 32px;
-  margin: 0 2px;
+  padding: 5px 10px;
+  min-width: 34px;
+  height: 34px;
+  margin: 0 3px;
   border: 1px solid #dee2e6;
   background-color: ${(props) => (props.active ? "#0284c7" : "#ffffff")};
   color: ${(props) => (props.active ? "#ffffff" : "#212529")};
@@ -159,11 +196,12 @@ const PaginationButton = styled.button`
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: all 0.2s ease-in-out;
   border-radius: 6px;
 
-  &:hover {
-    background-color: ${(props) => (props.active ? "#0284c7" : "#f8f9fa")};
+  &:hover:not(:disabled) {
+    background-color: ${(props) => (props.active ? "#0277b5" : "#e9ecef")};
+    border-color: #adb5bd;
     z-index: 2;
   }
 
@@ -171,470 +209,563 @@ const PaginationButton = styled.button`
     background-color: #f8f9fa;
     color: #6c757d;
     cursor: not-allowed;
+    border-color: #dee2e6;
   }
 
-  &:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
-
-  &:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+  &:first-child, &:last-child {
+    border-radius: 6px;
   }
 `;
+
 
 const ActionButton = styled.button`
   cursor: pointer;
   background-color: ${(props) =>
     props.variant === "accept" ? "#28a745" : "#dc3545"};
   color: #fff;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border: none;
   border-radius: 6px;
   font-size: 12px;
-  font-weight: bold;
-  transition: background-color 0.3s, transform 0.2s;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${(props) =>
       props.variant === "accept" ? "#218838" : "#c82333"};
   }
+
+   &:active:not(:disabled) {
+       transform: scale(0.98);
+   }
+
+   &:disabled {
+       opacity: 0.65;
+       cursor: not-allowed;
+   }
 `;
 
-const IconWrapper = styled.div`
-  cursor: pointer;
-  font-size: 20px;
-  display: flex;
+const IconWrapper = styled.span`
+  font-size: 16px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: ${(props) => props.color || "#6c757d"};
 `;
 
 const InfoWarningMessage = styled.div`
-  color: #0369a1;
+  color: #0c5460;
   font-size: 14px;
   margin-bottom: 15px;
-  padding: 8px;
-  background-color: #e0f2fe;
+  padding: 10px 15px;
+  background-color: #d1ecf1;
+  border-left: 4px solid #bee5eb;
   border-radius: 4px;
-  text-align: center;
+  text-align: left;
+`;
+
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #495057;
 `;
 
 const statusOptions = [
-  { label: "Pending", value: "Pending" },
-  { label: "Intransit", value: "Intransit" },
-  { label: "Accepted", value: "Accepted" },
-  { label: "Rejected", value: "Rejected" },
+    { label: "Pending", value: "Pending" },
+    { label: "Intransit", value: "Intransit" },
+    { label: "Accepted", value: "Accepted" },
+    { label: "Rejected", value: "Rejected" },
 ];
 
 const StockResponse = () => {
-  const token = localStorage.getItem("token");
-  const [stockData, setStockData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
-  const [count, setCount] = useState(0);
-  const [statusFilter, setStatusFilter] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(8);
-  const [availableStock, setAvailableStock] = useState(0);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
+    const token = localStorage.getItem("token");
+    const [bgsRequestData, setBgsRequestData] = useState([]);
+    const [dcStockMap, setDcStockMap] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedRequestId, setSelectedRequestId] = useState(null);
+    const [count, setCount] = useState(0);
+    const [statusFilter, setStatusFilter] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(8);
+    const [availableStock, setAvailableStock] = useState(0);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    fetchStockData();
-  }, [token]);
+    useEffect(() => {
+        fetchInitialData();
+    }, [token]);
 
-  const fetchStockData = async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/BGSStockRequest`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-      const data = await response.json();
-      const stockRequests = data[0]?.BGSStockRequests || [];
+    const fetchInitialData = async () => {
+        setIsLoading(true);
+        setError("");
+        setBgsRequestData([]);
+        setDcStockMap({});
 
-      // Sort by Id in descending order
-      const sortedRequests = [...stockRequests].sort((a, b) => b.Id - a.Id);
+        try {
+            const [requestsResponse, dcStockResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/BGSStockRequest`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+                fetch(`${API_BASE_URL}/api/DCStock`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+            ]);
 
-      const uniformIds = sortedRequests.map((item) => item.UniformId);
-      const uniformDetailsResponses = await Promise.all(
-        uniformIds.map(async (id) => {
-          const uniformResponse = await fetch(
-            `${API_BASE_URL}/api/Uniform/${id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+            if (!requestsResponse.ok) {
+                throw new Error(`HTTP Error fetching BGS Requests: ${requestsResponse.status}`);
             }
-          );
+            if (!dcStockResponse.ok) {
+                throw new Error(`HTTP Error fetching DC Stock: ${dcStockResponse.status}`);
+            }
 
-          if (uniformResponse.ok) {
-            return uniformResponse.json();
-          }
+            const requestsJson = await requestsResponse.json();
+            const dcStockJson = await dcStockResponse.json();
 
-          throw new Error("Error fetching uniform details");
-        })
-      );
+            const stockRequests = requestsJson[0]?.BGSStockRequests || [];
+            const sortedRequests = [...stockRequests].sort((a, b) =>
+                 (new Date(b.CreatedDate || 0)) - (new Date(a.CreatedDate || 0))
+             );
 
-      const uniformData = sortedRequests.map((item, index) => ({
-        ...item,
-        UniformDetails: uniformDetailsResponses[index],
-      }));
+            const uniformDetailsPromises = sortedRequests.map(item => {
+                if (!item.UniformId) return Promise.resolve(null);
+                return fetch(`${API_BASE_URL}/api/Uniform/${item.UniformId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).then(res => res.ok ? res.json() : null)
+                   .catch(err => {
+                      console.error(`Error fetching detail for Uniform ${item.UniformId}:`, err);
+                      return null;
+                   });
+            });
 
-      setStockData(uniformData);
-    } catch (err) {
-      setError("Failed to fetch stock data.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+            const uniformDetailsResults = await Promise.allSettled(uniformDetailsPromises);
 
-  const handleReject = async (requestId) => {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/BGSStockRequest/reject?id=${requestId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id: requestId }),
+            const combinedRequestData = sortedRequests.map((item, index) => {
+                 const detailResult = uniformDetailsResults[index];
+                 const uniformDetails = detailResult.status === 'fulfilled' ? detailResult.value : { UniType: 'N/A', Size: 'N/A', Gender: 'N/A' };
+                 return { ...item, UniformDetails: uniformDetails || { UniType: 'N/A', Size: 'N/A', Gender: 'N/A' } };
+             });
+             setBgsRequestData(combinedRequestData);
+
+            const stocks = dcStockJson[0]?.DCStocks || [];
+
+            if (!Array.isArray(stocks)) {
+                console.error("Could not extract DCStocks array from response:", dcStockJson);
+            }
+
+            const stockMap = {};
+            if(Array.isArray(stocks)) {
+                stocks.forEach((item) => {
+                     if (item && item.UniformId != null && typeof item.StockCount === 'number') {
+                         if (stockMap[item.UniformId]) {
+                             stockMap[item.UniformId] += item.StockCount;
+                         } else {
+                             stockMap[item.UniformId] = item.StockCount;
+                        }
+                     } else {
+                         console.warn("Skipping invalid DC stock item during map creation:", item);
+                      }
+                });
+           }
+
+            setDcStockMap(stockMap);
+
+
+        } catch (err) {
+            console.error("Error in fetchInitialData:", err);
+            setError(`Failed to load data: ${err.message}. Please try refreshing.`);
+            showToast("Failed to load data", "error");
+        } finally {
+            setIsLoading(false);
         }
-      );
+    };
 
-      if (!response.ok) throw new Error("Failed to reject request");
-
-      await fetchStockData();
-      showToast("Request rejected successfully", "success");
-    } catch (err) {
-      setError("Error rejecting the request.");
-    }
-  };
-
-  const fetchAvailableStock = async (uniformId) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/DCStock`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch stock data");
-
-      const data = await response.json();
-      const stocks = data[0]?.DCStocks || [];
-      console.log(stocks);
-      const uniformStock = stocks.find(
-        (stock) => stock.UniformId === uniformId
-      );
-      return uniformStock?.StockCount || 0;
-    } catch (error) {
-      console.error("Error fetching available stock:", error);
-      return 0;
-    }
-  };
-
-  // const handleAccept = async (requestId) => {
-  //   const selectedItem = stockData.find((item) => item.Id === requestId);
-  //   setSelectedRequest(selectedItem);
-  //   setCount(selectedItem.RequestCount); // Default olaraq requested count'u set edirik
-
-  //   const stockCount = await fetchAvailableStock(selectedItem.UniformId);
-  //   setAvailableStock(stockCount);
-  //   setSelectedRequestId(requestId);
-  //   setModalOpen(true);
-  // };
-
-  const handleAccept = async (requestId) => {
-    const selectedItem = stockData.find((item) => item.Id === requestId);
-    setSelectedRequest(selectedItem);
-
-    const stockCount = await fetchAvailableStock(selectedItem.UniformId);
-    setAvailableStock(stockCount);
-
-    // Set initial count based on available stock vs requested count
-    const initialCount = Math.min(selectedItem.RequestCount, stockCount);
-    setCount(initialCount);
-
-    setSelectedRequestId(requestId);
-    setModalOpen(true);
-  };
-
-  const handleCountChange = (e) => {
-    const newCount = parseInt(e.target.value) || 0;
-    const requestedCount = selectedRequest?.RequestCount || 0;
-
-    if (newCount > requestedCount) {
-      showToast(`Cannot exceed requested count (${requestedCount})`, "warning");
-      return;
-    }
-
-    if (newCount < 0) {
-      showToast("Count cannot be negative", "warning");
-      return;
-    }
-
-    setCount(newCount);
-  };
-
-  const handleSubmit = async () => {
-    try {
-      setIsSaving(true);
-      const countResponse = await fetch(
-        `${API_BASE_URL}/api/BGSStockRequest/update-count-status`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ Id: selectedRequestId, count }),
+    const handleReject = async (requestId) => {
+        if (!requestId) return;
+        setIsLoading(true);
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/api/BGSStockRequest/reject?id=${requestId}`,
+                {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}`, Accept: "*/*" },
+                }
+            );
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Reject failed: ${response.status} - ${errorData}`);
+            }
+            showToast("Request rejected successfully", "success");
+            await fetchInitialData();
+        } catch (err) {
+            console.error("Error rejecting request:", err);
+            setError(`Error rejecting request: ${err.message}`);
+            showToast("Failed to reject request", "error");
+        } finally {
+             setIsLoading(false);
         }
-      );
-      console.log(selectedRequestId, count);
+    };
 
-      if (!countResponse.ok) throw new Error("Failed to update count");
+    const handleAccept = (requestId) => {
+        const selectedItem = bgsRequestData.find((item) => item.Id === requestId);
 
-      setModalOpen(false);
-      setCount(0);
-      await fetchStockData();
-      showToast("Request accepted successfully", "success");
-    } catch (err) {
-      setError("Error processing the request.");
-    } finally {
-      setIsSaving(false); // Loading bitir
-    }
-  };
+        if (!selectedItem) {
+            showToast("Could not find the selected request details.", "error");
+            return;
+        }
+         if (selectedItem.UniformId == null) {
+            showToast("Cannot accept request: Uniform ID is missing.", "error");
+             return;
+        }
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+        setSelectedRequest(selectedItem);
+        setSelectedRequestId(requestId);
 
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxPagesToShow = 5;
+        const currentAvailableStock = dcStockMap[selectedItem.UniformId] || 0;
+        setAvailableStock(currentAvailableStock);
+
+        const requestedCount = selectedItem.RequestCount || 0;
+        const initialCount = Math.max(0, Math.min(requestedCount, currentAvailableStock));
+        setCount(initialCount);
+
+        setModalOpen(true);
+    };
+
+    const handleCountChange = (e) => {
+         const newCount = parseInt(e.target.value, 10) || 0;
+
+         if (newCount < 0) {
+             showToast("Count cannot be negative", "warning");
+             setCount(0);
+             return;
+         }
+
+        const requestedCount = selectedRequest?.RequestCount || 0;
+        const maxAllowed = Math.min(requestedCount, availableStock);
+
+         if (newCount > maxAllowed) {
+            showToast(`Cannot accept more than ${maxAllowed} (Stock: ${availableStock}, Requested: ${requestedCount})`, "warning");
+            setCount(maxAllowed);
+         } else {
+            setCount(newCount);
+         }
+    };
+
+    const handleSubmit = async () => {
+         if (!selectedRequestId) {
+             showToast("Error: No request selected.", "error");
+             return;
+        }
+         if (availableStock > 0 && count <= 0) {
+             showToast("Please enter a count greater than 0 to accept.", "warning");
+            return;
+         }
+         if (availableStock <= 0 && count > 0) {
+            showToast("Cannot accept items when no stock is available.", "error");
+            return;
+         }
+
+        setIsSaving(true);
+         try {
+             const response = await fetch(
+                `${API_BASE_URL}/api/BGSStockRequest/update-count-status`,
+                {
+                     method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                         "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ Id: selectedRequestId, count: count }),
+                }
+            );
+
+             if (!response.ok) {
+                 const errorData = await response.text();
+                throw new Error(`Failed to accept request: ${response.status} - ${errorData}`);
+            }
+
+            setModalOpen(false);
+            showToast(`Request accepted successfully with count: ${count}`, "success");
+             await fetchInitialData();
+             setSelectedRequestId(null);
+             setSelectedRequest(null);
+             setCount(0);
+            setAvailableStock(0);
+
+         } catch (err) {
+             console.error("Error during acceptance submission:", err);
+             setError(`Error processing acceptance: ${err.message}`);
+            showToast("Failed to accept request", "error");
+         } finally {
+             setIsSaving(false);
+         }
+     };
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const getPageNumbers = () => {
+        const pageNumbers = [];
+        const maxPagesToShow = 5;
+        const totalPages = Math.ceil(filteredStockData.length / itemsPerPage);
+
+        if (totalPages <= maxPagesToShow) {
+            for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+        } else {
+             let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+             let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+             if (endPage === totalPages) startPage = Math.max(1, totalPages - maxPagesToShow + 1);
+             if (startPage === 1) endPage = Math.min(totalPages, maxPagesToShow);
+
+            if (startPage > 1) {
+                 pageNumbers.push(1);
+                if (startPage > 2) pageNumbers.push('...');
+            }
+            for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) pageNumbers.push('...');
+                 pageNumbers.push(totalPages);
+            }
+        }
+        return pageNumbers;
+    };
+
+    const handleStatusFilterChange = (event) => {
+        setStatusFilter(event.target.value);
+        setCurrentPage(1);
+    };
+
+    const filteredStockData = statusFilter
+        ? bgsRequestData.filter((item) => item.Status === statusFilter)
+        : bgsRequestData;
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredStockData.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredStockData.length / itemsPerPage);
 
-    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    const columns = React.useMemo(() => [
+        { Header: "Uni. Code", accessor: "UniformCode" },
+        { Header: "Uniform Name", accessor: "UniformName" },
+        { Header: "Type", accessor: "UniformDetails.UniType" },
+        { Header: "Size", accessor: "UniformDetails.Size" },
+        { Header: "Gender", accessor: "UniformDetails.Gender" },
+        { Header: "Req. Count", accessor: "RequestCount" },
+        { Header: "Project", accessor: "ProjectName" },
+        {
+            Header: "Status",
+            accessor: "Status",
+            Cell: ({ value }) => {
+                let color = "#6c757d";
+                let icon = null;
+                switch (value) {
+                    case "Pending": color = "#ffc107"; break;
+                    case "Intransit": color = "#17a2b8"; icon = <FaShippingFast />; break;
+                    case "Accepted": color = "#28a745"; icon = <FaCheck />; break;
+                    case "Rejected": color = "#dc3545"; icon = <FaTimes />; break;
+                    default: break;
+                }
+                return (
+                    <span style={{ color, fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                      {icon && <IconWrapper color={color}>{icon}</IconWrapper>}
+                      {value || 'N/A'}
+                    </span>
+                 );
+             }
+        },
+        {
+            Header: "Actions",
+            id: "actions",
+            Cell: ({ row }) => {
+                const { Status, Id } = row.original;
+                if (Status === "Pending") {
+                    return (
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                            <ActionButton variant="accept" onClick={() => handleAccept(Id)} aria-label={`Accept request ${Id}`}>
+                               Accept
+                            </ActionButton>
+                            <ActionButton variant="reject" onClick={() => handleReject(Id)} aria-label={`Reject request ${Id}`}>
+                               Reject
+                            </ActionButton>
+                        </div>
+                    );
+                }
+                 return <span style={{ fontSize: '12px', color: '#6c757d', textAlign: 'center', display: 'block' }}>No actions</span>;
+            },
+        },
+    ], [bgsRequestData, dcStockMap, handleAccept, handleReject]);
 
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-    }
+    const renderModal = () => {
+        if (!modalOpen || !selectedRequest) return null;
 
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-
-    return pageNumbers;
-  };
-
-  const columns = [
-    { Header: "Uniform Code", accessor: "UniformCode" },
-    { Header: "Uniform Name", accessor: "UniformName" },
-    { Header: "Type", accessor: "UniformDetails.UniType" },
-    { Header: "Size", accessor: "UniformDetails.Size" },
-    { Header: "Gender", accessor: "UniformDetails.Gender" },
-    { Header: "Request Count", accessor: "RequestCount" },
-    { Header: "Project", accessor: "ProjectName" },
-    {
-      Header: "Actions",
-      accessor: "actions",
-      Cell: ({ row }) => {
-        const { Status, Id } = row.original;
+        const isStockAvailable = availableStock > 0;
+        const requestedCount = selectedRequest.RequestCount || 0;
+        const numericAvailableStock = Number(availableStock) || 0;
+        const isRequestedMoreThanAvailable = requestedCount > numericAvailableStock;
+        const maxAcceptable = Math.min(requestedCount, numericAvailableStock);
 
         return (
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              justifyContent: "center",
-            }}
-          >
-            {Status === "Intransit" && (
-              <IconWrapper>
-                <FaShippingFast style={{ color: "#6b7280" }} />
-              </IconWrapper>
-            )}
-            {Status === "Pending" && (
-              <>
-                <ActionButton variant="accept" onClick={() => handleAccept(Id)}>
-                  Accept
-                </ActionButton>
-                <ActionButton variant="reject" onClick={() => handleReject(Id)}>
-                  Reject
-                </ActionButton>
-              </>
-            )}
-            {Status === "Accepted" && (
-              <IconWrapper>
-                <FaCheck style={{ color: "#28a745" }} />
-              </IconWrapper>
-            )}
-            {Status === "Rejected" && (
-              <IconWrapper>
-                <FaTimes style={{ color: "#dc3545" }} />
-              </IconWrapper>
-            )}
-          </div>
+            <Modal>
+                <ModalContent>
+                    {isSaving && <LoadingSpinner overlay={true}/>}
+                    <CloseButton onClick={() => setModalOpen(false)} disabled={isSaving}><FaTimes /></CloseButton>
+                    <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#343a40', borderBottom: '1px solid #dee2e6', paddingBottom: '10px' }}>
+                        Accept Uniform Request
+                    </h3>
+
+                    <InfoSection>
+                        <InfoItem>
+                            <InfoLabel>Uniform:</InfoLabel>
+                            <InfoValue>{selectedRequest.UniformName || 'N/A'} ({selectedRequest.UniformCode || 'N/A'})</InfoValue>
+                        </InfoItem>
+                         <InfoItem>
+                            <InfoLabel>Type/Size/Gender:</InfoLabel>
+                             <InfoValue>
+                                 {selectedRequest.UniformDetails?.UniType || 'N/A'} / {selectedRequest.UniformDetails?.Size || 'N/A'} / {selectedRequest.UniformDetails?.Gender || 'N/A'}
+                             </InfoValue>
+                         </InfoItem>
+                        <InfoItem>
+                            <InfoLabel>Requested Count:</InfoLabel>
+                            <InfoValue>{requestedCount}</InfoValue>
+                        </InfoItem>
+                        <InfoItem>
+                            <InfoLabel>Available Stock (DC):</InfoLabel>
+                            <InfoValue style={{ color: !isStockAvailable ? '#dc3545' : (isRequestedMoreThanAvailable ? '#ffc107' : '#28a745') }}>
+                               {numericAvailableStock}
+                            </InfoValue>
+                        </InfoItem>
+                        <InfoItem>
+                            <InfoLabel>Project:</InfoLabel>
+                             <InfoValue>{selectedRequest.ProjectName || 'N/A'}</InfoValue>
+                        </InfoItem>
+                    </InfoSection>
+
+                     {!isStockAvailable && (
+                        <WarningMessage>
+                           No stock available in DC for this uniform. Cannot accept.
+                        </WarningMessage>
+                    )}
+
+                     {isStockAvailable && isRequestedMoreThanAvailable && (
+                         <InfoWarningMessage>
+                            Requested ({requestedCount}) exceeds available stock ({numericAvailableStock}). Max {maxAcceptable} can be accepted.
+                        </InfoWarningMessage>
+                     )}
+
+                     <div style={{ marginBottom: "25px" }}>
+                        <Label htmlFor="acceptCount">Count to Accept:</Label>
+                         <ModalInput
+                             id="acceptCount"
+                             type="number"
+                            min="0"
+                            max={maxAcceptable}
+                            value={count}
+                            onChange={handleCountChange}
+                            disabled={!isStockAvailable || isSaving}
+                            aria-describedby={!isStockAvailable ? "stockWarning" : (isRequestedMoreThanAvailable ? "stockInfoWarning" : undefined)}
+                        />
+                        {!isStockAvailable && <span id="stockWarning" className="sr-only">Warning: No stock available</span>}
+                        {isRequestedMoreThanAvailable && <span id="stockInfoWarning" className="sr-only">Warning: Requested count exceeds available stock</span>}
+                     </div>
+
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", paddingTop: '15px', borderTop: '1px solid #dee2e6' }}>
+                        <StyledButton
+                            onClick={() => { setModalOpen(false); }}
+                            disabled={isSaving}
+                        >
+                            Cancel
+                        </StyledButton>
+                        <ModalButton
+                            onClick={handleSubmit}
+                             disabled={
+                                isSaving ||
+                                 !isStockAvailable ||
+                                 (isStockAvailable && count <= 0)
+                            }
+                        >
+                            {isSaving ? "Saving..." : `Accept ${count} Item(s)`}
+                        </ModalButton>
+                    </div>
+                </ModalContent>
+            </Modal>
         );
-      },
-    },
-  ];
-
-  const handleStatusFilterChange = (event) => {
-    setStatusFilter(event.target.value);
-    setCurrentPage(1);
-  };
-
-  const filteredStockData = statusFilter
-    ? stockData.filter((item) => item.Status === statusFilter)
-    : stockData;
-
-  // Calculate current page items
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredStockData.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredStockData.length / itemsPerPage);
-  const renderModal = () => {
-    if (!modalOpen || !selectedRequest) return null;
-
-    const isStockAvailable = availableStock > 0;
-    const isRequestedMoreThanAvailable =
-      selectedRequest.RequestCount > availableStock;
+    };
 
     return (
-      <Modal>
-        <ModalContent>
-          {isSaving && <LoadingSpinner />}
-          <h3 style={{ marginTop: 0 }}>Accept Uniform</h3>
-          <InfoSection>
-            <InfoItem>
-              <InfoLabel>Uniform name:</InfoLabel>
-              <InfoValue>{selectedRequest.UniformName}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Requested count:</InfoLabel>
-              <InfoValue>{selectedRequest.RequestCount}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Available stock:</InfoLabel>
-              <InfoValue>{availableStock}</InfoValue>
-            </InfoItem>
-          </InfoSection>
+        <StockContainer>
+            <Header>
+                <Title>BGS Requests Response</Title>
+                <StatusFilter
+                    statusOptions={statusOptions}
+                    handleStatusFilterChange={handleStatusFilterChange}
+                    statusFilter={statusFilter}
+                />
+            </Header>
 
-          {!isStockAvailable && (
-            <WarningMessage>No stock available for this uniform</WarningMessage>
-          )}
+             {isLoading ? (
+                 <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}><LoadingSpinner /></div>
+             ) : error ? (
+                 <WarningMessage style={{margin: '20px 0'}}>{error}</WarningMessage>
+            ) : bgsRequestData.length === 0 ? (
+                 <p style={{textAlign: 'center', padding: '30px', color: '#6c757d'}}>No requests found matching the criteria.</p>
+             ) : (
+                 <>
+                     <Table
+                        columns={columns}
+                        data={currentItems}
+                        selectable={false}
+                        editable={false}
+                    />
 
-          {isStockAvailable && isRequestedMoreThanAvailable && (
-            <InfoWarningMessage>
-              The requested count exceeds available stock. Maximum{" "}
-              {availableStock} items can be accepted.
-            </InfoWarningMessage>
-          )}
+                    {filteredStockData.length > itemsPerPage && (
+                         <PaginationContainer>
+                            <PaginationButton
+                                 onClick={() => handlePageChange(currentPage - 1)}
+                                 disabled={currentPage === 1}
+                                 aria-label="Previous Page"
+                             >
+                                <FaChevronLeft size={12} />
+                             </PaginationButton>
 
-          <div style={{ marginBottom: "20px" }}>
-            <label
-              htmlFor="acceptCount"
-              style={{ display: "block", marginBottom: "5px" }}
-            >
-              Accept Count:
-            </label>
-            <ModalInput
-              id="acceptCount"
-              type="number"
-              min="0"
-              max={Math.min(selectedRequest.RequestCount, availableStock)}
-              value={count}
-              onChange={handleCountChange}
-              disabled={!isStockAvailable}
-            />
-          </div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <ModalButton
-              onClick={handleSubmit}
-              disabled={!isStockAvailable || count === 0}
-            >
-              Submit
-            </ModalButton>
-            <StyledButton
-              onClick={() => {
-                setModalOpen(false);
-                setSelectedRequest(null);
-                setCount(0);
-              }}
-            >
-              Cancel
-            </StyledButton>
-          </div>
-        </ModalContent>
-      </Modal>
+                            {getPageNumbers().map((page, index) =>
+                                 typeof page === 'number' ? (
+                                    <PaginationButton
+                                         key={page}
+                                         active={currentPage === page}
+                                         onClick={() => handlePageChange(page)}
+                                     >
+                                         {page}
+                                     </PaginationButton>
+                                 ) : (
+                                     <span key={`dots-${index}`} style={{ padding: '5px 10px', color: '#6c757d', alignSelf: 'center' }}>{page}</span>
+                                 )
+                             )}
+
+                             <PaginationButton
+                                 onClick={() => handlePageChange(currentPage + 1)}
+                                 disabled={currentPage === totalPages}
+                                 aria-label="Next Page"
+                             >
+                                 <FaChevronRight size={12} />
+                             </PaginationButton>
+                         </PaginationContainer>
+                     )}
+                 </>
+            )}
+
+            {renderModal()}
+            <ToastContainer />
+        </StockContainer>
     );
-  };
-
-  return (
-    <StockContainer>
-      <Header>
-        <Title>BGS Requests Response</Title>
-        <StatusFilter
-          statusOptions={statusOptions}
-          handleStatusFilterChange={handleStatusFilterChange}
-          statusFilter={statusFilter}
-        />
-      </Header>
-
-      {isLoading ? (
-        <p>Loading uniforms...</p>
-      ) : error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            data={currentItems}
-            selectable={false}
-            editable={false}
-          />
-
-          <PaginationContainer>
-            <PaginationButton
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <FaChevronLeft size={12} />
-            </PaginationButton>
-
-            {getPageNumbers().map((number) => (
-              <PaginationButton
-                key={number}
-                active={currentPage === number}
-                onClick={() => handlePageChange(number)}
-              >
-                {number}
-              </PaginationButton>
-            ))}
-
-            <PaginationButton
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <FaChevronRight size={12} />
-            </PaginationButton>
-          </PaginationContainer>
-        </>
-      )}
-      {renderModal()}
-      <ToastContainer />
-    </StockContainer>
-  );
 };
 
 export default StockResponse;

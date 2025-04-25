@@ -886,10 +886,10 @@ const ManagerResponse = () => {
       }, // Reduced width
       { Header: "Creator", accessor: "CreatedBy", width: 140 },
       {
-        Header: "Price",
+        Header: "Price(AZN)",
         accessor: "UniformDCStockUnitPrice",
         Cell: ({ value }) =>
-          value != null ? `$${Number(value).toFixed(2)}` : "-",
+          value != null ? `${Number(value).toFixed(2)}` : "-",
         width: 80,
         align: "right",
       }, // Reduced width

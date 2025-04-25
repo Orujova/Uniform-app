@@ -267,7 +267,7 @@ const TransactionPage = () => {
     { Header: "Uniform Name", accessor: "UniformName" },
     { Header: "Size", accessor: "UniformSize" },
     { Header: "Type", accessor: "UniformType" },
-    { Header: "Unit Price", accessor: "UnitPrice" },
+    { Header: "Unit Price(AZN)", accessor: "UnitPrice" },
     {
       Header: "Image",
       accessor: "UniformImageUrl",
