@@ -227,7 +227,6 @@ const ActionButton = styled.button`
   }
 `;
 
-
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: flex-end;

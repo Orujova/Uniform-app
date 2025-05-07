@@ -458,7 +458,6 @@ const CreateTrolleyTypeModal = ({
                   </>
                 )}
 
-                {/* Resim VARSA Gösterilecek İçerik (ÖNİZLEME BURADA) */}
                 {image && previewUrl && (
                   <ImagePreviewWrapper>
                     <SmallImagePreviewContainer>

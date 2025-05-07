@@ -621,7 +621,6 @@ const StockResponse = () => {
                     <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#343a40', borderBottom: '1px solid #dee2e6', paddingBottom: '10px' }}>
                         Accept Uniform Request
                     </h3>
-
                     <InfoSection>
                         <InfoItem>
                             <InfoLabel>Uniform:</InfoLabel>
