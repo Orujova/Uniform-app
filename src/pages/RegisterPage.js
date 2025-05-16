@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { createUser, fetchRoles } from "../redux/userActions";
 import {
   TextField,
@@ -17,11 +18,12 @@ import {
   IconButton,
 } from "@mui/material";
 import { User, Mail, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
-
-import { ToastContainer } from "../utils/ToastContainer";
+import ToastContainer from "../utils/ToastContainer"; // Sonner Toaster
+import { showToast } from "../utils/toast"; // Sonner toast utility
 
 const RegisterPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { roles, loading } = useSelector((state) => state.userReducer);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -75,8 +77,10 @@ const RegisterPage = () => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        await dispatch(createUser(formData));
-        // Navigate to success page or show success message
+        await dispatch(createUser(formData)); // Handle fulfilled action
+        setTimeout(() => {
+          navigate("/transaction"); // Redirect after toast
+        }, 3000); // Matches showToast duration
       } catch (error) {
         setErrors({ submit: error.message });
       }
@@ -97,20 +101,31 @@ const RegisterPage = () => {
         justifyContent: "center",
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth="xs">
         <Paper
-          elevation={6}
+          elevation={0}
           sx={{
-            p: 4,
-            borderRadius: 3,
-            background: "white",
-            maxWidth: "500px",
+            p: 2,
+            borderRadius: 2,
+            background: "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(10px)",
+            maxWidth: "400px",
             margin: "auto",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <Box textAlign="center" mb={4}>
-            <UserPlus size={48} color="#74ebd5" />
-            <Typography variant="h5" fontWeight="bold" mt={2} color="#1f2937">
+          <Box textAlign="center" mb={2}>
+            <UserPlus size={36} color="#74ebd5" />
+            <Typography
+              variant="h6"
+              fontWeight="600"
+              mt={1}
+              sx={{
+                background: "linear-gradient(to right, #74ebd5, #9face6)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
               CREATE ACCOUNT
             </Typography>
           </Box>
@@ -124,11 +139,23 @@ const RegisterPage = () => {
               fullWidth
               error={!!errors.FullName}
               helperText={errors.FullName}
-              margin="normal"
+              margin="dense"
+              size="small"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  "&:hover fieldset": {
+                    borderColor: "#74ebd5",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#9face6",
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <User color="#6b7280" />
+                    <User color="#74ebd5" size={20} />
                   </InputAdornment>
                 ),
               }}
@@ -142,11 +169,23 @@ const RegisterPage = () => {
               fullWidth
               error={!!errors.UserName}
               helperText={errors.UserName}
-              margin="normal"
+              margin="dense"
+              size="small"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  "&:hover fieldset": {
+                    borderColor: "#74ebd5",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#9face6",
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <User color="#6b7280" />
+                    <User color="#74ebd5" size={20} />
                   </InputAdornment>
                 ),
               }}
@@ -160,11 +199,23 @@ const RegisterPage = () => {
               fullWidth
               error={!!errors.Email}
               helperText={errors.Email}
-              margin="normal"
+              margin="dense"
+              size="small"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  "&:hover fieldset": {
+                    borderColor: "#74ebd5",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#9face6",
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Mail color="#6b7280" />
+                    <Mail color="#74ebd5" size={20} />
                   </InputAdornment>
                 ),
               }}
@@ -179,11 +230,23 @@ const RegisterPage = () => {
               fullWidth
               error={!!errors.Password}
               helperText={errors.Password}
-              margin="normal"
+              margin="dense"
+              size="small"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  "&:hover fieldset": {
+                    borderColor: "#74ebd5",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#9face6",
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Lock color="#6b7280" />
+                    <Lock color="#74ebd5" size={20} />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -191,11 +254,16 @@ const RegisterPage = () => {
                     <IconButton
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
+                      sx={{
+                        "&:hover": {
+                          color: "#9face6",
+                        },
+                      }}
                     >
                       {showPassword ? (
-                        <EyeOff color="#6b7280" />
+                        <EyeOff color="#74ebd5" size={20} />
                       ) : (
-                        <Eye color="#6b7280" />
+                        <Eye color="#74ebd5" size={20} />
                       )}
                     </IconButton>
                   </InputAdornment>
@@ -203,8 +271,15 @@ const RegisterPage = () => {
               }}
             />
 
-            <FormControl fullWidth margin="normal" error={!!errors.RoleIds}>
-              <InputLabel>Roles</InputLabel>
+            <FormControl
+              fullWidth
+              margin="dense"
+              error={!!errors.RoleIds}
+              size="small"
+            >
+              <InputLabel sx={{ "&.Mui-focused": { color: "#9face6" } }}>
+                Roles
+              </InputLabel>
               <Select
                 multiple
                 value={formData.RoleIds}
@@ -217,6 +292,15 @@ const RegisterPage = () => {
                     )
                     .join(", ")
                 }
+                sx={{
+                  borderRadius: "8px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#74ebd5",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#9face6",
+                  },
+                }}
               >
                 {roles?.map((role) => (
                   <MenuItem key={role.Id} value={role.Id}>
@@ -225,14 +309,24 @@ const RegisterPage = () => {
                 ))}
               </Select>
               {errors.RoleIds && (
-                <Typography color="error" variant="caption">
+                <Typography
+                  color="error"
+                  variant="caption"
+                  sx={{ mt: 0.5, ml: 1 }}
+                >
                   {errors.RoleIds}
                 </Typography>
               )}
             </FormControl>
 
             {errors.submit && (
-              <Typography color="error" textAlign="center" mt={2}>
+              <Typography
+                color="error"
+                textAlign="center"
+                mt={1}
+                variant="caption"
+                sx={{ background: "rgba(239, 68, 68, 0.1)", p: 0.5, borderRadius: 1 }}
+              >
                 {errors.submit}
               </Typography>
             )}
@@ -241,18 +335,29 @@ const RegisterPage = () => {
               type="submit"
               variant="contained"
               fullWidth
-              size="large"
+              size="small"
               sx={{
-                mt: 3,
-                py: 1.5,
-                fontWeight: "bold",
-                background: "linear-gradient(to left, #74ebd5, #9face6)",
+                mt: 2,
+                py: 1,
+                fontWeight: "600",
+                background: "linear-gradient(45deg, #74ebd5, #9face6)",
                 color: "#fff",
-                border: "none",
+                borderRadius: "8px",
+                textTransform: "none",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                  background: "linear-gradient(45deg, #9face6, #74ebd5)",
+                },
+                "&:disabled": {
+                  background: "rgba(0, 0, 0, 0.12)",
+                  color: "rgba(0, 0, 0, 0.26)",
+                },
               }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : "SIGN UP"}
+              {loading ? <CircularProgress size={20} color="inherit" /> : "Sign Up"}
             </Button>
           </form>
         </Paper>
