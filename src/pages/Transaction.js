@@ -47,10 +47,31 @@ const ClearFilterButton = styled.button`
   }
 `;
 
+const ExportButton = styled.button`
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #ffffff;
+  background-color: #48bb78; /* Green color for export */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 6px rgba(72, 187, 120, 0.3);
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: #38a169;
+  }
+`;
+
 const FilterActionsContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   padding-top: 12px;
+  gap: 10px;
 `;
 
 const TransactionPage = () => {
@@ -115,6 +136,50 @@ const TransactionPage = () => {
 
   const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+  const handleExport = async () => {
+  try {
+    const requestPayload = {
+      status: filters.status || null,
+      badge: filters.badge || null,
+      order: filters.order || null,
+      handoveredDate: filters.handoveredDate || null,
+      transactionDate: filters.transactionDate || null,
+      projectId: filters.projectId ? parseInt(filters.projectId) : null,
+      isFirstDistribution: filters.distributionType === "firstDistribution" ? true : null,
+      isStore: filters.distributionType === "store" ? true : null,
+      isBGS: filters.distributionType === "bgs" ? true : null,
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/TransactionPage/export-all-transactions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestPayload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "AllTransactions.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    showToast("Transactions exported successfully", "success");
+  } catch (error) {
+    console.error("Error exporting transactions:", error);
+    showToast("Failed to export transactions", "error");
+  }
+};
 
   const fetchHandoveredDates = async (projectId) => {
     try {
@@ -698,6 +763,9 @@ const TransactionPage = () => {
           <ClearFilterButton onClick={handleClearFilters}>
             Clear Filters
           </ClearFilterButton>
+          <ExportButton onClick={handleExport}>
+          Export to Excel
+          </ExportButton>
         </FilterActionsContainer>
       </div>
 
